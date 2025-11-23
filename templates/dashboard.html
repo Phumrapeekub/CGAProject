@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | CGA{% endblock %}
+{% block content %}
+<div class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-b from-blue-400 to-blue-600 grid place-items-center text-white">
+        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 11.5a2.5 2.5 0 105 0V7.8a1.3 1.3 0 112.6 0v6.2a2.5 2.5 0 105 0V9.8"/>
+        </svg>
+      </div>
+      <div class="leading-tight">
+        <div class="font-semibold">CGA System</div>
+        <div class="text-xs text-slate-500">โรงพยาบาลพะเยา</div>
+      </div>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <nav class="hidden md:flex items-center gap-2">
+      <a class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium">Dashboard</a>
+      <a class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 text-sm">จัดการผู้ป่วย</a>
+      <a href="{{ url_for('assess_start') }}" class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 text-sm">ประเมินใหม่</a>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <div class="text-right hidden sm:block">
+        <div class="text-sm font-medium">{{ user }}</div>
+        <div class="text-xs text-slate-500">{{ role }}</div>
+      </div>
+      <a href="{{ url_for('logout') }}"
+         class="px-3 py-1.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 text-sm font-medium">
+        ออกจากระบบ
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div>
+    <h1 class="text-3xl font-semibold">Dashboard พยาบาล</h1>
+    <p class="text-slate-500 mt-1">ภาพรวมการประเมินสุขภาพผู้สูงอายุ</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="rounded-3xl bg-white shadow-md p-5 border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-xl grid place-items-center bg-slate-100 text-slate-600">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" d="M8 2v3M16 2v3M3 9h18M4 7h16a1 1 0 011 1v11a2 2 0 01-2 2H5a2 2 0 01-2-2V8a1 1 0 011-1z"/>
+          </svg>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">วันนี้</span>
+      </div>
+      <div class="mt-3 text-5xl font-semibold">{{ kpis.today }}</div>
+      <div class="text-slate-500 text-sm mt-1">ผู้ป่วยที่ประเมินวันนี้</div>
+    </div>
+
+    <div class="rounded-3xl bg-white shadow-md p-5 border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-xl grid place-items-center bg-purple-100 text-purple-600">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 3h18M3 12h18M3 21h18" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">สัปดาห์นี้</span>
+      </div>
+      <div class="mt-3 text-5xl font-semibold">{{ kpis.week }}</div>
+      <div class="text-slate-500 text-sm mt-1">ผู้ป่วยสัปดาห์นี้</div>
+    </div>
+
+    <div class="rounded-3xl bg-white shadow-md p-5 border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-xl grid place-items-center bg-orange-100 text-orange-600">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 6v12M6 12h12" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">เดือนนี้</span>
+      </div>
+      <div class="mt-3 text-5xl font-semibold">{{ kpis.month }}</div>
+      <div class="text-slate-500 text-sm mt-1">ผู้ป่วยเดือนนี้</div>
+    </div>
+
+    <div class="rounded-3xl bg-white shadow-md p-5 border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-xl grid place-items-center bg-emerald-100 text-emerald-600">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 4a8 8 0 100 16 8 8 0 000-16z"/>
+          </svg>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ทั้งหมด</span>
+      </div>
+      <div class="mt-3 text-5xl font-semibold">{{ kpis.total }}</div>
+      <div class="text-slate-500 text-sm mt-1">ผู้ป่วยทั้งหมด</div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="rounded-3xl bg-white p-5 shadow-md border border-slate-100">
+    <div class="font-semibold mb-3">การดำเนินการด่วน</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a href="{{ url_for('assess_start') }}"
+         class="block text-center rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg relative"
+         style="z-index: 10;">
+        ➕ ประเมินผู้ป่วยใหม่
+      </a>
+      <a href="{{ url_for('patient_list') }}"
+   class="block text-center rounded-2xl border-2 border-purple-300 text-purple-600 py-4 font-semibold hover:bg-purple-50">
+   👤 จัดการข้อมูลผู้ป่วย
+    </a>
+
+    <a href="{{ url_for('dashboard') }}"
+   class="block text-center rounded-2xl border-2 border-emerald-300 text-emerald-600 py-4 font-semibold hover:bg-emerald-50">
+   📊 ดูรายงานสรุป
+    </a>
+    </div>
+  </div>
+
+  <!-- ที่เหลือใส่คอนเทนต์อื่นได้ตามต้องการ -->
+
+</div>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- ส่งข้อมูลจากเซิร์ฟเวอร์เป็น JSON (ไม่ใช่ JS) -->
+<script id="chart-data" type="application/json">
+  {{ {
+      "bar_labels": bar_labels,
+      "bar_values": bar_values,
+      "risk": risk
+    } | tojson }}
+</script>
+
+<!-- สคริปต์กราฟ (ไฟล์แยก) -->
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+{% block title %}ขั้นตอนที่ 2: สมรรถภาพสมอง (MMSE-T){% endblock %}
+{% block content %}
+
+<div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- HN/GCN + Step -->
+  <div class="flex items-center justify-between">
+    <span class="px-4 py-1.5 rounded-full bg-white shadow border text-slate-700">
+      <span class="font-medium">HN:</span> {{ hn }} <span class="mx-1">|</span> <span class="font-medium">GCN:</span> {{ gcn }}
+    </span>
+    <span class="px-4 py-1.5 rounded-full bg-white shadow border text-slate-700">
+      ขั้นตอนที่ 2: สมรรถภาพสมอง
+    </span>
+  </div>
+  <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+    <div class="h-full w-2/3 bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400"></div>
+  </div>
+
+  <form method="POST" action="{{ url_for('mmse_next', hn=hn, gcn=gcn) }}">
+
+  <!-- การ์ดหัวเรื่อง -->
+  <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
+    <div class="px-6 py-5 bg-rose-50 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 grid place-items-center">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M12 8v8m4-4H8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-semibold">แบบประเมินสมรรถภาพสมอง (MMSE-T)</div>
+        <div class="text-xs text-slate-500">Mini-Mental State Examination - Thai 2002</div>
+      </div>
+      <div class="ml-auto text-sm">
+        คะแนนรวม: <span id="score" class="font-semibold">0</span> / 30
+      </div>
+    </div>
+
+    <div class="p-6 md:p-8 space-y-8">
+
+      <!-- หมายเหตุ -->
+      <div class="rounded-2xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm">
+        หมายเหตุ: หากผู้ป่วยเป็นผู้ที่ไม่ได้เรียน (อ่านเขียนไม่ได้) ข้อคำถาม 4, 9, 10 จะถูกข้าม และคะแนนเต็มจะเป็น 23 คะแนน
+      </div>
+
+      <!-- ระดับการศึกษา -->
+      <div>
+        <label class="block text-slate-700 font-medium mb-2">ระดับการศึกษา <span class="text-rose-600">*</span></label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3">
+            <input type="radio" name="edu" value="0" class="edu accent-blue-600">
+            ไม่ได้เรียน (อ่านเขียนไม่ได้)
+          </label>
+          <label class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3">
+            <input type="radio" name="edu" value="1" class="edu accent-blue-600">
+            ประถมศึกษา
+          </label>
+          <label class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3">
+            <input type="radio" name="edu" value="2" class="edu accent-blue-600">
+            มัธยมศึกษาขึ้นไป
+          </label>
+        </div>
+      </div>
+
+      <!-- กลุ่มข้อ 1: Orientation for Time (5 คะแนน) -->
+      <section class="space-y-4">
+        <div class="rounded-2xl bg-sky-50 text-sky-800 px-4 py-2 font-medium">
+          ข้อ 1: Orientation for Time (ทดสอบการรับรู้เกี่ยวกับเวลาในปัจจุบัน) – 5 คะแนน
+        </div>
+
+        {% set q1 = [
+          ('วันนี้วันที่เท่าไหร่','เช่น วันที่ 1'),
+          ('วันนี้ วันอะไร','เช่น วันนี้ วันจันทร์'),
+          ('เดือนนี้ เดือนอะไร','เช่น ตุลาคม'),
+          ('ปีนี้ ปีอะไร (พ.ศ.)','เช่น 2568'),
+          ('ฤดูกาลอะไร','เช่น ฝน')
+        ] %}
+
+        {% for txt, ex in q1 %}
+  <div class="rounded-2xl border px-4 py-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="text-slate-700">{{ loop.index }}. {{ txt }}</div>
+      <div class="text-xs text-slate-400">เช่น {{ ex }}</div>
+    </div>
+
+    <!-- 🔽 แก้เฉพาะบล็อกนี้จาก flex items → เป็นปุ่มใหญ่กดง่าย -->
+    <div class="mt-3 mmse-option-group">
+      <label class="mmse-label">
+        <input type="radio" name="q1_{{ loop.index }}" value="1">
+        <span>✓</span>
+      </label>
+
+      <label class="mmse-label">
+        <input type="radio" name="q1_{{ loop.index }}" value="0">
+        <span>✗</span>
+      </label>
+    </div>
+    <!-- 🔼 จบส่วนที่แก้ -->
+  </div>
+{% endfor %}
+      </section>
+
+      <!-- กลุ่มข้อ 2: Orientation for Place (5 คะแนน) -->
+      <section class="space-y-4">
+        <div class="rounded-2xl bg-sky-50 text-sky-800 px-4 py-2 font-medium">
+          ข้อ 2: Orientation for Place (การรับรู้สถานที่) – 5 คะแนน
+        </div>
+
+        {% set q2 = [
+          ('สถานที่ตรงนี้เรียกว่าอะไร และชื่ออะไร','คำตอบ'),
+          ('ขณะนี้อยู่อำเภอ/เขต/แขวงของตัวอาคาร','คำตอบ'),
+          ('ที่อยู่นี้อำเภออะไร','คำตอบ'),
+          ('ที่นี่จังหวัดอะไร','คำตอบ'),
+          ('ที่นี่ภาคอะไร','คำตอบ')
+        ] %}
+
+        {% for txt, ex in q2 %}
+<div class="rounded-2xl border px-4 py-3">
+  
+  <!-- ข้อคำถาม -->
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="text-slate-700">{{ loop.index }}. {{ txt }}</div>
+    <div class="text-xs text-slate-400">{{ ex }}</div>
+  </div>
+
+  <!-- ตัวเลือก ✓ ✗ -->
+  <div class="mt-3 mmse-option-group">
+    
+    <label class="mmse-label">
+      <input type="radio" name="q2_{{ loop.index }}" value="1">
+      <span>✓</span>
+    </label>
+
+    <label class="mmse-label">
+      <input type="radio" name="q2_{{ loop.index }}" value="0">
+      <span>✗</span>
+    </label>
+
+  </div>
+
+</div>
+{% endfor %}
+
+      </section>
+
+      
+      <!-- ตัวอย่างกลุ่มข้อ 3–11 (สรุปแบบปุ่มเลือกจำนวนที่ถูกต้อง) -->
+      <section class="space-y-4">
+        <!-- ข้อ 3: Registration -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-6">
+  ข้อ 3: Registration (ทดสอบการบันทึกความจำ โดยให้จำชื่อของ 3 อย่าง) – 3 คะแนน
+</div>
+<p class="text-slate-500 mt-1">
+  ฟังให้ดีนะคะ จะบอกเพียงครั้งเดียว เมื่อพูดจบให้คุณพูดตามคำที่ได้ยินทั้ง 3 ชื่อ แล้วจำไว้ให้ดีนะคะ
+  เดี๋ยวจะถามซ้ำ: <span class="text-fuchsia-600 font-semibold">ดอกไม้ - แม่น้ำ - รถไฟ</span>
+</p>
+
+<div class="mt-4 text-slate-700 font-medium">จำนวนคำที่จำได้ถูกต้อง (0–3)</div>
+
+<div class="grid grid-cols-4 gap-3 mt-2">
+  <!-- ปุ่ม 0 -->
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-3 cursor-pointer transition hover:bg-blue-50">
+    <input type="radio" name="q3" value="0" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">0 คำ</span>
+  </label>
+
+  <!-- ปุ่ม 1 -->
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-3 cursor-pointer transition hover:bg-blue-50">
+    <input type="radio" name="q3" value="1" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">1 คำ</span>
+  </label>
+
+  <!-- ปุ่ม 2 -->
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-3 cursor-pointer transition hover:bg-blue-50">
+    <input type="radio" name="q3" value="2" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">2 คำ</span>
+  </label>
+
+  <!-- ปุ่ม 3 -->
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-3 cursor-pointer transition hover:bg-blue-50">
+    <input type="radio" name="q3" value="3" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">3 คำ</span>
+  </label>
+</div>
+      </section>
+
+ <!-- ข้อ 4 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-6">
+  ข้อ 4: Attention or Calculation (ทดสอบสมาธิ) - 5 คะแนน
+</div>
+
+<p class="text-slate-500 mt-2">
+  1) คิดเลขในใจ เอา 100 ตั้ง ลบออกทีละ 7 ไปเรื่อยๆ 5 ครั้ง (93, 86, 79, 72, 65)
+</p>
+<p class="text-sm text-gray-400 mb-2">(จำนวนครั้งที่ตอบถูก 0–5)</p>
+<div class="grid grid-cols-6 gap-3">
+  {% for i in range(0,6) %}
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q4_1" value="{{ i }}" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">{{ i }}</span>
+  </label>
+  {% endfor %}
+</div>
+
+<p class="text-slate-500 mt-4">
+  2) สะกดคำย้อนหลัง: ให้ท่านสะกดคำว่า 
+  <span class="text-fuchsia-600 font-semibold">"มะนาว"</span> 
+  ย้อนหลังเป็น <span class="text-purple-600 font-semibold">"ว า น ะ ม"</span>
+</p>
+<p class="text-sm text-gray-400 mb-2">(จำนวนตัวอักษรที่สะกดถูก 0–5)</p>
+<div class="grid grid-cols-6 gap-3">
+  {% for i in range(0,6) %}
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q4_2" value="{{ i }}" class="hidden peer" />
+    <span class="text-base font-medium peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">{{ i }}</span>
+  </label>
+  {% endfor %}
+</div>
+
+<!-- ข้อ 5 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 5: Recall (ทดสอบการจำโดยให้จำคำในข้อ 3) - 3 คะแนน
+</div>
+<p class="text-slate-500 mt-2">ให้ท่านบอกชื่อคำที่ให้จำไว้ในข้อ 3</p>
+<div class="grid grid-cols-4 gap-3 mt-2">
+  {% for i in range(0,4) %}
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q5" value="{{ i }}" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">{{ i }} คำ</span>
+  </label>
+  {% endfor %}
+</div>
+
+<!-- ข้อ 6 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 6: Naming (ทดสอบการบอกชื่อสิ่งของที่เห็น) - 2 คะแนน
+</div>
+<p class="text-slate-500 mt-2">ให้ท่านบอกชื่อของสิ่งของที่เห็น เช่น ดินสอ, นาฬิกา</p>
+<div class="grid grid-cols-3 gap-3 mt-2">
+  {% for i in range(0,3) %}
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q6" value="{{ i }}" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">{{ i }}</span>
+  </label>
+  {% endfor %}
+</div>
+
+<!-- ข้อ 7 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 7: Repetition (พูดตามประโยค) - 1 คะแนน
+</div>
+<p class="text-slate-500 mt-2">ให้ท่านพูดตามประโยค: <span class="text-fuchsia-600 font-semibold">"ใครครวญสายใยใจ"</span></p>
+<div class="grid grid-cols-2 gap-3 mt-2">
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q7" value="1" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">ถูกต้อง (1)</span>
+  </label>
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q7" value="0" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">ไม่ถูกต้อง (0)</span>
+  </label>
+</div>
+
+<!-- ข้อ 8 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 8: Verbal Command (ทำตามคำสั่ง 3 ขั้นตอน) - 3 คะแนน
+</div>
+<p class="text-slate-500 mt-2">
+  ให้ทำตามคำสั่ง: <span class="text-purple-600 font-semibold">"หยิบกระดาษขึ้นมา พับครึ่ง แล้ววางลงบนโต๊ะ"</span>
+</p>
+<div class="grid grid-cols-4 gap-3 mt-2">
+  {% for i in range(0,4) %}
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q8" value="{{ i }}" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">{{ i }} ขั้นตอน</span>
+  </label>
+  {% endfor %}
+</div>
+
+<!-- ข้อ 9 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 9: Written Command (อ่านข้อความและทำตาม) - 1 คะแนน
+</div>
+<p class="text-slate-500 mt-2">อ่านข้อความว่า <span class="text-fuchsia-600 font-semibold">"หลับตา"</span> แล้วให้ทำตาม</p>
+<div class="grid grid-cols-2 gap-3 mt-2">
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q9" value="1" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">ทำได้ (1)</span>
+  </label>
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q9" value="0" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">ทำไม่ได้ (0)</span>
+  </label>
+</div>
+
+<!-- ข้อ 10 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 10: Writing (เขียนประโยคที่มีความหมาย) - 1 คะแนน
+</div>
+<p class="text-slate-500 mt-2">ให้เขียนประโยคอะไรก็ได้ที่มีความหมาย</p>
+<div class="grid grid-cols-2 gap-3 mt-2">
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q10" value="1" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">เขียนได้ (1)</span>
+  </label>
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q10" value="0" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">เขียนไม่ได้ (0)</span>
+  </label>
+</div>
+
+<!-- ข้อ 11 -->
+<div class="rounded-2xl bg-indigo-50 text-indigo-800 px-4 py-2 font-medium mt-8">
+  ข้อ 11: Visuoconstruction (คัดลอกภาพรูปห้าเหลี่ยม) - 1 คะแนน
+</div>
+<p class="text-slate-500 mt-2">ให้วาดรูปห้าเหลี่ยมซ้อนกันตามตัวอย่าง</p>
+<div class="grid grid-cols-2 gap-3 mt-2 mb-10">
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q11" value="1" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">วาดได้ (1)</span>
+  </label>
+  <label class="inline-flex items-center justify-center rounded-2xl border border-gray-300 px-6 py-3 cursor-pointer hover:bg-blue-50 transition">
+    <input type="radio" name="q11" value="0" class="hidden peer" />
+    <span class="peer-checked:bg-blue-500 peer-checked:text-white px-6 py-2 rounded-2xl">วาดไม่ได้ (0)</span>
+  </label>
+</div>
+
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-8">
+        <div class="flex gap-3">
+          <!-- ปุ่มย้อนกลับ -->
+          <a href="{{ url_for('assess_session', hn=hn, gcn=gcn) }}"
+             class="px-6 py-2 bg-gray-200 text-slate-700 rounded-2xl shadow hover:bg-gray-300 transition">
+            ย้อนกลับ
+          </a>
+
+          <!-- ปุ่มหน้าหลัก (เปลี่ยนชื่อ endpoint ให้ตรงกับของโปรเจกต์นะ) -->
+          <a href="{{ url_for('dashboard') }}"
+             class="px-6 py-2 bg-gray-200 text-slate-700 rounded-2xl shadow hover:bg-gray-300 transition">
+            หน้าหลัก
+          </a>
+        </div>
+
+        <!-- ปุ่มถัดไป (ส่งฟอร์ม) -->
+        <div>
+          <input type="hidden" name="total_score" id="total_score_input" value="0">
+          <button type="submit"
+            class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-medium shadow-lg hover:bg-blue-700 transition">
+            ถัดไป >
+          </button>
+        </div>
+      </div>
+</form> <!-- ✅ ปิด form ตรงนี้ -->
+
+    </div> <!-- /.p-6 md:p-8 -->
+  </div>   <!-- /.card -->
+</div>     <!-- /.container -->
+  
+
+<!-- สคริปต์นับคะแนนรวมอย่างง่าย -->
+<script>
+  function getChecked(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? Number(el.value) : 0;
+  }
+  function sumGroup(prefix, count) {
+    let s = 0;
+    for (let i = 1; i <= count; i++) {
+      const el = document.querySelector(`input[name="${prefix}_${i}"]:checked`);
+      s += el ? Number(el.value) : 0;
+    }
+    return s;
+  }
+
+  // ===== นี่คือฟังก์ชันที่แก้ไขแล้ว =====
+  function recalc() {
+    let sum = 0;
+    
+    // ข้อ 1–2
+    sum += sumGroup('q1', 5); // 5 คะแนน
+    sum += sumGroup('q2', 5); // 5 คะแนน
+    
+    // ข้อ 3
+    sum += getChecked('q3');  // 3 คะแนน
+    
+    // ข้อ 4 (แก้บั๊กแล้ว: เอาค่ามากสุดระหว่าง 4.1 กับ 4.2)
+    sum += Math.max(getChecked('q4_1'), getChecked('q4_2')); // 5 คะแนน
+    
+    // ข้อ 5–11
+    sum += getChecked('q5');  // 3 คะแนน
+    sum += getChecked('q6');  // 2 คะแนน
+    sum += getChecked('q7');  // 1 คะแนน
+    sum += getChecked('q8');  // 3 คะแนน
+    sum += getChecked('q9');  // 1 คะแนน
+    sum += getChecked('q10'); // 1 คะแนน
+    sum += getChecked('q11'); // 1 คะแนน
+
+    // 1. อัปเดตคะแนนที่โชว์บนจอ (ที่หัวการ์ด)
+    document.getElementById('score').textContent = sum;
+    
+    // 2. อัปเดตคะแนนใน "ช่องลับ" (ที่เราเพิ่มในขั้นตอนที่ 2)
+    document.getElementById('total_score_input').value = sum;
+  }
+  
+  // สั่งให้โค้ดทำงานทุกครั้งที่มีการคลิก
+  document.addEventListener('change', recalc);
+  recalc(); // ทำงานครั้งแรกตอนโหลด
+</script>
+
+
+
+{% endblock %}

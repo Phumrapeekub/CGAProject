@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10 bg-white shadow rounded-2xl p-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-indigo-600">
+      ประวัติการประเมินของ {{ patient.name }}
+    </h1>
+    <a href="{{ url_for('patient_list') }}" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">← กลับหน้าผู้ป่วย</a>
+  </div>
+
+  {% if assessments %}
+    {% for a in assessments %}
+      <div class="border rounded-xl p-5 mb-4 bg-slate-50">
+        <div class="flex justify-between mb-2">
+          <p class="font-semibold text-slate-700">วันที่ประเมิน: {{ a.assess_date.strftime('%d/%m/%Y') }}</p>
+          <p class="text-sm text-gray-500">โดย: {{ a.assessor }}</p>
+        </div>
+        <p><strong>MMSE:</strong> {{ a.mmse }}/30</p>
+        <p><strong>Depression:</strong> {{ a.depression }}/15</p>
+        <p class="mt-2"><strong>AI Summary:</strong> {{ a.ai_summary }}</p>
+        <p class="mt-1"><strong>Doctor’s Notes:</strong> {{ a.doctor_notes }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-center text-gray-500">ยังไม่มีประวัติการประเมิน</p>
+  {% endif %}
+</div>
+{% endblock %}
