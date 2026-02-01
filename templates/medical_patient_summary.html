@@ -1,0 +1,157 @@
+{% extends "medical_base.html" %}
+
+{% block title %}สรุปผลการประเมินผู้ป่วย{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-10">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-primary mb-1">
+            สรุปผลการประเมินผู้ป่วย
+        </h1>
+        <p class="text-gray-600">ข้อมูลสรุปจากแบบประเมิน MMSE-T, TGDS และ SRA (8Q)</p>
+    </div>
+
+    <!-- patients Basic Info -->
+    <div class="bg-white rounded-2xl shadow-lg border border-blue-200 p-8">
+
+        <h2 class="text-xl font-bold text-primary mb-4">ข้อมูลผู้ป่วย</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+                <p class="text-gray-500 text-sm">ชื่อ - นามสกุล</p>
+                <p class="text-xl font-semibold text-gray-900">{{ patients.name }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">HN / GCN</p>
+                <p class="text-xl font-semibold text-gray-900">
+                    {{ patients.hn }} / {{ patients.gcn }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">อายุ</p>
+                <p class="text-lg font-medium">{{ patients.age }} ปี</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">วันที่ประเมิน</p>
+                <p class="text-lg font-medium">{{ date }}</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Score Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- MMSE -->
+        <div class="bg-white rounded-2xl border-2 border-blue-300 p-6 text-center shadow">
+            <p class="text-gray-600 font-medium">คะแนน MMSE-T</p>
+            <p class="text-5xl font-bold mt-2
+                {% if mmse < 17 %}text-red-600
+                {% elif mmse < 24 %}text-orange-500
+                {% else %}text-green-600
+                {% endif %}
+            ">
+                {{ mmse }}
+            </p>
+            <p class="text-sm mt-2 text-gray-500">จาก 30 คะแนน</p>
+            <p class="font-semibold mt-3 text-primary">{{ mmse_flag }}</p>
+        </div>
+
+        <!-- TGDS -->
+        <div class="bg-white rounded-2xl border-2 border-indigo-300 p-6 text-center shadow">
+            <p class="text-gray-600 font-medium">คะแนน TGDS-15</p>
+            <p class="text-5xl font-bold mt-2
+                {% if tgds >= 6 %}text-red-600
+                {% elif tgds >= 4 %}text-orange-500
+                {% else %}text-green-600
+                {% endif %}
+            ">
+                {{ tgds }}
+            </p>
+            <p class="text-sm mt-2 text-gray-500">จาก 15 คะแนน</p>
+            <p class="font-semibold mt-3 text-primary">{{ tgds_flag }}</p>
+        </div>
+
+        <!-- SRA -->
+        <div class="bg-white rounded-2xl border-2 border-cyan-300 p-6 text-center shadow">
+            <p class="text-gray-600 font-medium">คะแนน SRA (8Q)</p>
+            <p class="text-5xl font-bold mt-2
+                {% if sra >= 9 %}text-red-600
+                {% elif sra > 0 %}text-orange-500
+                {% else %}text-green-600
+                {% endif %}
+            ">
+                {{ sra }}
+            </p>
+            <p class="text-sm mt-2 text-gray-500">คะแนนรวม</p>
+            <p class="font-semibold mt-3 text-primary">{{ sra_flag }}</p>
+        </div>
+
+    </div>
+
+    <!-- Interpretation Section -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow p-8 space-y-6">
+        <h2 class="text-2xl font-bold text-primary">สรุปการแปลผล</h2>
+
+        <div class="space-y-4">
+
+            <div class="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                <p class="text-lg font-semibold text-blue-700">สมรรถภาพสมอง (MMSE-T)</p>
+                <p class="text-gray-700 mt-1">
+                    {{ mmse_flag }}
+                </p>
+            </div>
+
+            <div class="p-4 bg-indigo-50 rounded-xl border-l-4 border-indigo-500 shadow-sm">
+                <p class="text-lg font-semibold text-indigo-700">ภาวะซึมเศร้า (TGDS-15)</p>
+                <p class="text-gray-700 mt-1">
+                    {{ tgds_flag }}
+                </p>
+            </div>
+
+            <div class="p-4 bg-cyan-50 rounded-xl border-l-4 border-cyan-500 shadow-sm">
+                <p class="text-lg font-semibold text-cyan-700">ความเสี่ยงฆ่าตัวตาย (8Q)</p>
+                <p class="text-gray-700 mt-1">
+                    {{ sra_flag }}
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="bg-white rounded-2xl border shadow p-8">
+        <h2 class="text-xl font-bold text-primary mb-4">บันทึกเพิ่มเติมจากผู้ประเมิน</h2>
+
+        {% if notes %}
+            <ul class="space-y-4">
+                {% for n in notes %}
+                <li class="border-l-4 border-primary bg-blue-50 px-4 py-3 rounded-lg shadow-sm">
+                    <p class="font-medium text-gray-800">{{ n.note }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ n.created_at }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-500">ยังไม่มีบันทึกเพิ่มเติม</p>
+        {% endif %}
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end mt-10">
+
+        <a href="{{ url_for('medical_patients') }}"
+           class="px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow hover:shadow-lg hover:bg-blue-700 transition">
+            รายชื่อผู้ป่วย
+        </a>
+
+    </div>
+
+</div>
+{% endblock %}

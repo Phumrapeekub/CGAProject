@@ -1,0 +1,698 @@
+{% extends "medical_base.html" %}
+
+{% block title %}Dashboard แพทย์{% endblock %}
+
+{% block content %}
+
+<style>
+  /* ซ่อน native calendar picker indicators */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="month"]::-webkit-inner-spin-button {
+    display: none;
+  }
+
+  input[type="date"],
+  input[type="month"] {
+    cursor: pointer;
+  }
+</style>
+
+<div class="space-y-8">
+
+  <!-- Header -->
+  <div>
+    <h1 class="text-3xl font-bold text-primary mb-2">Dashboard แพทย์</h1>
+    <p class="text-gray-600">ภาพรวมผู้ป่วยและข้อมูลสำคัญล่าสุด</p>
+  </div>
+
+  <!-- ===== การ์ด วันนี้ / สัปดาห์ / เดือน / ปี (รูปที่ 1) - แสดงจำนวนผู้ป่วย ไม่ใช่การประเมิน ===== -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+    <!-- 1) ทั้งหมด -->
+    <div class="bg-white rounded-[28px] border-2 border-blue-300 p-8 shadow-sm">
+      <div class="flex items-start justify-between">
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold">
+          ทั้งหมด
+        </span>
+      </div>
+      <div class="mt-6">
+        <p class="text-[56px] leading-none font-black text-slate-900">{{ kpis.total_patients or 0 }}</p>
+        <p class="mt-6 text-slate-600 text-lg">ผู้ป่วยทั้งหมด</p>
+      </div>
+    </div>
+
+    <!-- 2) วันนี้/สัปดาห์ -->
+    <div class="bg-white rounded-[28px] border-2 border-indigo-300 p-8 shadow-sm">
+      <div class="flex items-start justify-between">
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold">
+          วันนี้
+        </span>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-[56px] leading-none font-black text-slate-900">
+          {% if date_patient_count is not none %}{{ date_patient_count }}{% else %}{{ kpis.today_patients or 0 }}{% endif %}
+        </p>
+        <p class="mt-6 text-slate-600 text-lg">
+          {% if date_label_th %}ผู้ป่วย{{ date_label_th }}{% else %}ผู้ป่วยที่ประเมินวันนี้{% endif %}
+        </p>
+
+        <form id="formDay" method="get" action="{{ url_for('doctor_patients') }}" class="mt-6 space-y-4">
+          <input type="hidden" name="quick" id="quickDay" value="">
+          <input type="hidden" name="week_start" id="week_start" value="{{ week_start or '' }}">
+          <input type="hidden" name="week_end" id="week_end" value="{{ week_end or '' }}">
+
+          <!-- ช่องแสดงวันที่ที่เลือก + ปุ่มปฏิทิน -->
+          <div class="relative">
+            <input
+              id="range_display"
+              type="text"
+              readonly
+              placeholder="เลือกวันหรือสัปดาห์"
+              class="w-full h-12 rounded-2xl bg-slate-50 border border-slate-200 px-5 pr-14
+                     text-slate-900 text-center font-medium
+                     focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer"
+              onclick="document.getElementById('search_date').showPicker()"
+            >
+
+            <!-- Native date picker (invisible overlay) -->
+            <input
+              id="search_date"
+              type="date"
+              name="search_date"
+              value="{{ search_date or '' }}"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+
+            <button
+              type="button"
+              onclick="document.getElementById('search_date').showPicker()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl
+                     bg-indigo-50 border border-indigo-200 grid place-items-center
+                     hover:bg-indigo-100 pointer-events-none"
+            >
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- สวิตช์เลือกโหมด: วันเดียว / สัปดาห์ -->
+          <div class="flex items-center justify-center gap-3 py-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="date_mode"
+                value="day"
+                id="mode_day"
+                checked
+                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+              >
+              <span class="text-sm font-medium text-slate-700">วันเดียว</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="date_mode"
+                value="week"
+                id="mode_week"
+                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+              >
+              <span class="text-sm font-medium text-slate-700">สัปดาห์</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <button type="button" data-quick="today"
+              class="h-12 rounded-2xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition-colors">
+              วันนี้
+            </button>
+            <button type="button" data-quick="week"
+              class="h-12 rounded-2xl bg-sky-500 text-white font-semibold hover:bg-sky-600 transition-colors">
+              สัปดาห์นี้
+            </button>
+          </div>
+
+          <button type="submit"
+            class="w-full h-12 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors">
+            ค้นหา
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 3) เดือนนี้ -->
+    <div class="bg-white rounded-[28px] border-2 border-cyan-300 p-8 shadow-sm">
+      <div class="flex items-start justify-between">
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-cyan-50 text-cyan-700 text-sm font-semibold">
+          เดือนนี้
+        </span>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-[56px] leading-none font-black text-slate-900">
+          {% if month_patient_count is not none %}{{ month_patient_count }}{% else %}{{ kpis.month_patients or 0 }}{% endif %}
+        </p>
+        <p class="mt-6 text-slate-600 text-lg">
+          {% if month_label_th %}ผู้ป่วยเดือน {{ month_label_th }}{% else %}ผู้ป่วยเดือนนี้{% endif %}
+        </p>
+
+        <form id="formMonth" method="get" action="{{ url_for('doctor_patients') }}" class="mt-6 space-y-4">
+          <input type="hidden" name="quick" id="quickMonth" value="">
+
+          <!-- ช่องแสดงเดือน/ปี + ปุ่มปฏิทิน -->
+          <div class="relative">
+            <input
+              id="month_display"
+              type="text"
+              readonly
+              placeholder="mm/yyyy (เช่น 12/2025)"
+              class="w-full h-12 rounded-2xl bg-slate-50 border border-slate-200 px-5 pr-14
+                     text-slate-900 text-center font-medium
+                     focus:outline-none focus:ring-2 focus:ring-cyan-300 cursor-pointer"
+              onclick="document.getElementById('search_month').showPicker()"
+            >
+
+            <!-- Native month picker (invisible overlay) -->
+            <input
+              id="search_month"
+              type="month"
+              name="search_month"
+              value="{{ search_month or '' }}"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+
+            <button
+              type="button"
+              onclick="document.getElementById('search_month').showPicker()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl
+                     bg-cyan-50 border border-cyan-200 grid place-items-center
+                     hover:bg-cyan-100 pointer-events-none"
+            >
+              <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </button>
+          </div>
+
+          <button type="button" data-quick="month"
+            class="w-full h-12 rounded-2xl bg-cyan-500 text-white font-semibold hover:bg-cyan-600 transition-colors">
+            เดือนนี้อัตโนมัติ
+          </button>
+
+          <button type="submit"
+            class="w-full h-12 rounded-2xl bg-cyan-600 text-white font-bold hover:bg-cyan-700 transition-colors">
+            ค้นหา
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 4) รายปี -->
+    <div class="bg-white rounded-[28px] border-2 border-emerald-400 p-8 shadow-sm">
+      <div class="flex items-start justify-between">
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold">
+          รายปี
+        </span>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-[56px] leading-none font-black text-slate-900">
+          {% if year_patient_count is not none %}{{ year_patient_count }}{% else %}{{ kpis.year_patients or 0 }}{% endif %}
+        </p>
+        <p class="mt-6 text-slate-600 text-lg">
+          {% if year_label_th %}ผู้ป่วยรายปี ({{ year_label_th }}){% else %}ผู้ป่วยรายปี (ปีนี้){% endif %}
+        </p>
+
+        <form method="get" action="{{ url_for('doctor_patients') }}" class="mt-8 space-y-4">
+          {% if search_date %}<input type="hidden" name="search_date" value="{{ search_date }}">{% endif %}
+          {% if search_month %}<input type="hidden" name="search_month" value="{{ search_month }}">{% endif %}
+
+          <!-- Dropdown ปี + ปุ่มปฏิทิน -->
+          <div class="relative">
+            <select
+              id="search_year"
+              name="search_year"
+              class="w-full h-12 rounded-2xl bg-slate-50 border border-slate-200 px-5 pr-14
+                     text-slate-900 text-center font-medium appearance-none
+                     focus:outline-none focus:ring-2 focus:ring-emerald-300 cursor-pointer"
+            >
+              <option value="">เช่น 2025</option>
+              {% for y in range(2000, 2101) %}
+                <option value="{{ y }}" {% if (search_year|string) == (y|string) %}selected{% endif %}>
+                  {{ y }}
+                </option>
+              {% endfor %}
+            </select>
+
+            <button
+              type="button"
+              onclick="document.getElementById('search_year').focus()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl
+                     bg-emerald-50 border border-emerald-200 grid place-items-center
+                     hover:bg-emerald-100 pointer-events-none"
+            >
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </button>
+          </div>
+
+          <button type="submit"
+            class="w-full h-12 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-colors">
+            ค้นหา
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== KPI ใหม่ 4 ใบ (รูปที่ 2) ===== -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+    <!-- ผู้ป่วยทั้งหมด (จำนวนคน) -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-slate-600 font-medium">ผู้ป่วยทั้งหมด</p>
+          <p class="text-4xl font-extrabold text-slate-900 mt-1">{{ kpis.total_unique_patients or 0 }}</p>
+          <p class="text-sm mt-3 text-emerald-600">+{{ kpis.delta_patients_month or 0 }} เดือนนี้</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-blue-500 grid place-items-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-4a4 4 0 10-8 0 4 4 0 008 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- การประเมินสำเร็จ (จำนวนคนในวันนั้นๆ) -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-slate-600 font-medium">การประเมินสำเร็จ</p>
+          <p class="text-4xl font-extrabold text-slate-900 mt-1">{{ kpis.completed_patients_today or 0 }}</p>
+          <p class="text-sm mt-3 text-emerald-600">+{{ kpis.delta_completed_week or 0 }} สัปดาห์นี้</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500 grid place-items-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- รอติดตาม (จำนวนคน) -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-slate-600 font-medium">รอติดตาม</p>
+          <p class="text-4xl font-extrabold text-slate-900 mt-1">{{ kpis.pending_patients or 0 }}</p>
+          <p class="text-sm mt-3 text-red-600">{{ kpis.delta_pending_week_text or "-0 จากสัปดาห์ที่แล้ว" }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-orange-500 grid place-items-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- คะแนนเฉลี่ย (จาก CGA assessment) -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-slate-600 font-medium">คะแนนเฉลี่ย</p>
+          <p class="text-4xl font-extrabold text-slate-900 mt-1">{{ kpis.avg_cga_score|round(2) or 0 }}</p>
+          <p class="text-sm mt-3 text-emerald-600">+{{ kpis.delta_avg_month|round(2) or 0 }} จากเดือนที่แล้ว</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-fuchsia-500 grid place-items-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 17l6-6 4 4 8-8"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== การประเมินล่าสุด | นัดหมายวันนี้ (รูปที่ 2) ===== -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- การประเมินล่าสุด (คลิกแล้วไปหน้ารายละเอียดผู้ป่วย) -->
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-slate-800">การประเมินล่าสุด</h2>
+        <a href="{{ url_for('doctor_assessments') }}"
+           class="text-blue-600 font-semibold hover:underline">ดูทั้งหมด</a>
+      </div>
+
+      <div class="space-y-3">
+        {% set la = latest_assessments or [] %}
+        {% if la|length == 0 %}
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600">
+            ยังไม่มีรายการการประเมินล่าสุด
+          </div>
+        {% else %}
+          {% for it in la %}
+            {# คลิกแล้วไปหน้ารายละเอียดผู้ป่วย #}
+            <a href="{{ url_for('doctor_patient_detail', hn=it.hn, gcn=it.gcn) if it.hn and it.gcn else '#' }}"
+               class="block p-5 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full bg-indigo-500 text-white grid place-items-center font-bold">
+                    {{ it.initials or 'ผ' }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900">{{ it.name or '-' }}</p>
+                    <p class="text-sm text-slate-600">{{ it.hn or '-' }}</p>
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <p class="font-bold text-slate-900">คะแนน: {{ it.score or 0 }}</p>
+                  <p class="text-sm text-slate-500">{{ it.date_th or '-' }}</p>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- นัดหมายวันนี้ (แสดงรายชื่อผู้ป่วยที่แพทย์นัด) -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <h2 class="text-xl font-bold text-slate-800">นัดหมายวันนี้</h2>
+      </div>
+
+      <div class="space-y-3">
+        {% set ap = today_appointments or [] %}
+        {% if ap|length == 0 %}
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600">
+            วันนี้ยังไม่มีนัดหมาย
+          </div>
+        {% else %}
+          {% for a in ap %}
+            {# คลิกแล้วไปหน้ารายละเอียดผู้ป่วย #}
+          <a href="{{ url_for('doctor_patient_detail', hn=a.hn, gcn=a.gcn) if a.hn and a.gcn else '#' }}"   
+               class="block p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-14 py-2 rounded-2xl bg-blue-100 text-blue-700 font-extrabold text-center">
+                  {{ a.time or '--:--' }}
+                </div>
+                <div>
+                  <p class="font-bold text-slate-900">{{ a.name or '-' }}</p>
+                  <p class="text-sm text-slate-600">{{ a.note or '-' }}</p>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts (รูปที่ 3 - แสดงกราฟเปรียบเทียบ) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+    <div class="bg-white rounded-3xl shadow-md p-6">
+      <h3 class="text-lg font-semibold text-gray-900">การกระจายตามระดับความเสี่ยง</h3>
+      <div class="h-72 mt-4">
+        <canvas id="riskPieChart"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-md p-6">
+      <h3 class="text-lg font-semibold text-gray-900">การกระจายตามช่วงอายุ</h3>
+      <div class="h-72 mt-4">
+        <canvas id="ageBarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 space-y-6">
+    <div class="bg-white rounded-3xl shadow-md p-6">
+      <h3 class="text-lg font-semibold text-gray-900">แนวโน้มรายเดือน</h3>
+      <div class="h-80 mt-4">
+        <canvas id="monthlyLineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- รูปที่ 3 - แถบล่างสุด -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-3xl shadow-md p-6">
+        <p class="text-sm text-gray-500">อายุเฉลี่ย</p>
+        <p class="text-3xl font-bold text-gray-900">{{ avg_age|round(1) or 0 }} ปี</p>
+      </div>
+      <div class="bg-white rounded-3xl shadow-md p-6">
+        <p class="text-sm text-gray-500">การประเมินเฉลี่ยต่อคน</p>
+        <p class="text-3xl font-bold text-gray-900">{{ avg_assessment|round(2) or 0 }} ครั้ง</p>
+      </div>
+      <div class="bg-white rounded-3xl shadow-md p-6">
+        <p class="text-sm text-gray-500">อัตราความเสี่ยง</p>
+        <p class="text-3xl font-bold text-gray-900">{{ risk_rate|round(1) or 0 }}%</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmtISO = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fmtTHfull = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  const fmtTHshort = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}`;
+
+  const fmtMonthDisp = (ym) => {
+    if (!ym) return "";
+    const [y, m] = ym.split("-");
+    return `${m}/${y}`;
+  };
+
+  const startOfWeekMonday = (d) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    const day = x.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    x.setDate(x.getDate() + diff);
+    return x;
+  };
+
+  const endOfWeekSunday = (mon) => {
+    const x = new Date(mon);
+    x.setDate(x.getDate() + 6);
+    return x;
+  };
+
+  // Elements
+  const formDay = document.getElementById("formDay");
+  const formMonth = document.getElementById("formMonth");
+
+  const dateInput = document.getElementById("search_date");
+  const rangeDisp = document.getElementById("range_display");
+
+  const monthInput = document.getElementById("search_month");
+  const monthDisp = document.getElementById("month_display");
+
+  const weekStart = document.getElementById("week_start");
+  const weekEnd = document.getElementById("week_end");
+  const quickDay = document.getElementById("quickDay");
+  const quickMonth = document.getElementById("quickMonth");
+
+  // Radio Buttons
+  const modeDay = document.getElementById("mode_day");
+  const modeWeek = document.getElementById("mode_week");
+
+  // initial render
+  if (dateInput && dateInput.value && rangeDisp) {
+    const d = new Date(dateInput.value + "T00:00:00");
+    if (weekStart && weekStart.value && weekEnd && weekEnd.value) {
+      const ws = new Date(weekStart.value + "T00:00:00");
+      const we = new Date(weekEnd.value + "T00:00:00");
+      rangeDisp.value = `${fmtTHshort(ws)} – ${fmtTHshort(we)}`;
+      if (modeWeek) modeWeek.checked = true;
+    } else {
+      rangeDisp.value = fmtTHfull(d);
+      if (modeDay) modeDay.checked = true;
+    }
+  }
+
+  if (monthInput && monthInput.value && monthDisp) {
+    monthDisp.value = fmtMonthDisp(monthInput.value);
+  }
+
+  if (dateInput) {
+    dateInput.addEventListener("change", () => {
+      if (!dateInput.value) return;
+      const d = new Date(dateInput.value + "T00:00:00");
+
+      if (modeWeek && modeWeek.checked) {
+        const monday = startOfWeekMonday(d);
+        const sunday = endOfWeekSunday(monday);
+        if (weekStart) weekStart.value = fmtISO(monday);
+        if (weekEnd) weekEnd.value = fmtISO(sunday);
+        if (rangeDisp) rangeDisp.value = `${fmtTHshort(monday)} – ${fmtTHshort(sunday)}`;
+        if (quickDay) quickDay.value = "";
+      } else {
+        if (rangeDisp) rangeDisp.value = fmtTHfull(d);
+        if (weekStart) weekStart.value = "";
+        if (weekEnd) weekEnd.value = "";
+        if (quickDay) quickDay.value = "";
+      }
+    });
+  }
+
+  if (modeDay) {
+    modeDay.addEventListener("change", () => {
+      if (dateInput && dateInput.value) {
+        const d = new Date(dateInput.value + "T00:00:00");
+        if (rangeDisp) rangeDisp.value = fmtTHfull(d);
+        if (weekStart) weekStart.value = "";
+        if (weekEnd) weekEnd.value = "";
+      }
+    });
+  }
+
+  if (modeWeek) {
+    modeWeek.addEventListener("change", () => {
+      if (dateInput && dateInput.value) {
+        const d = new Date(dateInput.value + "T00:00:00");
+        const monday = startOfWeekMonday(d);
+        const sunday = endOfWeekSunday(monday);
+        dateInput.value = fmtISO(monday);
+        if (weekStart) weekStart.value = fmtISO(monday);
+        if (weekEnd) weekEnd.value = fmtISO(sunday);
+        if (rangeDisp) rangeDisp.value = `${fmtTHshort(monday)} – ${fmtTHshort(sunday)}`;
+      }
+    });
+  }
+
+  if (monthInput) {
+    monthInput.addEventListener("change", () => {
+      if (!monthInput.value) return;
+      if (monthDisp) monthDisp.value = fmtMonthDisp(monthInput.value);
+      if (quickMonth) quickMonth.value = "";
+    });
+  }
+
+  // Quick buttons
+  document.querySelectorAll("[data-quick]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const q = btn.dataset.quick;
+      const now = new Date();
+
+      if (q === "today") {
+        if (modeDay) modeDay.checked = true;
+
+        if (quickDay) quickDay.value = "today";
+        if (dateInput) dateInput.value = fmtISO(now);
+        if (rangeDisp) rangeDisp.value = fmtTHfull(now);
+        if (weekStart) weekStart.value = "";
+        if (weekEnd) weekEnd.value = "";
+        if (formDay) formDay.submit();
+      }
+
+      if (q === "week") {
+        if (modeWeek) modeWeek.checked = true;
+
+        const mon = startOfWeekMonday(now);
+        const sun = endOfWeekSunday(mon);
+
+        if (quickDay) quickDay.value = "week";
+        if (dateInput) dateInput.value = fmtISO(mon);
+        if (weekStart) weekStart.value = fmtISO(mon);
+        if (weekEnd) weekEnd.value = fmtISO(sun);
+        if (rangeDisp) rangeDisp.value = `${fmtTHshort(mon)} – ${fmtTHshort(sun)}`;
+
+        if (formDay) formDay.submit();
+      }
+
+      if (q === "month") {
+        if (quickMonth) quickMonth.value = "month";
+        const y = now.getFullYear();
+        const m = pad(now.getMonth() + 1);
+        if (monthInput) monthInput.value = `${y}-${m}`;
+        if (monthDisp) monthDisp.value = `${m}/${y}`;
+        if (formMonth) formMonth.submit();
+      }
+    });
+  });
+
+  // Initialize Charts
+  const ctxRisk = document.getElementById('riskPieChart');
+  const ctxAge = document.getElementById('ageBarChart');
+  const ctxMonthly = document.getElementById('monthlyLineChart');
+
+  if (ctxRisk) {
+    new Chart(ctxRisk, {
+      type: 'pie',
+      data: {
+        labels: {{ risk_labels|tojson|safe if risk_labels else "[]" }},
+        datasets: [{
+          data: {{ risk_data|tojson|safe if risk_data else "[]" }},
+          backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6']
+        }]
+      }
+    });
+  }
+
+  if (ctxAge) {
+    new Chart(ctxAge, {
+      type: 'bar',
+      data: {
+        labels: {{ age_labels|tojson|safe if age_labels else "[]" }},
+        datasets: [{
+          label: 'จำนวนผู้ป่วย',
+          data: {{ age_data|tojson|safe if age_data else "[]" }},
+          backgroundColor: '#3b82f6'
+        }]
+      }
+    });
+  }
+
+  if (ctxMonthly) {
+    new Chart(ctxMonthly, {
+      type: 'line',
+      data: {
+        labels: {{ monthly_labels|tojson|safe if monthly_labels else "[]" }},
+        datasets: [{
+          label: 'จำนวนผู้ป่วย',
+          data: {{ monthly_data|tojson|safe if monthly_data else "[]" }},
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4
+        }]
+      }
+    });
+  }
+});
+</script>
+
+{% endblock %}
