@@ -1,0 +1,131 @@
+{% extends "medical_base.html" %}
+
+{% block title %}ผู้ป่วยขอส่งต่อ{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-10">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-primary mb-2">ผู้ป่วยขอส่งต่อ</h1>
+        <p class="text-gray-600">รายการผู้ป่วยที่ต้องการส่งต่อให้แพทย์เฉพาะทาง</p>
+    </div>
+
+    <!-- Referral Form -->
+    <div class="bg-white rounded-2xl shadow-lg border border-blue-200 p-8">
+        <h2 class="text-xl font-bold text-primary mb-4">ฟอร์มส่งต่อผู้ป่วย</h2>
+
+        <form action="#" method="POST" class="space-y-6">
+
+            <!-- HN & ชื่อ -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm text-gray-600">HN ผู้ป่วย</label>
+                    <input type="text" name="hn"
+                        class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary"
+                        placeholder="เช่น 012345">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">ชื่อ - นามสกุล</label>
+                    <input type="text" name="name"
+                        class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary"
+                        placeholder="ชื่อผู้ป่วย">
+                </div>
+            </div>
+
+            <!-- หมวดการส่งต่อ -->
+            <div>
+                <label class="text-sm text-gray-600">แผนกที่ต้องการส่งต่อ</label>
+                <select name="refer_to"
+                    class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary">
+                    <option>ศัลยกรรม</option>
+                    <option>อายุรกรรม</option>
+                    <option>ออร์โธปิดิกส์</option>
+                    <option>จิตเวช</option>
+                    <option>โภชนาการ</option>
+                    <option>แพทย์เวชศาสตร์ฟื้นฟู</option>
+                </select>
+            </div>
+
+            <!-- เหตุผล -->
+            <div>
+                <label class="text-sm text-gray-600">เหตุผลในการส่งต่อ</label>
+                <textarea name="reason" rows="4"
+                    class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary"
+                    placeholder="อธิบายเหตุผลเพิ่มเติม"></textarea>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-primary text-white py-3 rounded-xl font-semibold shadow hover:bg-blue-700 transition">
+                ส่งข้อมูลการส่งต่อ
+            </button>
+
+        </form>
+    </div>
+
+    <!-- รายการผู้ป่วยขอส่งต่อ -->
+    <div class="bg-white rounded-2xl shadow-lg border overflow-hidden">
+
+        <div class="px-6 py-4 border-b bg-primary text-white">
+            <h2 class="text-lg font-semibold">รายชื่อผู้ป่วยที่ถูกส่งต่อ</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-blue-50 text-gray-700">
+                    <tr>
+                        <th class="px-6 py-3">HN</th>
+                        <th class="px-6 py-3">ชื่อผู้ป่วย</th>
+                        <th class="px-6 py-3">ส่งต่อไปแผนก</th>
+                        <th class="px-6 py-3">วันที่ส่ง</th>
+                        <th class="px-6 py-3">สถานะ</th>
+                        <th class="px-6 py-3 text-center">การดำเนินการ</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+                    <!-- Example rows (ไว้ค่อยดึงจาก DB ทีหลัง) -->
+
+                    <tr class="hover:bg-blue-50 transition">
+                        <td class="px-6 py-4">012345</td>
+                        <td class="px-6 py-4">นายสมชาย ตัวอย่าง</td>
+                        <td class="px-6 py-4">อายุรกรรม</td>
+                        <td class="px-6 py-4">24 พ.ย. 2567</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700 border border-yellow-300">
+                                รอดำเนินการ
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow">
+                                เสร็จสิ้น
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-blue-50 transition">
+                        <td class="px-6 py-4">008912</td>
+                        <td class="px-6 py-4">นางสมฤดี ดีมาก</td>
+                        <td class="px-6 py-4">จิตเวช</td>
+                        <td class="px-6 py-4">20 พ.ย. 2567</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700 border border-green-300">
+                                เสร็จสิ้น
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button class="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg shadow">
+                                ดูข้อมูล
+                            </button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

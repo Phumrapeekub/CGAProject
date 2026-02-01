@@ -1,0 +1,199 @@
+{% set t = row or tgds or {} %}
+
+{# ดึงคำตอบแต่ละข้อ tgds_1 - tgds_15 (enum 'no','yes') #}
+{% set ans = {} %}
+{% for i in range(1, 16) %}
+    {% set val = t.get('tgds_' ~ i) %}
+    {# แปลง 'yes' -> 1, 'no' -> 0 #}
+    {% if val == 'yes' %}
+        {% set _ = ans.update({i: 1}) %}
+    {% elif val == 'no' %}
+        {% set _ = ans.update({i: 0}) %}
+    {% else %}
+        {% set _ = ans.update({i: none}) %}
+    {% endif %}
+{% endfor %}
+
+{# คำนวณคะแนน - ข้อ reverse: 1,5,7,11,13 ตอบ "ไม่ใช่" (no=0) ได้ 1 คะแนน, ข้ออื่น ตอบ "ใช่" (yes=1) ได้ 1 คะแนน #}
+{% set reverse_items = [1, 5, 7, 11, 13] %}
+{% set calculated_score = namespace(value=0) %}
+{% for i in range(1, 16) %}
+    {% if ans[i] is not none %}
+        {% if i in reverse_items %}
+            {% if ans[i] == 0 %}
+                {% set calculated_score.value = calculated_score.value + 1 %}
+            {% endif %}
+        {% else %}
+            {% if ans[i] == 1 %}
+                {% set calculated_score.value = calculated_score.value + 1 %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{% set total = t.get('total_score') if t.get('total_score') is not none else calculated_score.value %}
+{% set interpretation = t.get('interpretation') or '' %}
+
+{# คำถามทั้ง 15 ข้อ #}
+{% set questions = [
+    (1, "ท่านพอใจกับชีวิตความเป็นอยู่ตอนนี้", true),
+    (2, "ท่านไม่อยากทำในสิ่งที่เคยสนใจ หรือเคยทำเป็นประจำ", false),
+    (3, "ท่านรู้สึกชีวิตของคุณว่างเปล่าไม่รู้จะทำอะไร", false),
+    (4, "ท่านรู้สึกเบื่อหน่ายบ่อยๆ", false),
+    (5, "ส่วนใหญ่แล้วท่านรู้สึกอารมณ์ดี", true),
+    (6, "ท่านรู้สึกกลัวว่าจะมีเรื่องไม่ดีเกิดขึ้นกับคุณ", false),
+    (7, "ส่วนใหญ่ท่านรู้สึกมีความสุข", true),
+    (8, "บ่อยครั้งที่ท่านรู้สึกไม่มีที่พึ่ง", false),
+    (9, "ท่านชอบอยู่กับบ้านมากกว่าที่จะออกนอกบ้านหรือการทำสิ่งใหม่ๆ", false),
+    (10, "ท่านคิดว่าความจำของคุณไม่ดีเท่าคนอื่น", false),
+    (11, "การที่มีชีวิตอยู่ถึงปัจจุบันนี้เป็นเรื่องน่ายินดีหรือไม่", true),
+    (12, "ท่านรู้สึกว่าชีวิตคุณค่อนข้างไม่มีคุณค่า", false),
+    (13, "ท่านรู้สึกกระตือรือร้น", true),
+    (14, "ท่านรู้สึกสิ้นหวัง", false),
+    (15, "ท่านคิดว่าคนอื่นดีกว่าท่าน", false)
+] %}
+
+<div class="w-full max-w-4xl mx-auto font-sans">
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div>
+                <div class="text-lg font-bold text-slate-800">Thai Geriatric Depression Scale (TGDS-15)</div>
+                <div class="text-xs text-slate-500 mt-1">แบบวัดความเศร้าในผู้สูงอายุของไทย (15 ข้อ)</div>
+            </div>
+            
+            <!-- Score Badge -->
+            <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">คะแนนรวม</div>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-2xl font-black {% if total >= 7 %}text-rose-600{% elif total >= 6 %}text-amber-600{% else %}text-emerald-600{% endif %}">
+                        {{ total }}
+                    </span>
+                    <span class="text-sm font-bold text-slate-400">/ 15</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoring Guide -->
+        <div class="px-6 py-3 bg-amber-50/50 border-b border-amber-100 text-xs text-amber-700">
+            <div class="flex flex-wrap gap-x-6 gap-y-1">
+                <span><strong>การคิดคะแนน:</strong></span>
+                <span>• ข้อที่ 1, 5, 7, 11, 13 ถ้าตอบว่า <strong>"ไม่ใช่"</strong> ได้ 1 คะแนน</span>
+                <span>• ส่วนข้อที่ 2, 3, 4, 6, 8, 9, 10, 12, 14, 15 ถ้าตอบว่า <strong>"ใช่"</strong> ได้ 1 คะแนน</span>
+            </div>
+        </div>
+
+        <!-- Table Header -->
+        <div class="bg-slate-50/80 px-6 py-3 border-b border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider sticky top-0 z-10">
+            <div class="flex gap-4">
+                <span class="w-6 text-center">#</span>
+                <span>คำถาม</span>
+            </div>
+            <div class="flex gap-8 pr-2">
+                <span>ใช่</span>
+                <span>ไม่ใช่</span>
+                <span class="w-12 text-center">คะแนน</span>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="divide-y divide-slate-100 text-sm">
+            {% for num, text, is_reverse in questions %}
+            {% set answer = ans[num] %}
+            {% set got_point = false %}
+            {% if answer is not none %}
+                {% if is_reverse and answer == 0 %}
+                    {% set got_point = true %}
+                {% elif not is_reverse and answer == 1 %}
+                    {% set got_point = true %}
+                {% endif %}
+            {% endif %}
+            
+            <div class="group px-6 py-3 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                <div class="flex gap-4 items-start flex-1">
+                    <span class="w-6 text-center font-bold text-slate-400 text-xs mt-0.5">{{ num }}</span>
+                    <span class="text-slate-700 font-medium">{{ text }}</span>
+                </div>
+                
+                <div class="flex items-center gap-4 shrink-0">
+                    <!-- ใช่ -->
+                    <label class="inline-flex items-center gap-1.5 cursor-not-allowed w-12 justify-center">
+                        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
+                            {% if answer is not none and answer == 1 %}border-blue-500 bg-blue-50{% else %}border-slate-300 bg-white{% endif %}">
+                            {% if answer is not none and answer == 1 %}<div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>{% endif %}
+                        </div>
+                    </label>
+
+                    <!-- ไม่ใช่ -->
+                    <label class="inline-flex items-center gap-1.5 cursor-not-allowed w-12 justify-center">
+                        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
+                            {% if answer is not none and answer == 0 %}border-blue-500 bg-blue-50{% else %}border-slate-300 bg-white{% endif %}">
+                            {% if answer is not none and answer == 0 %}<div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>{% endif %}
+                        </div>
+                    </label>
+
+                    <!-- คะแนน -->
+                    <div class="w-12 text-center">
+                        {% if answer is not none %}
+                            {% if got_point %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">1</span>
+                            {% else %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-400 text-xs font-bold">0</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-slate-300">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Interpretation Guide -->
+        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50">
+            <div class="text-sm font-bold text-slate-700 mb-3">การแปรผล:</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div class="flex items-center gap-2 p-2 rounded-lg {% if total < 7 %}bg-emerald-50 border border-emerald-200{% else %}bg-white border border-slate-200{% endif %}">
+                    <span class="w-3 h-3 rounded-full {% if total < 7 %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></span>
+                    <span class="{% if total < 7 %}text-emerald-700 font-bold{% else %}text-slate-500{% endif %}">
+                        คะแนน น้อยกว่า 7 คะแนน หมายถึง <strong>ปกติ</strong>
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 p-2 rounded-lg {% if total >= 7 %}bg-rose-50 border border-rose-200{% else %}bg-white border border-slate-200{% endif %}">
+                    <span class="w-3 h-3 rounded-full {% if total >= 7 %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
+                    <span class="{% if total >= 7 %}text-rose-700 font-bold{% else %}text-slate-500{% endif %}">
+                        คะแนน มากกว่าหรือเท่ากับ 7 คะแนน หมายถึง <strong>มีภาวะซึมเศร้า</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Summary -->
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+            {% if total >= 7 or interpretation == 'depression' %}
+                <div class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-rose-800">ผลการประเมิน: มีภาวะซึมเศร้า ({{ total }} คะแนน)</div>
+                        <div class="text-sm text-rose-600 mt-1">คะแนนตั้งแต่ 7 ขึ้นไป บ่งชี้ว่ามีภาวะซึมเศร้า ควรส่งต่อแพทย์เพื่อวินิจฉัย</div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-check text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-emerald-800">ผลการประเมิน: ปกติ</div>
+                        <div class="text-sm text-emerald-600 mt-1">สุขภาพจิตอยู่ในเกณฑ์ดี ไม่พบภาวะซึมเศร้า</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>

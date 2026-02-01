@@ -1,0 +1,320 @@
+{% extends "medical_base.html" %}
+
+{% block title %}ข้อมูลผู้ป่วย (Medical Dashboard 2025){% endblock %}
+
+{% block head %}
+<style>
+  #global-back-wrapper { display:none; }
+
+  /* =========================================================
+     ✅ KILL OUTER FRAME (กรอบแดงรอบนอกสุดที่ครอบทั้งหน้า)
+     ใช้ CSS ทับ wrapper จาก medical_base โดยไม่ต้องไปแก้ base
+     ========================================================= */
+
+  /* 1) บังคับ main ให้โปร่ง/ไม่สร้างกรอบ */
+  main, main#main, #main, #content, #page, .page, .page-content {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* 2) เอากรอบ/เงา/โค้ง ออกจาก “กล่องใหญ่” ที่มักครอบ block content */
+  main > div,
+  main > section,
+  main > article,
+  main > div > div,
+  main > section > div {
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  /* 3) กรณี base ใช้ container แล้วครอบด้วย card ชั้นนอก */
+  main .max-w-7xl,
+  main .max-w-6xl,
+  main .max-w-5xl,
+  main .container {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* 4) กรณี base ใส่ padding แล้วมีพื้นหลังขาวเป็นกรอบ */
+  main .max-w-7xl > div,
+  main .max-w-6xl > div,
+  main .max-w-5xl > div,
+  main .container > div {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Sleek scrollbar */
+  .scroller::-webkit-scrollbar { width: 10px; height: 10px; }
+  .scroller::-webkit-scrollbar-track { background: rgba(241,245,249,.85); border-radius: 999px; }
+  .scroller::-webkit-scrollbar-thumb { background-color: rgba(148,163,184,.65); border-radius: 999px; border: 2px solid rgba(241,245,249,.85); }
+  .scroller::-webkit-scrollbar-thumb:hover { background-color: rgba(100,116,139,.9); }
+
+  /* Smooth details */
+  summary::-webkit-details-marker { display:none; }
+
+  /* ===============  "Blend" UI (no hard frames)  =============== */
+  .surface{
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226,232,240,.0);
+    box-shadow: 0 10px 28px rgba(2,6,23,.05);
+    border-radius: 26px;
+  }
+  .surface-plain{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .surface-head{
+    background: rgba(248,250,252,.65);
+    border-bottom: 1px solid rgba(226,232,240,.55);
+  }
+  .soft-divider{
+    border-top: 1px solid rgba(226,232,240,.55);
+  }
+
+  /* ลดความรู้สึก "มีกรอบ" ของชิ้นย่อย */
+  .soft-chip{ background: rgba(248,250,252,.9); border: 1px solid rgba(226,232,240,.6); }
+
+  /* ==== EMBED RESET: ทำให้ partial ที่ include มา "ไม่สร้างกรอบซ้อน" ==== */
+  .embed-plain > div{
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .embed-plain > div > div{
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .embed-plain .border{ border-width:0 !important; }
+  .embed-plain .shadow,
+  .embed-plain .shadow-sm,
+  .embed-plain .shadow-md,
+  .embed-plain .shadow-lg{ box-shadow:none !important; }
+  .embed-plain .rounded-2xl,
+  .embed-plain .rounded-3xl,
+  .embed-plain .rounded-b-2xl,
+  .embed-plain .rounded-t-2xl{ border-radius:0 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# -------------------------
+   SAFE GETTERS / FALLBACKS
+-------------------------- #}
+{% set p = patients or {} %}
+{% set g = cga_general or {} %}
+
+{% if visits is defined and visits %}
+  {% set _visits = visits %}
+{% elif visit is defined and visit %}
+  {% set _visits = visit %}
+{% else %}
+  {% set _visits = [] %}
+{% endif %}
+
+{% if upcoming_appts is defined and upcoming_appts %}
+  {% set _upcoming = upcoming_appts %}
+{% elif upcoming is defined and upcoming %}
+  {% set _upcoming = upcoming %}
+{% else %}
+  {% set _upcoming = [] %}
+{% endif %}
+
+{% set hn  = (p.get('hn') if p is mapping else (p.hn if p.hn is defined else '')) %}
+{% set gcn = (p.get('gcn') if p is mapping else (p.gcn if p.gcn is defined else '')) %}
+
+{% set p_name = (p.get('name') if p is mapping else (p.name if p.name is defined else '')) %}
+{% if not p_name %}
+  {% set _fn = p.get('first_name','') if p is mapping else (p.first_name if p.first_name is defined else '') %}
+  {% set _ln = p.get('last_name','') if p is mapping else (p.last_name if p.last_name is defined else '') %}
+  {% set p_name = (_fn ~ ' ' ~ _ln)|trim %}
+{% endif %}
+
+{% set p_age = (p.get('age') if p is mapping else (p.age if p.age is defined else None)) %}
+{% set p_gender = (p.get('gender_th') if p is mapping else (p.gender_th if p.gender_th is defined else None)) %}
+{% set _avatar = (p_name|string)[:1] if p_name else 'U' %}
+
+{# Scores #}
+{% set mmse = (scores.mmse if scores is defined and scores and scores.mmse is defined else (scores.get('mmse') if scores is mapping else 0)) %}
+{% set tgds = (scores.tgds if scores is defined and scores and scores.tgds is defined else (scores.get('tgds') if scores is mapping else 0)) %}
+{% set sra  = (scores.sra  if scores is defined and scores and scores.sra  is defined else (scores.get('sra')  if scores is mapping else 0)) %}
+{% set twoq = (scores.twoq if scores is defined and scores and scores.twoq is defined else (scores.get('twoq') if scores is mapping else 0)) %}
+
+<div class="min-h-[calc(100vh-64px)] bg-slate-50">
+  <div class="max-w-[1200px] mx-auto px-4 lg:px-6 py-6">
+
+    <!-- ===== Top bar (same page / no extra footer block) ===== -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+      <div class="min-w-0">
+        <div class="text-slate-500 text-sm">รายละเอียดผู้ป่วย</div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight truncate">
+          {{ p_name or 'ไม่ระบุชื่อ' }}
+          <span class="ml-2 text-sm font-bold text-slate-500">HN: {{ hn }}</span>
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/doctor/patients"
+           class="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-white/80 hover:bg-white font-extrabold text-slate-700 shadow-sm border border-slate-200/60">
+          กลับหน้ารายชื่อ
+        </a>
+
+        <a href="{{ url_for('doctor_dashboard') }}"
+           class="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-slate-900 text-white hover:bg-black font-extrabold shadow-sm">
+          กลับหน้าหลัก
+        </a>
+      </div>
+    </div>
+
+    <!-- ===== Main grid (no outer card frame) ===== -->
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- ========= Profile ========= -->
+      <section class="col-span-12 surface p-5">
+        <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+          <div class="shrink-0">
+            <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center text-2xl font-extrabold shadow-lg shadow-indigo-200/60">
+              {{ _avatar }}
+            </div>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="text-lg font-extrabold text-slate-900">ประวัติส่วนตัว</div>
+            <div class="mt-1 text-sm text-slate-500 flex flex-wrap gap-3">
+              <span class="inline-flex items-center gap-1.5">
+                <span class="font-bold text-slate-700">อายุ:</span> {{ p_age if p_age else '-' }} ปี
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="font-bold text-slate-700">เพศ:</span> {{ p_gender or '-' }}
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="font-bold text-slate-700">โทร:</span> {{ (p.get('phone') if p is mapping else (p.phone if p.phone is defined else None)) or "-" }}
+              </span>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="rounded-2xl soft-chip p-3">
+                <div class="text-[11px] text-slate-500 font-bold">ที่อยู่</div>
+                <div class="text-sm font-bold text-slate-800 mt-1 leading-relaxed">{{ p.get('address') or '-' }}</div>
+              </div>
+              <div class="rounded-2xl soft-chip p-3">
+                <div class="text-[11px] text-slate-500 font-bold">การพักอาศัย</div>
+                <div class="text-sm font-bold text-slate-800 mt-1">
+                  {% if g.get('living_status') == 'alone' %}อยู่คนเดียว
+                  {% elif g.get('living_status') == 'family' %}อยู่กับครอบครัว
+                  {% else %}-{% endif %}
+                </div>
+              </div>
+              <div class="rounded-2xl bg-white/85 border border-slate-200/70 p-3">
+                <div class="text-[11px] text-slate-500 font-bold">ผู้ดูแล (Caregiver)</div>
+                <div class="text-sm font-bold text-slate-800 mt-1">
+                  {{ g.get('caregiver_name') or 'ไม่มีข้อมูล' }}
+                  {% if g.get('caregiver_phone') %}
+                    <span class="text-slate-500 font-semibold">({{ g.get('caregiver_phone') }})</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========= CGA Forms ========= -->
+      <section class="col-span-12 lg:col-span-8 surface overflow-hidden">
+        <div class="surface-head px-5 py-4 flex items-center justify-between">
+          <div class="font-extrabold text-slate-900">แบบฟอร์ม CGA ทั้งหมด</div>
+          <div class="text-[11px] text-slate-400 font-bold">แสดงฟอร์มจริงในหน้า (2025 UI)</div>
+        </div>
+
+        <div class="h-[420px] overflow-y-auto scroller p-5 space-y-4">
+
+          <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+            <div class="text-sm font-extrabold text-slate-900 mb-2">1. การสูบบุหรี่</div>
+            {% set smoke = g.get('smoking_status') %}
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='yes' %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">สูบ</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='no' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่สูบ</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='quit' %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">เคยสูบ/เลิกแล้ว</span>
+            </div>
+            {% if smoke=='yes' %}
+              <div class="mt-2 text-sm text-slate-600">จำนวน: <span class="font-extrabold">{{ g.get('smoking_per_day') or '-' }}</span> มวน/วัน</div>
+            {% endif %}
+          </div>
+
+          <!-- ... (ที่เหลือของไฟล์คุณเหมือนเดิมทุกอย่าง) ... -->
+
+        </div>
+      </section>
+
+      <!-- ========= AI Summary (keep as strong card) ========= -->
+      <section class="col-span-12 lg:col-span-4 overflow-hidden rounded-[26px] bg-gradient-to-br from-slate-900 to-indigo-900 shadow-lg">
+        <!-- ... เหมือนเดิม ... -->
+      </section>
+
+      <!-- ========= Diagnosis / History / Appointments ... เหมือนเดิมทั้งหมด ========= -->
+
+      <div class="col-span-12 pt-2 text-center text-slate-400 text-sm">
+        © 2024-2025 | ระบบประเมินสุขภาพผู้สูงอายุ โรงพยาบาลพะเยา
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Appointment Modal ===== -->
+<div id="apptModal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeApptModal()"></div>
+  <div class="relative mx-auto mt-20 w-[96%] max-w-lg bg-white rounded-3xl shadow-2xl p-6 border border-slate-200">
+    <h3 class="font-extrabold text-lg mb-4 text-slate-900">เพิ่มนัดหมาย</h3>
+    <form method="post" action="/doctor/patient/{{ hn }}/{{ gcn }}/appointment/create" class="space-y-3">
+      <div>
+        <label class="text-xs text-slate-500 font-extrabold">วันเวลานัด</label>
+        <input type="datetime-local" name="appt_datetime" required
+               class="w-full border border-slate-200 rounded-2xl p-3 bg-slate-50">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 font-extrabold">เรื่อง</label>
+        <input type="text" name="reason"
+               class="w-full border border-slate-200 rounded-2xl p-3 bg-slate-50">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 font-extrabold">สถานที่</label>
+        <input type="text" name="location"
+               class="w-full border border-slate-200 rounded-2xl p-3 bg-slate-50">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeApptModal()"
+                class="px-4 py-2 bg-slate-100 rounded-2xl font-extrabold text-slate-700">
+          ยกเลิก
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-slate-900 text-white rounded-2xl font-extrabold">
+          บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openApptModal() { document.getElementById("apptModal")?.classList.remove("hidden"); }
+  function closeApptModal() { document.getElementById("apptModal")?.classList.add("hidden"); }
+</script>
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "medical_base.html" %}
+
+{% block title %}ผู้ป่วยนัดหมาย{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto space-y-10">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-primary mb-2">ผู้ป่วยนัดหมาย</h1>
+        <p class="text-gray-600">รายการผู้ป่วยที่มีการนัดหมายตรวจ / ติดตามอาการ</p>
+    </div>
+
+    <!-- Summary / Filter (เผื่ออนาคต) -->
+    <div class="bg-white rounded-2xl shadow-lg border border-blue-200 p-6 flex flex-wrap gap-4 items-center justify-between">
+        <div>
+            <p class="text-sm text-gray-500">ภาพรวม</p>
+            <p class="text-lg font-semibold text-gray-800">
+                ทั้งหมด {{ appointments|length }} รายการ
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3 text-sm">
+            <span class="px-3 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
+                ● รอดำเนินการ
+            </span>
+            <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ● เสร็จสิ้น
+            </span>
+        </div>
+    </div>
+
+    <!-- ตารางนัดหมาย -->
+    <div class="bg-white rounded-2xl shadow-lg border overflow-hidden">
+        <div class="px-6 py-4 border-b bg-primary text-white">
+            <h2 class="text-lg font-semibold">รายชื่อผู้ป่วยนัดหมาย</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-blue-50 text-gray-700">
+                    <tr>
+                        <th class="px-6 py-3">HN</th>
+                        <th class="px-6 py-3">ชื่อผู้ป่วย</th>
+                        <th class="px-6 py-3">วันที่นัด</th>
+                        <th class="px-6 py-3">เวลา</th>
+                        <th class="px-6 py-3">สถานะ</th>
+                        <th class="px-6 py-3 text-center">การดำเนินการ</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+                    {% if appointments %}
+                        {% for ap in appointments %}
+                        <tr class="hover:bg-blue-50 transition">
+                            <td class="px-6 py-4">{{ ap.hn }}</td>
+                            <td class="px-6 py-4">{{ ap.name }}</td>
+                            <td class="px-6 py-4">{{ ap.date }}</td>
+                            <td class="px-6 py-4">{{ ap.time }}</td>
+                            <td class="px-6 py-4">
+                                {% if ap.status == "รอดำเนินการ" %}
+                                    <span class="px-3 py-1 rounded-full text-xs bg-violet-100 text-violet-700 border border-violet-300">
+                                        {{ ap.status }}
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-full text-xs bg-emerald-100 text-emerald-700 border border-emerald-300">
+                                        {{ ap.status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <button class="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg shadow text-sm">
+                                    ดูรายละเอียด
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                ยังไม่มีข้อมูลการนัดหมาย
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
