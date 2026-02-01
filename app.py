@@ -1,3 +1,6 @@
+import joblib
+import numpy as np
+
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime
@@ -7,20 +10,37 @@ from mysql.connector import Error
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 
+import joblib
+
+model = joblib.load("naive_bayes_cga.pkl")
+label_encoder = joblib.load("naive_bayes_label_encoder.pkl")
+
 
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
-            host="localhost",       # หรือ "127.0.0.1"
-            user="root",            # 👈 ชื่อผู้ใช้ MySQL ของคุณ
-            password="Kantiya203_",            # 👈 ถ้ามีรหัสผ่านให้ใส่ที่นี่
-            database="cga_system"   # 👈 ชื่อ database ที่คุณสร้างใน MySQL Workbench
+            host="localhost",
+            user="root",
+            password="Kantiya203_",
+            database="cga_system"
         )
-        print("✅ Database connected successfully")
+        print("🟢 Database connected successfully")
         return conn
+
     except mysql.connector.Error as err:
         print(f"❌ Database connection error: {err}")
         return None
+
+
+def predict_risk(features):
+    # features = [mmse, tgds, sra, edu, age]
+    prediction = model.predict([features])
+    label = label_encoder.inverse_transform(prediction)[0]
+    return label
+
+
+
+
 
 def get_patient_id_by_hn_gcn(hn, gcn):
     conn = get_db_connection()
@@ -41,6 +61,10 @@ def get_patient_id_by_hn_gcn(hn, gcn):
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-me"  # ใช้กับ flash และ session
+
+from admin.routes_admin import admin_bp
+app.register_blueprint(admin_bp)
+
 
 # ------------------- หน้าเข้าสู่ระบบ -------------------
 @app.get("/")
@@ -209,45 +233,53 @@ def mmse_next(hn, gcn):
 @app.route("/dashboard")
 def dashboard():
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True)
 
-    cur.execute("SELECT COUNT(*) AS total FROM patient_history")
-    total = cur.fetchone()["total"]
-
-    cur.execute("SELECT COUNT(*) AS today FROM patient_history WHERE DATE(date_assessed) = CURDATE()")
-    today = cur.fetchone()["today"]
-
-    cur.execute("SELECT COUNT(*) AS week FROM patient_history WHERE YEARWEEK(date_assessed, 1) = YEARWEEK(CURDATE(), 1)")
-    week = cur.fetchone()["week"]
-
-    cur.execute("SELECT COUNT(*) AS month FROM patient_history WHERE MONTH(date_assessed) = MONTH(CURDATE())")
-    month = cur.fetchone()["month"]
-
+    # ดึงตัวเลขจาก patient_history
+    cursor.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today,
+            SUM(
+                CASE WHEN YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+                THEN 1 ELSE 0 END
+            ) AS week,
+            SUM(
+                CASE WHEN DATE_FORMAT(created_at, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+                THEN 1 ELSE 0 END
+            ) AS month
+        FROM patient_history;
+    """)
+    row = cursor.fetchone()
     conn.close()
 
-    # ✅ สร้าง object รวมข้อมูล KPI
+    total = row["total"] or 0
+    today = row["today"] or 0
+    week = row["week"] or 0
+    month = row["month"] or 0
+
+    # ---------- ตัวแปรที่ส่งเข้า template ----------
     kpis = {
         "total": total,
         "today": today,
         "week": week,
-        "month": month
+        "month": month,
     }
 
-    # ✅ เพิ่มตัวแปรอื่น ๆ สำหรับ chart
-    bar_labels = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย."]
-    bar_values = [12, 19, 3, 5, 2, 3]
-    risk = {"สูง": 2, "ปานกลาง": 5, "ต่ำ": 10}
+    # mock data สำหรับกราฟ (จะเปลี่ยนทีหลังก็ได้)
+    bar_labels = ["Jan", "Feb", "Mar", "Apr", "May"]
+    bar_values = [10, 20, 30, 25, 40]
+    risk = {"ต่ำ": 10, "ปานกลาง": 5, "สูง": 2}
 
     return render_template(
         "dashboard.html",
-        kpis=kpis,  # ✅ ส่ง object kpis
+        kpis=kpis,
         bar_labels=bar_labels,
         bar_values=bar_values,
-        risk=risk
+        risk=risk,
     )
 
-# (ต้องมีบรรทัดนี้อยู่ด้านบนของไฟล์ app.py)
-# from flask import render_template
+
 
 @app.route("/assess/<hn>/<gcn>/summary", methods=["GET", "POST"], endpoint="cga_summary")
 def cga_summary(hn, gcn):
