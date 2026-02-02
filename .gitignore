@@ -12,3 +12,5 @@ AI_test/
 # OS files
 .DS_Store
 Thumbs.db
+
+ai_multi_models.py
