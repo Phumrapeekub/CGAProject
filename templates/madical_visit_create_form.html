@@ -1,0 +1,38 @@
+<form method="POST" action="/doctor/patient/{{ patients.hn }}/{{ patients.gcn }}/visit/create" class="space-y-4">
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div>
+      <label class="text-xs text-slate-500">วันเวลาตรวจจริง (Clinical time)</label>
+      <input type="datetime-local" name="visit_datetime"
+        class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-200" required>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">ประเภท Visit</label>
+      <select name="visit_type"
+        class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-200">
+        <option value="OPD">OPD</option>
+        <option value="ER">ER</option>
+        <option value="FOLLOWUP">Follow-up</option>
+      </select>
+    </div>
+  </div>
+
+  <div>
+    <label class="text-xs text-slate-500">อาการสำคัญ</label>
+    <input name="chief_complaint" placeholder="เช่น เวียนหัว/ล้ม/นอนไม่หลับ"
+      class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-200">
+  </div>
+
+  <div>
+    <label class="text-xs text-slate-500">บันทึกเบื้องต้น</label>
+    <textarea name="note" rows="4"
+      class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-200"
+      placeholder="ใส่ข้อมูลที่จำเป็น…"></textarea>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">
+      บันทึก Visit
+    </button>
+  </div>
+</form>

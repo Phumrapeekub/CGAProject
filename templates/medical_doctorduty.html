@@ -1,0 +1,673 @@
+{% extends "medical_base.html" %}
+{% block title %}ตารางเข้าเวร - แพทย์{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<style>
+  .soft-card{ border:1px solid rgba(148,163,184,.25); box-shadow:0 10px 30px rgba(2,6,23,.06); }
+  .fc .fc-toolbar-title{ font-weight:800; }
+  .fc .fc-button{ border-radius:12px; }
+  .fc .fc-daygrid-day.fc-day-today{ background: rgba(37,99,235,.06); }
+
+  /* ===== Mini calendar (1 month pager + swipe) ===== */
+  #miniViewport{
+    overflow: hidden;          /* ไม่ให้เลื่อนยาว */
+    touch-action: pan-x;       /* ให้ลากซ้ายขวา */
+    user-select: none;
+  }
+  #miniTrack{
+    display:flex;
+    width:300%;                /* 3 หน้า: prev/current/next */
+    transform: translateX(-33.3333%);
+    transition: transform .26s ease;
+    will-change: transform;
+  }
+  .mini-page{
+    width:33.3333%;
+    padding-top: .25rem;
+  }
+  .mini-grid{
+    display:grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap:.5rem;
+  }
+  .mini-day{
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:14px;
+    border:1px solid #e2e8f0;
+    display:grid;
+    place-items:center;
+    font-weight:700;
+    font-size:.95rem;
+    color:#0f172a;
+    background:#fff;
+    transition: transform .08s ease;
+  }
+  .mini-day:active{ transform: scale(.97); }
+  .mini-day.has-event{ border-color:#bfdbfe; background:#eff6ff; color:#1d4ed8; }
+  .mini-day.is-selected{ outline:2px solid #2563eb; outline-offset:2px; }
+  .mini-day.is-today{ box-shadow: inset 0 0 0 2px rgba(37,99,235,.25); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-5">
+
+  <!-- Top bar -->
+  <div class="bg-white rounded-2xl soft-card p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white grid place-items-center font-black">CGA</div>
+      <div>
+        <div class="text-lg font-extrabold text-slate-900">DutyDash</div>
+        <div class="text-xs text-slate-500 -mt-0.5">ตารางเข้าเวรแพทย์ • ดูรายวัน/สัปดาห์/เดือน</div>
+      </div>
+    </div>
+
+    <div class="flex-1 lg:max-w-xl">
+      <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
+        <svg class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input id="searchBox" class="w-full bg-transparent outline-none text-sm"
+               placeholder="ค้นหาเวร (เช่น night, on-call, ICU, OPD...)">
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-700">
+        👨‍⚕️ แพทย์
+      </span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="bg-white rounded-2xl soft-card p-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div class="text-base font-bold text-slate-900">ตารางเข้าเวรของฉัน</div>
+      <div class="text-sm text-slate-500">คลิก “วัน” เพื่อดูเวรวันนั้น • กด “ยืนยันวัน” เพื่อเพิ่มเวร • คลิก “เวร” เพื่อแก้ไขโน้ต</div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 text-sm" id="legendChips">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span> Day
+      </span>
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span> Evening
+      </span>
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-700">
+        <span class="w-2 h-2 rounded-full bg-red-500"></span> Night
+      </span>
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> On-call
+      </span>
+    </div>
+  </div>
+
+  <!-- 3 columns -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left -->
+    <aside class="lg:col-span-3 space-y-5">
+      <div class="bg-white rounded-2xl soft-card p-5">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-slate-900">วันนี้</div>
+          <span id="todayBadge" class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">-</span>
+        </div>
+        <div class="mt-4">
+          <div class="text-5xl font-extrabold text-slate-900 leading-none" id="todayDay">--</div>
+          <div class="text-sm text-slate-500 mt-1" id="todayFull">-</div>
+        </div>
+        <div class="mt-5">
+          <div class="text-sm font-semibold text-slate-800">เวรของวันนี้</div>
+          <div id="todayList" class="mt-2 space-y-2">
+            <div class="text-sm text-slate-500">กำลังโหลด...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl soft-card p-5">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-slate-900">เวรของวันที่เลือก</div>
+          <span class="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700" id="pickedDate">-</span>
+        </div>
+        <div id="pickedList" class="mt-3 space-y-2">
+          <div class="text-sm text-slate-500">คลิกวันที่ในปฏิทินเพื่อดู</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center -->
+    <section class="lg:col-span-6 bg-white rounded-2xl soft-card p-4">
+      <div id="calendar" class="min-h-[720px]"></div>
+    </section>
+
+    <!-- Right -->
+    <aside class="lg:col-span-3 space-y-5">
+
+      <!-- ✅ Mini calendar (1 month, swipe + buttons) -->
+      <div class="bg-white rounded-2xl soft-card p-5">
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-slate-900" id="miniTitle">-</div>
+          <div class="flex items-center gap-1">
+            <button id="miniPrev" type="button" class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">‹</button>
+            <button id="miniNext" type="button" class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">›</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 text-xs text-slate-500 mt-3">
+          <div class="text-center">จ</div><div class="text-center">อ</div><div class="text-center">พ</div>
+          <div class="text-center">พฤ</div><div class="text-center">ศ</div><div class="text-center">ส</div><div class="text-center">อา</div>
+        </div>
+
+        <div id="miniViewport" class="mt-2">
+          <div id="miniTrack">
+            <div class="mini-page" id="miniPrevPage"></div>
+            <div class="mini-page" id="miniCurPage"></div>
+            <div class="mini-page" id="miniNextPage"></div>
+          </div>
+        </div>
+
+        <button id="miniConfirm" type="button"
+          class="mt-4 w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-sm font-bold transition">
+          ยืนยันวันที่เลือก
+        </button>
+
+        <div class="mt-2 text-xs text-slate-600">
+          เลือก: <span id="miniPickedText" class="font-semibold text-slate-800">ยังไม่ได้เลือกวัน</span>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="bg-white rounded-2xl soft-card p-5">
+        <h2 class="text-base font-bold text-slate-900">รายละเอียดเวร</h2>
+        <p class="text-sm text-slate-500 mt-1">คลิกเวรจากปฏิทินหรือ list เพื่อแก้ไขโน้ต</p>
+
+        <div id="detailEmpty" class="mt-5 rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+          ยังไม่ได้เลือกเวร
+        </div>
+
+        <div id="detailBox" class="hidden mt-4 space-y-4">
+          <div class="rounded-2xl bg-slate-50 p-4 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="text-sm font-extrabold text-slate-900" id="dTitle">-</div>
+              <span class="text-xs px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-700" id="dType">-</span>
+            </div>
+            <div class="text-sm text-slate-600 space-y-1">
+              <div><span class="text-slate-500">วันเวลา:</span> <span id="dTime">-</span></div>
+              <div><span class="text-slate-500">สถานที่:</span> <span id="dLoc">-</span></div>
+            </div>
+          </div>
+
+          <form id="noteForm" class="space-y-2">
+            <input type="hidden" name="shift_id" id="shift_id" value="">
+            <label class="text-sm font-semibold text-slate-800">โน้ตส่วนตัว</label>
+            <textarea name="note" id="note" rows="5"
+              class="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+              placeholder="เช่น เคสที่ต้องติดตาม, ข้อควรระวัง, นัดหมายสำคัญ..."></textarea>
+
+            <button type="submit"
+              class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-sm font-bold transition">
+              บันทึกโน้ต
+            </button>
+
+            <p id="saveMsg" class="text-xs text-emerald-600 hidden">บันทึกแล้ว ✓</p>
+          </form>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<!-- Modal เลือกประเภทเวร -->
+<div id="dutyModal" class="hidden fixed inset-0 z-[999]">
+  <div class="absolute inset-0 bg-slate-900/40"></div>
+
+  <div class="relative mx-auto mt-24 w-[92%] max-w-md">
+    <div class="bg-white rounded-2xl soft-card p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-lg font-extrabold text-slate-900">ยืนยันวันที่</div>
+          <div class="text-sm text-slate-500 mt-0.5">
+            วันที่: <span id="modalDate" class="font-semibold text-slate-800">-</span>
+          </div>
+        </div>
+        <button id="modalClose" type="button" class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">✕</button>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-sm font-semibold text-slate-800">เลือกประเภทเวร</div>
+
+        <div class="mt-3 flex flex-wrap gap-2" id="typeChips">
+          <button type="button" data-type="day" class="chip px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold border border-blue-100 hover:border-blue-300">● Day</button>
+          <button type="button" data-type="evening" class="chip px-4 py-2 rounded-full bg-amber-50 text-amber-700 text-sm font-semibold border border-amber-100 hover:border-amber-300">● Evening</button>
+          <button type="button" data-type="night" class="chip px-4 py-2 rounded-full bg-red-50 text-red-700 text-sm font-semibold border border-red-100 hover:border-red-300">● Night</button>
+          <button type="button" data-type="oncall" class="chip px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold border border-emerald-100 hover:border-emerald-300">● On-call</button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-500">เวลาเริ่ม</label>
+            <input id="startTime" type="time" value="08:00"
+              class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">เวลาจบ</label>
+            <input id="endTime" type="time" value="16:00"
+              class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="text-xs text-slate-500">สถานที่ (ถ้ามี)</label>
+          <input id="locationInput" type="text" placeholder="เช่น OPD, ICU, Ward..."
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+        </div>
+
+        <p id="modalErr" class="hidden mt-3 text-sm text-red-600">กรุณาเลือกประเภทเวร</p>
+
+        <div class="mt-5 flex items-center gap-2">
+          <button id="modalCancel" type="button" class="flex-1 rounded-2xl border border-slate-200 hover:bg-slate-50 py-2.5 text-sm font-semibold">ยกเลิก</button>
+          <button id="modalSave" type="button" class="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-sm font-extrabold">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+
+  const detailEmpty = document.getElementById('detailEmpty');
+  const detailBox   = document.getElementById('detailBox');
+  const dTitle = document.getElementById('dTitle');
+  const dType  = document.getElementById('dType');
+  const dTime  = document.getElementById('dTime');
+  const dLoc   = document.getElementById('dLoc');
+
+  const shiftIdInput = document.getElementById('shift_id');
+  const noteInput    = document.getElementById('note');
+  const saveMsg      = document.getElementById('saveMsg');
+
+  const pickedDateEl = document.getElementById('pickedDate');
+  const pickedListEl = document.getElementById('pickedList');
+  const todayListEl  = document.getElementById('todayList');
+  const searchBox    = document.getElementById('searchBox');
+
+  // -------- helpers --------
+  function fmtThai(dt) {
+    return dt ? dt.toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'short' }) : '-';
+  }
+  function ymd(d) {
+    const z = new Date(d);
+    const m = String(z.getMonth()+1).padStart(2,'0');
+    const day = String(z.getDate()).padStart(2,'0');
+    return `${z.getFullYear()}-${m}-${day}`;
+  }
+  function timeHM(s) { return (s || '').slice(11,16); }
+  function thaiMonthTitle(d){
+    return d.toLocaleDateString('th-TH', { month:'long', year:'numeric' });
+  }
+
+  function showDetailByEvent(e) {
+    detailEmpty.classList.add('hidden');
+    detailBox.classList.remove('hidden');
+
+    const p = e.extendedProps || {};
+    dTitle.textContent = e.title || '-';
+    dType.textContent  = ((p.shift_type || '-') + '').toUpperCase();
+    dTime.textContent = `${fmtThai(e.start)} – ${fmtThai(e.end)}`;
+    dLoc.textContent  = p.location || '-';
+    shiftIdInput.value = e.id;
+    noteInput.value = p.note || '';
+    saveMsg.classList.add('hidden');
+  }
+
+  function renderList(targetEl, events, emptyText) {
+    if (!events.length) {
+      targetEl.innerHTML = `<div class="text-sm text-slate-500">${emptyText}</div>`;
+      return;
+    }
+    targetEl.innerHTML = events.map(e => {
+      const p = e.extendedProps || {};
+      const st = timeHM(e.startStr);
+      const en = timeHM(e.endStr);
+      const loc = p.location || '-';
+      const note = p.note || '';
+      return `
+        <button class="w-full text-left p-3 rounded-2xl border border-slate-200 hover:bg-slate-50 transition"
+                data-shift="${e.id}">
+          <div class="flex items-center justify-between gap-2">
+            <div class="font-bold text-slate-900 text-sm">${e.title}</div>
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">${(p.shift_type||'-').toUpperCase()}</span>
+          </div>
+          <div class="text-xs text-slate-500 mt-1">${st}-${en} • ${loc}</div>
+          ${note ? `<div class="text-xs text-slate-600 mt-1 line-clamp-2">📝 ${note}</div>` : ``}
+        </button>
+      `;
+    }).join('');
+
+    targetEl.querySelectorAll('button[data-shift]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ev = calendar.getEventById(btn.dataset.shift);
+        if (ev) showDetailByEvent(ev);
+      });
+    });
+  }
+
+  // -------- FullCalendar --------
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+    locale: 'th',
+    nowIndicator: true,
+    eventDisplay: 'block',
+    events: { url: "{{ url_for('doctor_duty_events') }}", method: 'GET' },
+    eventClick: (info) => showDetailByEvent(info.event),
+    dateClick: (info) => {
+      document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('ring-2','ring-blue-600','bg-blue-50'));
+      info.dayEl.classList.add('ring-2','ring-blue-600','bg-blue-50');
+      setPickedDate(info.dateStr);
+    }
+  });
+  calendar.render();
+
+  function setPickedDate(picked) {
+    pickedDateEl.textContent = picked;
+    document.getElementById('miniPickedText').textContent = picked;
+
+    const events = calendar.getEvents().filter(e => (e.startStr || '').slice(0,10) === picked);
+    const q = (searchBox.value || '').trim().toLowerCase();
+    const filtered = q ? events.filter(e =>
+      (e.title||'').toLowerCase().includes(q) ||
+      (e.extendedProps?.location||'').toLowerCase().includes(q) ||
+      (e.extendedProps?.shift_type||'').toLowerCase().includes(q) ||
+      (e.extendedProps?.note||'').toLowerCase().includes(q)
+    ) : events;
+
+    renderList(pickedListEl, filtered, "ไม่มีเวรในวันที่เลือก");
+    syncMiniToPicked(picked);
+  }
+
+  // Today box
+  const now = new Date();
+  document.getElementById('todayDay').innerText = now.getDate();
+  document.getElementById('todayFull').innerText = now.toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('todayBadge').innerText = ymd(now);
+
+  function refreshTodayList() {
+    const today = ymd(new Date());
+    const events = calendar.getEvents().filter(e => (e.startStr || '').slice(0,10) === today);
+    renderList(todayListEl, events, "ไม่มีเวรวันนี้");
+  }
+
+  // Search affects picked list
+  searchBox.addEventListener('input', () => {
+    const picked = pickedDateEl.textContent;
+    if (!picked || picked === '-') return;
+    setPickedDate(picked);
+  });
+
+  // Save note
+  document.getElementById('noteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    saveMsg.classList.add('hidden');
+
+    const formData = new FormData(e.target);
+    const res = await fetch("{{ url_for('doctor_duty_note_save') }}", { method: "POST", body: formData });
+    const data = await res.json();
+
+    if (data.ok) {
+      saveMsg.classList.remove('hidden');
+      const id = shiftIdInput.value;
+      const ev = calendar.getEventById(id);
+      if (ev) ev.setExtendedProp("note", noteInput.value);
+
+      refreshTodayList();
+      const picked = pickedDateEl.textContent;
+      if (picked && picked !== '-') setPickedDate(picked);
+    }
+  });
+
+  // ===== Mini calendar pager =====
+  const miniTitle = document.getElementById('miniTitle');
+  const miniViewport = document.getElementById('miniViewport');
+  const miniTrack = document.getElementById('miniTrack');
+  const prevPage = document.getElementById('miniPrevPage');
+  const curPage  = document.getElementById('miniCurPage');
+  const nextPage = document.getElementById('miniNextPage');
+  const miniPrevBtn = document.getElementById('miniPrev');
+  const miniNextBtn = document.getElementById('miniNext');
+
+  let miniMonth = new Date(); miniMonth.setDate(1);
+  let animLock = false;
+
+  function renderMonth(container, monthDate) {
+    container.innerHTML = "";
+    const grid = document.createElement('div');
+    grid.className = "mini-grid";
+
+    const first = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const startDow = (first.getDay() + 6) % 7; // Mon=0
+    for (let i=0; i<startDow; i++){
+      const blank = document.createElement('div');
+      blank.className = "mini-day";
+      blank.style.visibility = "hidden";
+      grid.appendChild(blank);
+    }
+
+    const daysInMonth = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+    const todayKey = ymd(new Date());
+
+    for (let d=1; d<=daysInMonth; d++){
+      const dt = new Date(first.getFullYear(), first.getMonth(), d);
+      const key = ymd(dt);
+
+      const hasEvent = calendar.getEvents().some(e => (e.startStr || '').slice(0,10) === key);
+
+      const btn = document.createElement('button');
+      btn.type = "button";
+      btn.className = "mini-day" + (hasEvent ? " has-event" : "");
+      btn.textContent = d;
+
+      if (key === todayKey) btn.classList.add("is-today");
+      if (pickedDateEl.textContent === key) btn.classList.add("is-selected");
+
+      btn.addEventListener('click', () => {
+        calendar.gotoDate(key);
+        setPickedDate(key);
+      });
+
+      grid.appendChild(btn);
+    }
+
+    container.appendChild(grid);
+  }
+
+  function buildMiniPager(){
+    const prevM = new Date(miniMonth.getFullYear(), miniMonth.getMonth()-1, 1);
+    const nextM = new Date(miniMonth.getFullYear(), miniMonth.getMonth()+1, 1);
+
+    renderMonth(prevPage, prevM);
+    renderMonth(curPage,  miniMonth);
+    renderMonth(nextPage, nextM);
+
+    miniTitle.textContent = thaiMonthTitle(miniMonth);
+
+    // reset ให้อยู่กลางเสมอ
+    miniTrack.style.transition = "none";
+    miniTrack.style.transform = "translateX(-33.3333%)";
+    requestAnimationFrame(() => {
+      miniTrack.style.transition = "transform .26s ease";
+    });
+  }
+
+  function changeMiniMonth(delta){
+    if (animLock) return;
+    animLock = true;
+
+    // slide ไปหน้า prev/next
+    miniTrack.style.transform = (delta > 0) ? "translateX(-66.6666%)" : "translateX(0%)";
+
+    const onEnd = () => {
+      miniTrack.removeEventListener('transitionend', onEnd);
+      miniMonth = new Date(miniMonth.getFullYear(), miniMonth.getMonth()+delta, 1);
+      buildMiniPager();
+      calendar.gotoDate(miniMonth);
+      animLock = false;
+    };
+    miniTrack.addEventListener('transitionend', onEnd);
+  }
+
+  function syncMiniToPicked(key){
+    if (!key || key === '-') return;
+    const [yy, mm] = key.split('-').map(n => parseInt(n,10));
+    const need = new Date(yy, mm-1, 1);
+    if (need.getFullYear() !== miniMonth.getFullYear() || need.getMonth() !== miniMonth.getMonth()){
+      miniMonth = need;
+    }
+    buildMiniPager();
+  }
+
+  miniPrevBtn.addEventListener('click', () => changeMiniMonth(-1));
+  miniNextBtn.addEventListener('click', () => changeMiniMonth(+1));
+
+  // swipe (pointer)
+  let startX = 0, lastX = 0, startT = 0, dragging = false;
+
+  miniViewport.addEventListener('pointerdown', (e) => {
+    if (animLock) return;
+    dragging = true;
+    startX = lastX = e.clientX;
+    startT = performance.now();
+    miniTrack.style.transition = "none";
+    miniViewport.setPointerCapture(e.pointerId);
+  });
+
+  miniViewport.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    lastX = e.clientX;
+    const dx = lastX - startX;
+    const pct = (dx / miniViewport.clientWidth) * 33.3333;
+    miniTrack.style.transform = `translateX(${(-33.3333 + pct)}%)`;
+  });
+
+  miniViewport.addEventListener('pointerup', () => {
+    if (!dragging) return;
+    dragging = false;
+
+    const dx = lastX - startX;
+    const dt = Math.max(1, performance.now() - startT);
+    const vx = dx / dt; // px/ms
+    const threshold = miniViewport.clientWidth * 0.22;
+
+    miniTrack.style.transition = "transform .26s ease";
+
+    // velocity ช่วยให้รู้สึกลื่นแบบ iOS
+    if (dx < -threshold || vx < -0.55) return changeMiniMonth(+1);
+    if (dx >  threshold || vx >  0.55) return changeMiniMonth(-1);
+
+    // snap กลับกลาง
+    miniTrack.style.transform = "translateX(-33.3333%)";
+  });
+
+  // confirm button (เปิด modal)
+  document.getElementById('miniConfirm').addEventListener('click', () => {
+    const picked = pickedDateEl.textContent;
+    const t = (!picked || picked === '-') ? ymd(new Date()) : picked;
+    setPickedDate(t);
+    openModal(t);
+  });
+
+  // ===== Modal create shift =====
+  const dutyModal   = document.getElementById('dutyModal');
+  const modalDateEl = document.getElementById('modalDate');
+  const modalClose  = document.getElementById('modalClose');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSave   = document.getElementById('modalSave');
+  const modalErr    = document.getElementById('modalErr');
+
+  const startTimeEl = document.getElementById('startTime');
+  const endTimeEl   = document.getElementById('endTime');
+  const locEl       = document.getElementById('locationInput');
+
+  let selectedType = "";
+  let selectedDate = "";
+
+  function openModal(dateStr){
+    selectedDate = dateStr;
+    modalDateEl.textContent = dateStr;
+    modalErr.classList.add('hidden');
+    selectedType = "";
+    document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('ring-2','ring-blue-600'));
+    dutyModal.classList.remove('hidden');
+  }
+  function closeModal(){ dutyModal.classList.add('hidden'); }
+
+  document.querySelectorAll('#typeChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedType = btn.dataset.type;
+      modalErr.classList.add('hidden');
+      document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('ring-2','ring-blue-600'));
+      btn.classList.add('ring-2','ring-blue-600');
+    });
+  });
+
+  modalClose.addEventListener('click', closeModal);
+  modalCancel.addEventListener('click', closeModal);
+  dutyModal.addEventListener('click', (e) => { if (e.target === dutyModal) closeModal(); });
+
+  modalSave.addEventListener('click', async () => {
+    if (!selectedType) {
+      modalErr.textContent = "กรุณาเลือกประเภทเวร";
+      modalErr.classList.remove('hidden');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("shift_date", selectedDate);
+    fd.append("shift_type", selectedType);
+    fd.append("start_time", startTimeEl.value || "08:00");
+    fd.append("end_time", endTimeEl.value || "16:00");
+    fd.append("location", (locEl.value || "").trim());
+
+    const res = await fetch("{{ url_for('doctor_duty_create') }}", { method:"POST", body: fd });
+    const data = await res.json();
+
+    if (!data.ok) {
+      modalErr.textContent = data.msg || "บันทึกไม่สำเร็จ";
+      modalErr.classList.remove('hidden');
+      return;
+    }
+
+    calendar.addEvent({
+      id: data.event.id,
+      title: data.event.title,
+      start: data.event.start,
+      end: data.event.end,
+      backgroundColor: data.event.backgroundColor,
+      borderColor: data.event.borderColor,
+      extendedProps: data.event.extendedProps || {}
+    });
+
+    closeModal();
+    refreshTodayList();
+    setPickedDate(selectedDate);
+  });
+
+  // init
+  setTimeout(() => {
+    refreshTodayList();
+    const today = ymd(new Date());
+    setPickedDate(today);
+    miniMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    buildMiniPager();
+  }, 450);
+});
+</script>
+{% endblock %}

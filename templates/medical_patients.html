@@ -1,0 +1,313 @@
+{% extends "medical_base.html" %}
+
+{% block title %}รายชื่อผู้ป่วย - แพทย์{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- แถวบน: Search + Risk filter + Export -->
+  <div class="bg-white rounded-2xl shadow-sm px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    <!-- กล่องค้นหา (แยก HN / ชื่อ-นามสกุล) -->
+    <div class="flex-1">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <!-- ค้นหา HN -->
+        <div class="relative">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            id="searchHN"
+            placeholder="ค้นหาด้วย HN..."
+            class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-300
+                   focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+                   text-sm md:text-base"
+            oninput="filterpatients()"
+          />
+        </div>
+
+        <!-- ค้นหา ชื่อ-นามสกุล -->
+        <div class="relative">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            id="searchName"
+            placeholder="ค้นหาด้วยชื่อ-นามสกุล..."
+            class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-300
+                   focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+                   text-sm md:text-base"
+            oninput="filterpatients()"
+          />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ด้านขวา: risk filter + Export -->
+    <div class="flex items-center gap-3 justify-end">
+
+      <!-- เลือกความเสี่ยง -->
+      <div class="flex items-center gap-2">
+        <span class="text-gray-600 text-sm">ความเสี่ยง:</span>
+        <select
+          id="riskFilter"
+          onchange="filterpatients()"
+          class="rounded-full border border-gray-300 px-4 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+        >
+          <option value="all">ทั้งหมด</option>
+          <option value="low">เสี่ยงต่ำ</option>
+          <option value="medium">เสี่ยงปานกลาง</option>
+          <option value="high">เสี่ยงสูง</option>
+        </select>
+      </div>
+
+      <!-- Export -->
+      <button
+        type="button"
+        onclick="exportExcel()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full
+               bg-emerald-50 text-emerald-600 border border-emerald-500
+               text-sm font-semibold shadow-sm hover:bg-emerald-100 transition"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+        </svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <!-- หัวข้อ section -->
+  <div class="flex items-center gap-2 text-primary">
+    <svg fill="#191970" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"
+         class="h-9 w-9">
+      <path d="M 38.7232 28.5490 C 43.1399 28.5490 46.9403 24.6047 46.9403 19.4690 C 46.9403 14.3949 43.1193 10.6356 38.7232 10.6356 C 34.3271 10.6356 30.5061 14.4771 30.5061 19.5101 C 30.5061 24.6047 34.3066 28.5490 38.7232 28.5490 Z M 15.0784 29.0215 C 18.8994 29.0215 22.2274 25.5703 22.2274 21.1125 C 22.2274 16.6958 18.8789 13.4294 15.0784 13.4294 C 11.2575 13.4294 7.8885 16.7779 7.9090 21.1536 C 7.9090 25.5703 11.2370 29.0215 15.0784 29.0215 Z M 3.6155 47.5717 L 19.2281 47.5717 C 17.0917 44.4697 19.7006 38.2247 24.1173 34.8146 C 21.8371 33.2944 18.8994 32.1645 15.0579 32.1645 C 5.7931 32.1645 0 39.0053 0 44.6957 C 0 46.5445 1.0271 47.5717 3.6155 47.5717 Z M 25.8018 47.5717 L 51.6241 47.5717 C 54.8493 47.5717 56 46.6472 56 44.8395 C 56 39.5394 49.3644 32.2261 38.7026 32.2261 C 28.0616 32.2261 21.4262 39.5394 21.4262 44.8395 C 21.4262 46.6472 22.5766 47.5717 25.8018 47.5717 Z"></path>
+    </svg>
+
+    <h2 class="text-xl md:text-2xl font-semibold">
+      รายชื่อผู้สูงอายุ ({{ patients|length }} คน)
+    </h2>
+  </div>
+
+  <!-- การ์ดตาราง -->
+  <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm md:text-base">
+        <thead class="bg-slate-50 border-b border-slate-200 text-gray-600">
+          <tr>
+            <th class="px-6 py-3 text-left font-semibold">HN / GCN</th>
+            <th class="px-6 py-3 text-left font-semibold">ชื่อ-นามสกุล</th>
+            <th class="px-6 py-3 text-left font-semibold">อายุ</th>
+            <th class="px-6 py-3 text-left font-semibold">โรคประจำตัว</th>
+            <th class="px-6 py-3 text-left font-semibold">การประเมินล่าสุด</th>
+            <th class="px-6 py-3 text-left font-semibold">ความเสี่ยง</th>
+            <th class="px-6 py-3 text-center font-semibold">จัดการ</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-100">
+          {% for p in patients %}
+            {% set risk_slug =
+              'high' if (p.sra|int >= 9 or p.tgds|int >= 6 or p.mmse|int <= 21)
+              else ('medium' if (p.sra|int > 0 or p.tgds|int >= 4 or p.mmse|int < 26)
+              else 'low')
+            %}
+            <tr class="patients-row hover:bg-blue-50/60 transition-colors"
+                data-name="{{ (p.name or '')|lower }}"
+                data-hn="{{ (p.hn or '')|lower }}"
+                data-gcn="{{ (p.gcn or '')|lower }}"
+                data-risk="{{ risk_slug }}">
+
+              <!-- HN / GCN -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="font-semibold text-gray-900">{{ p.hn }}</div>
+                <div class="text-xs text-gray-400">{{ p.gcn or '' }}</div>
+              </td>
+
+              <!-- ชื่อ -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="font-semibold text-gray-900">{{ p.name }}</div>
+              </td>
+
+              <!-- อายุ + เพศ -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>{{ p.age }} ปี</div>
+                <div class="text-xs text-gray-500">
+                  {% set g = (p.gender or '') %}
+                  {% if g in ['male','ชาย','M'] %}ชาย
+                  {% elif g in ['female','หญิง','F'] %}หญิง
+                  {% elif g == 'O' %}อื่นๆ
+                  {% else %}{{ g or '-' }}{% endif %}
+                </div>
+              </td>
+
+              <!-- โรคประจำตัว -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if p.disease %}
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
+                    {{ p.disease }}
+                  </span>
+                {% else %}
+                  <span class="text-sm text-gray-400">-</span>
+                {% endif %}
+              </td>
+
+              <!-- การประเมินล่าสุด -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-gray-900">{{ p.last_assessed_date or '-' }}</div>
+                <div class="text-xs text-gray-500">
+                  {% if p.mmse is not none %}
+                    MMSE: {{ p.mmse }}{% if p.tgds is not none %} | D: {{ p.tgds }}{% endif %}
+                  {% else %}
+                    ยังไม่มีข้อมูล
+                  {% endif %}
+                </div>
+              </td>
+
+              <!-- ความเสี่ยง -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% set risk_label =
+                  'เสี่ยงสูง' if risk_slug == 'high'
+                  else ('เสี่ยงปานกลาง' if risk_slug == 'medium'
+                  else 'เสี่ยงต่ำ')
+                %}
+                <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold
+                  {% if risk_slug == 'high' %}
+                    bg-red-50 text-red-600
+                  {% elif risk_slug == 'medium' %}
+                    bg-orange-50 text-orange-600
+                  {% else %}
+                    bg-emerald-50 text-emerald-600
+                  {% endif %}
+                ">
+                  {{ risk_label }}
+                </span>
+              </td>
+
+              <!-- จัดการ -->
+              <td class="px-6 py-4 text-center whitespace-nowrap">
+                <div class="flex items-center justify-center gap-3">
+
+                  <!-- 🔵 ดูข้อมูล (แก้ไข: เพิ่ม gcn=p.gcn) -->
+                  <a href="{{ url_for('doctor_patient_detail', hn=p.hn, gcn=p.gcn) }}"
+                     class="inline-flex items-center justify-center rounded-full p-2
+                            bg-blue-50 hover:bg-blue-100 transition"
+                     title="ดูข้อมูล">
+                    <svg class="h-5 w-5" fill="#0000CD" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg" stroke="#0000CD">
+                      <path d="M2.062,12.346C3.773,17,7.675,20,12,20s8.227-3,9.938-7.654a.993.993,0,0,0,0-.692C20.227,7,16.325,4,12,4S3.773,7,2.062,11.654A.993.993,0,0,0,2.062,12.346ZM12,6c3.373,0,6.451,2.343,7.929,6-1.478,3.657-4.556,6-7.929,6s-6.451-2.343-7.929-6C5.549,8.343,8.627,6,12,6Zm0,10a4,4,0,1,0-4-4A4,4,0,0,0,12,16Zm0-6a2,2,0,1,1-2,2A2,2,0,0,1,12,10Z"></path>
+                    </svg>
+                  </a>
+
+                  <!-- 🔴 ลบ (คงไว้) -->
+                  <form method="POST"
+                        action="{{ url_for('doctor_patients_delete', hn=p.hn) }}"
+                        onsubmit="return confirm('ยืนยันลบข้อมูลผู้ป่วย HN {{ p.hn }} ?');">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center rounded-full p-2
+                                   bg-red-50 hover:bg-red-100 transition"
+                            title="ลบข้อมูล">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5">
+                        <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 6H22" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11V16" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 11V16" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </form>
+
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function filterpatients() {
+  const hnKey   = (document.getElementById("searchHN")?.value || "").toLowerCase().trim();
+  const nameKey = (document.getElementById("searchName")?.value || "").toLowerCase().trim();
+  const riskFilter = document.getElementById("riskFilter").value;
+  const rows = document.querySelectorAll(".patients-row");
+
+  rows.forEach(row => {
+    const name = row.dataset.name || "";
+    const hn   = row.dataset.hn || "";
+    const risk = row.dataset.risk || "low";
+
+    const matchHN   = !hnKey   || hn.includes(hnKey);
+    const matchName = !nameKey || name.includes(nameKey);
+    const matchRisk = (riskFilter === "all") || (risk === riskFilter);
+
+    row.style.display = (matchHN && matchName && matchRisk) ? "" : "none";
+  });
+}
+
+function exportExcel() {
+  const rows = document.querySelectorAll(".patients-row");
+  const visibleRows = Array.from(rows).filter(r => r.style.display !== "none");
+
+  if (visibleRows.length === 0) {
+    alert("ไม่มีข้อมูลให้ Export");
+    return;
+  }
+
+  const csv = [];
+  csv.push([
+    "HN","GCN","ชื่อ-นามสกุล","อายุ","เพศ","โรคประจำตัว",
+    "วันที่ประเมินล่าสุด","MMSE / D","ความเสี่ยง"
+  ].join(","));
+
+  visibleRows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+
+    const hnBlock = cells[0].querySelectorAll("div");
+    const hn  = (hnBlock[0]?.innerText || "").trim();
+    const gcn = (hnBlock[1]?.innerText || "").trim();
+
+    const name = (cells[1].innerText || "").trim();
+
+    const ageBlock = cells[2].querySelectorAll("div");
+    const age    = (ageBlock[0]?.innerText || "").trim();
+    const gender = (ageBlock[1]?.innerText || "").trim();
+
+    const disease = (cells[3].innerText || "").trim();
+
+    const assessDiv = cells[4].querySelectorAll("div");
+    const lastDate = (assessDiv[0]?.innerText || "").trim();
+    const mmseText = (assessDiv[1]?.innerText || "").trim();
+
+    const riskText = (cells[5].innerText || "").trim();
+
+    csv.push([hn, gcn, name, age, gender, disease, lastDate, mmseText, riskText]
+      .map(v => `"${(v || "").replace(/"/g, '""')}"`)
+      .join(","));
+  });
+
+  const blob = new Blob([csv.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "patients_export.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+</script>
+
+{% endblock %}

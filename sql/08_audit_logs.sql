@@ -1,0 +1,15 @@
+USE cga_system;
+
+CREATE TABLE audit_logs (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED,
+
+  action VARCHAR(80),
+  entity_type VARCHAR(80),
+  entity_id BIGINT UNSIGNED,
+
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_audit_user FOREIGN KEY (user_id)
+    REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

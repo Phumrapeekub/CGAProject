@@ -1,0 +1,180 @@
+{% extends "medical_base.html" %}
+{% block title %}การวิเคราะห์ด้วย AI{% endblock %}
+
+{% block head %}
+<style>
+  /* ซ่อนปุ่มกลับหน้าหลักมุมซ้าย (global button ใน medical_base) เฉพาะหน้านี้ */
+  #global-back-wrapper {
+      display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 space-y-6">
+
+  <!-- HEADER -->
+  <div class="bg-white rounded-3xl shadow-md px-8 py-6">
+    <h1 class="text-3xl font-extrabold text-slate-900 mb-2">
+      การวิเคราะห์ด้วย AI
+    </h1>
+    <p class="text-sm text-slate-500">
+      ระบบบูรณาการข้อมูลคัดกรองสุขภาพผู้สูงอายุด้วย Machine Learning
+    </p>
+  </div>
+
+  <!-- patients INFO BAR -->
+  <div
+    class="rounded-3xl bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 text-white px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-lg"
+  >
+    <div>
+      <p class="text-sm opacity-80">ชื่อผู้ป่วย</p>
+      <p class="text-2xl font-semibold">
+        {{ patients.name or "ผู้ป่วย" }}
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm opacity-80">HN / GCN</p>
+      <p class="text-xl font-semibold">
+        {{ patients.hn }} / {{ patients.gcn }}
+      </p>
+    </div>
+
+    <div class="text-right">
+      <p class="text-sm opacity-80">วันที่ประเมิน</p>
+      <p class="text-xl font-semibold">
+        {{ thaidate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN RESULT CARD -->
+  <div class="bg-white rounded-3xl shadow-md px-8 py-6 space-y-4">
+    <h2 class="text-xl font-bold text-slate-900 mb-2">
+      สรุปผลการวิเคราะห์โดย AI
+    </h2>
+
+    <div class="bg-pink-50 rounded-3xl border border-pink-100 p-6 space-y-4">
+      <!-- Cognitive -->
+      <div class="flex gap-3 items-start">
+        <div
+          class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shadow-sm"
+        >
+          🧠
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">
+            สมรรถภาพสมอง:
+          </p>
+          <p class="text-slate-700">
+            {% if mmse <= 21 %}
+              มีภาวะสมองเสื่อม
+            {% elif mmse <= 26 %}
+              มีภาวะสมองเสื่อมเล็กน้อย
+            {% else %}
+              ปกติ
+            {% endif %}
+            (คะแนน MMSE: {{ mmse }})
+          </p>
+        </div>
+      </div>
+
+      <!-- Depression -->
+      <div class="flex gap-3 items-start">
+        <div
+          class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shadow-sm"
+        >
+          💬
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">
+            ภาวะซึมเศร้า:
+          </p>
+          <p class="text-slate-700">
+            {% if tgds >= 6 %}
+              มีภาวะซึมเศร้า
+            {% elif tgds >= 4 %}
+              เสี่ยงภาวะซึมเศร้า
+            {% else %}
+              ไม่พบภาวะซึมเศร้า
+            {% endif %}
+            (คะแนน TGDS-15: {{ tgds }})
+          </p>
+        </div>
+      </div>
+
+      <!-- Suicide risk -->
+      <div class="flex gap-3 items-start">
+        <div
+          class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shadow-sm"
+        >
+          ❤️
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">
+            ความเสี่ยงฆ่าตัวตาย:
+          </p>
+          <p class="text-slate-700">
+            {% if sra >= 17 %}
+              มีความเสี่ยงฆ่าตัวตายรุนแรง
+            {% elif sra >= 9 %}
+              มีความเสี่ยงฆ่าตัวตายปานกลาง
+            {% elif sra > 0 %}
+              มีความเสี่ยงฆ่าตัวตายเล็กน้อย
+            {% else %}
+              ไม่พบความเสี่ยง
+            {% endif %}
+            (คะแนน 8Q: {{ sra }})
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATION -->
+  <div class="bg-white rounded-3xl shadow-md px-8 py-6 space-y-3">
+    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+      <span class="text-amber-500 text-xl">📌</span>
+      ข้อเสนอแนะจากระบบ AI
+    </h3>
+    <ul class="list-disc list-inside text-slate-700 space-y-1">
+      <li>ควรทำกิจกรรมกระตุ้นสมอง เช่น เกมฝึกความจำ ฝึกคิดเลขง่าย ๆ</li>
+      <li>ติดตามอาการซึมเศร้าด้วยแบบประเมิน TGDS-15 อย่างสม่ำเสมอ</li>
+      <li>หากพบความคิดทำร้ายตนเอง ควรส่งต่อพบจิตแพทย์ทันที</li>
+    </ul>
+  </div>
+
+  <!-- BACK BUTTONS -->
+  <div class="flex flex-wrap gap-4 justify-between items-center pt-2">
+
+    <!-- กลับหน้ารายชื่อ -->
+    <a
+      href="{{ url_for('doctor_patients') }}"
+      class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 transition"
+    >
+      <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor">
+        <path d="M12 22.4C17.5 22.4 22 17.9 22 12.4C22 6.9 17.5 2.4 12 2.4C6.5 2.4 2 6.9 2 12.4C2 17.9 6.5 22.4 12 22.4Z"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13.41 16.42L10.35 13.55C10.02 13.24 9.86 12.83 9.86 12.42C9.86 12.01 10.02 11.6 10.35 11.29L13.41 8.42"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      กลับหน้ารายชื่อ
+    </a>
+
+    <!-- กลับหน้าหลักหมอ -->
+    <a
+      href="{{ url_for('doctor_dashboard') }}"
+      class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-400/40 hover:-translate-y-0.5 hover:shadow-xl transition"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7">
+        <path d="M3 10.5L12 3L21 10.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 9.5V21H19V9.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      กลับหน้าหลัก
+    </a>
+  </div>
+
+</div>
+{% endblock %}

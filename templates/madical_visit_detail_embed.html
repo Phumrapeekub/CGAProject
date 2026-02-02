@@ -1,0 +1,106 @@
+<div class="space-y-5">
+
+  <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50">
+    <div class="font-extrabold text-slate-900">{{ visit.name }} (HN {{ visit.hn }} / GCN {{ visit.gcn }})</div>
+    <div class="text-sm text-slate-600 mt-1">
+      เวลาตรวจจริง: <span class="font-bold">{{ visit.visit_datetime }}</span>
+      • สถานะ: <span class="font-bold">{{ visit.status }}</span>
+    </div>
+    <div class="text-sm text-slate-700 mt-2">
+      อาการสำคัญ: <span class="font-semibold">{{ visit.chief_complaint or '-' }}</span>
+    </div>
+    {% if visit.note %}
+      <div class="text-sm text-slate-700 mt-1">Note: {{ visit.note }}</div>
+    {% endif %}
+    <div class="text-xs text-slate-400 mt-2">
+      created_at: {{ visit.created_at }} • updated_at: {{ visit.updated_at }}
+    </div>
+  </div>
+
+  <!-- Diagnoses -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-slate-200 p-4">
+      <div class="font-extrabold text-slate-900 mb-2">Diagnosis</div>
+
+      <form data-ajax="1" method="POST" action="/doctor/visit/{{ visit.id }}/diagnosis/add" class="space-y-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <input name="diag_code" placeholder="ICD-10 (ถ้ามี)"
+            class="px-3 py-2 rounded-xl border border-slate-200">
+          <select name="diag_type" class="px-3 py-2 rounded-xl border border-slate-200">
+            <option value="primary">Primary</option>
+            <option value="secondary">Secondary</option>
+          </select>
+        </div>
+        <input name="diag_name" placeholder="ชื่อการวินิจฉัย (เช่น HT, DM)"
+          class="w-full px-3 py-2 rounded-xl border border-slate-200" required>
+        <button class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700">
+          + เพิ่ม Diagnosis
+        </button>
+      </form>
+
+      <div class="mt-4 space-y-2">
+        {% if diags and diags|length > 0 %}
+          {% for d in diags %}
+            <div class="p-3 rounded-xl border border-slate-200">
+              <div class="font-bold text-slate-900">
+                {{ d.diag_name }} <span class="text-xs text-slate-500">({{ d.diag_type }})</span>
+              </div>
+              <div class="text-xs text-slate-400">ICD: {{ d.diag_code or '-' }} • created_at: {{ d.created_at }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-sm text-slate-500">ยังไม่มี diagnosis</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="rounded-2xl border border-slate-200 p-4">
+      <div class="font-extrabold text-slate-900 mb-2">Notes / SOAP</div>
+
+      <form data-ajax="1" method="POST" action="/doctor/visit/{{ visit.id }}/note/add" class="space-y-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <select name="note_type" class="px-3 py-2 rounded-xl border border-slate-200">
+            <option value="general">General</option>
+            <option value="progress">Progress</option>
+            <option value="s">S</option>
+            <option value="o">O</option>
+            <option value="a">A</option>
+            <option value="p">P</option>
+          </select>
+          <div>
+            <input type="datetime-local" name="note_datetime"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200"
+              placeholder="เวลาที่ note เกิดจริง (ไม่ใส่ก็ได้)">
+          </div>
+        </div>
+
+        <textarea name="note_text" rows="4" required
+          class="w-full px-3 py-2 rounded-xl border border-slate-200"
+          placeholder="พิมพ์โน้ต…"></textarea>
+
+        <button class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700">
+          + เพิ่ม Note
+        </button>
+      </form>
+
+      <div class="mt-4 space-y-2">
+        {% if notes and notes|length > 0 %}
+          {% for n in notes %}
+            <div class="p-3 rounded-xl border border-slate-200">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-slate-900">{{ n.note_type }}</div>
+                <div class="text-xs text-slate-400">{{ n.note_datetime or n.created_at }}</div>
+              </div>
+              <div class="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{{ n.note_text }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-sm text-slate-500">ยังไม่มี note</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
