@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เข้าสู่ระบบแพทย์ - ระบบประเมินสุขภาพผู้สูงอายุ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: { colors: { primary: '#2563eb' } }
+      }
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-b from-sky-50 via-blue-50 to-blue-100">
+  <div class="min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+      <div class="bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-blue-100 px-8 py-10 space-y-8">
+
+        <!-- Icon + Title -->
+        <div class="text-center space-y-3">
+          <div class="w-20 h-20 mx-auto rounded-full overflow-hidden shadow border bg-white flex items-center justify-center">
+            <img src="{{ url_for('static', filename='logo_phayao.png') }}"
+                 alt="Hospital Logo"
+                 class="w-full h-full object-contain">
+          </div>
+          <div>
+            <p class="text-sm font-medium text-primary">ระบบประเมินสุขภาพผู้สูงอายุ</p>
+            <h2 class="text-xl font-bold text-slate-900 mt-1">เข้าสู่ระบบสำหรับแพทย์</h2>
+          </div>
+        </div>
+
+        <!-- Flash messages (รองรับ category) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              {% set is_error = (category == 'error') %}
+              <div class="rounded-2xl border px-4 py-3 text-sm flex items-start gap-2
+                          {{ 'border-red-200 bg-red-50 text-red-700' if is_error else 'border-emerald-200 bg-emerald-50 text-emerald-700' }}">
+                <span class="mt-0.5">
+                  {% if is_error %}
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 3h.01M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+                    </svg>
+                  {% else %}
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 13l4 4L19 7"/>
+                    </svg>
+                  {% endif %}
+                </span>
+                <span>{{ msg }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Form -->
+        <form method="POST" action="{{ url_for('doctor_login') }}" class="space-y-5" autocomplete="on">
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700" for="username">ชื่อผู้ใช้งาน</label>
+            <input id="username" type="text" name="username"
+                   value="{{ request.cookies.get('remember_user', '') }}"
+                   class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-primary/70 focus:border-primary
+                          placeholder:text-slate-400"
+                   placeholder="กรอกชื่อผู้ใช้งาน" required autocomplete="username">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700" for="password">รหัสผ่าน</label>
+            <input id="password" type="password" name="password"
+                   class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-primary/70 focus:border-primary
+                          placeholder:text-slate-400"
+                   placeholder="กรอกรหัสผ่าน" required autocomplete="current-password">
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+              <input id="remember" name="remember" value="1" type="checkbox"
+                     class="rounded border-slate-300 text-primary focus:ring-primary/70">
+              <label for="remember">จดจำการเข้าสู่ระบบ</label>
+            </div>
+            <a href="#" class="hover:text-primary">ลืมรหัสผ่าน?</a>
+          </div>
+
+          <button type="submit"
+                  class="w-full rounded-2xl bg-primary text-white py-3.5 text-sm font-semibold
+                         shadow-md hover:shadow-lg hover:bg-blue-700 transition-all">
+            เข้าสู่ระบบ
+          </button>
+
+        </form>
+
+        <p class="text-[11px] text-slate-400 text-center pt-2">
+          สำหรับบุคลากรทางการแพทย์เท่านั้น หากไม่สามารถเข้าสู่ระบบได้ กรุณาติดต่อผู้ดูแลระบบคลินิกผู้สูงอายุ
+        </p>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

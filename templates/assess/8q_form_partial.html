@@ -1,0 +1,340 @@
+{% set t = q8 or q8_detail or row or {} %}
+
+{# -------------------------
+   normalize answers
+-------------------------- #}
+{% set ans = {} %}
+{% for i in range(1, 9) %}
+  {% set val = t.get('q' ~ i) %}
+  {% if val == 'yes' %}
+    {% set _ = ans.update({i: 1}) %}
+  {% elif val == 'no' %}
+    {% set _ = ans.update({i: 0}) %}
+  {% else %}
+    {% set _ = ans.update({i: none}) %}
+  {% endif %}
+{% endfor %}
+
+{# q3 special (q3a + q3b) #}
+{% set q3a_raw = t.get('q3a') %}
+{% set q3b_raw = t.get('q3b') %}
+{% set q3a = 1 if q3a_raw == 'yes' else 0 %}
+{% set q3b = 1 if q3b_raw == 'yes' else 0 %}
+
+{# weights (score only 1-6) #}
+{% set score_weights = {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 9} %}
+
+{# calc total #}
+{% set calculated_score = namespace(value=0) %}
+{% for i in range(1, 7) %}
+  {% if i == 3 %}
+    {% if q3a == 1 and q3b == 1 %}
+      {% set calculated_score.value = calculated_score.value + score_weights[3] %}
+    {% endif %}
+  {% else %}
+    {% if ans[i] is not none and ans[i] == 1 %}
+      {% set calculated_score.value = calculated_score.value + score_weights[i] %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% set total = t.get('total_score') if t.get('total_score') is not none else calculated_score.value %}
+{% set risk_level = t.get('risk_level') or '' %}
+
+{# risk mapping #}
+{% if total == 0 %}
+  {% set risk_text = "ปกติ" %}
+  {% set risk_color = "emerald" %}
+{% elif total <= 8 %}
+  {% set risk_text = "มีแนวโน้ม" %}
+  {% set risk_color = "amber" %}
+{% elif total <= 16 %}
+  {% set risk_text = "เสี่ยงปานกลาง" %}
+  {% set risk_color = "orange" %}
+{% else %}
+  {% set risk_text = "เสี่ยงรุนแรง" %}
+  {% set risk_color = "rose" %}
+{% endif %}
+
+{# override by DB risk_level if present #}
+{% if risk_level == 'low' %}
+  {% set risk_text = "ปกติ" %}
+  {% set risk_color = "emerald" %}
+{% elif risk_level == 'moderate' %}
+  {% set risk_text = "เสี่ยงปานกลาง" %}
+  {% set risk_color = "orange" %}
+{% elif risk_level == 'high' %}
+  {% set risk_text = "เสี่ยงรุนแรง" %}
+  {% set risk_color = "rose" %}
+{% endif %}
+
+{% set questions = [
+  (1, "คิดอยากตาย หรือคิดว่าตายไปจะดีกว่า", 1),
+  (2, "อยากทำร้ายตัวเอง หรือทำให้ตัวเองบาดเจ็บ", 2),
+  (3, "คิดเกี่ยวกับการฆ่าตัวตาย", 4),
+  (4, "มีแผนการที่จะฆ่าตัวตาย", 6),
+  (5, "ได้เตรียมการที่จะทำร้ายตนเองหรือเตรียมการจะฆ่าตัวตาย", 8),
+  (6, "ได้ทำร้ายตนเองหรือพยายามฆ่าตัวตาย", 9),
+  (7, "ตลอดชีวิตที่ผ่านมา ท่านเคยทำร้ายตนเองหรือไม่", 0),
+  (8, "ท่านเคยพยายามฆ่าตัวตายหรือไม่", 0)
+] %}
+
+{# small helper classes #}
+{% set chip_bg = {
+  'emerald':'bg-emerald-50 border-emerald-200 text-emerald-700',
+  'amber':'bg-amber-50 border-amber-200 text-amber-700',
+  'orange':'bg-orange-50 border-orange-200 text-orange-700',
+  'rose':'bg-rose-50 border-rose-200 text-rose-700'
+}[risk_color] %}
+
+{% set score_txt = {
+  'emerald':'text-emerald-600',
+  'amber':'text-amber-600',
+  'orange':'text-orange-600',
+  'rose':'text-rose-600'
+}[risk_color] %}
+
+<div class="w-full">
+
+  <!-- ===== Header (match 2025) ===== -->
+  <div class="rounded-3xl border border-slate-200 bg-white overflow-hidden">
+    <div class="p-4 md:p-5 bg-gradient-to-r from-slate-50 to-indigo-50 border-b border-slate-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-base font-extrabold text-slate-900">แบบประเมินการฆ่าตัวตาย (SRA - 8Q)</div>
+          <div class="text-xs text-slate-500 mt-0.5">ประเมินความเสี่ยงต่อการทำร้ายตนเอง</div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="px-3 py-2 rounded-2xl border {{ chip_bg }}">
+            <div class="text-[10px] font-extrabold text-slate-500">ผลรวม</div>
+            <div class="flex items-baseline gap-2">
+              <div class="text-2xl font-black {{ score_txt }}">{{ total }}</div>
+              <div class="text-sm font-extrabold {{ score_txt }}">{{ risk_text }}</div>
+            </div>
+          </div>
+
+          <div class="hidden sm:flex px-3 py-2 rounded-2xl border border-slate-200 bg-white">
+            <div class="text-[10px] font-extrabold text-slate-500">คะแนนเต็ม</div>
+            <div class="text-sm font-extrabold text-slate-900">24</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="px-4 md:px-5 py-3 bg-amber-50/60 border-b border-amber-100">
+      <div class="flex items-start gap-2 text-xs text-amber-800">
+        <span class="mt-[2px] inline-flex w-5 h-5 rounded-full bg-amber-100 border border-amber-200 items-center justify-center font-black">i</span>
+        <div class="leading-relaxed">
+          <span class="font-extrabold">หมายเหตุ:</span>
+          ประเมินครั้งแรกถามครบทุก 8 ข้อ • ครั้งต่อไปถามเฉพาะข้อ 1–7 • ข้อ 7–8 เป็นประวัติตลอดชีวิต (ไม่นับคะแนน)
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Body ===== -->
+    <div class="p-4 md:p-5 space-y-3">
+
+      <!-- 1-6 -->
+      <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider">ช่วง 1 เดือนที่ผ่านมา (นับคะแนน)</div>
+
+      {% for i in range(1, 7) %}
+        {% set num, text, weight = questions[i-1] %}
+        {% set answer = ans[num] %}
+
+        {% if num == 3 %}
+          {% set answer = 1 if (q3a == 1 and q3b == 1) else (0 if (q3a_raw or q3b_raw) else none) %}
+          {% set got_score = weight if (q3a == 1 and q3b == 1) else 0 %}
+        {% else %}
+          {% set got_score = weight if (answer is not none and answer == 1) else 0 %}
+        {% endif %}
+
+        <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+          <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-start gap-3">
+                <div class="mt-0.5 w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-extrabold text-slate-700">
+                  {{ num }}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-slate-900 leading-snug">{{ text }}</div>
+                  {% if num == 3 %}
+                    <div class="text-[11px] text-amber-700 mt-1">
+                      *ข้อ 3 ต้องตอบ “มี” ทั้ง 2 ส่วนถึงจะได้คะแนน
+                    </div>
+                  {% endif %}
+                  <div class="mt-2 text-[11px] text-slate-500 font-semibold">น้ำหนักคะแนน: {{ weight }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Answer pills -->
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
+                {% if answer is not none and answer == 0 %}bg-emerald-50 border-emerald-200 text-emerald-700
+                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+                <span class="w-2.5 h-2.5 rounded-full {% if answer is not none and answer == 0 %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></span>
+                ไม่มี
+              </span>
+
+              <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
+                {% if answer is not none and answer == 1 %}bg-rose-50 border-rose-200 text-rose-700
+                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+                <span class="w-2.5 h-2.5 rounded-full {% if answer is not none and answer == 1 %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
+                มี
+              </span>
+
+              <!-- score chip -->
+              <span class="ml-1 inline-flex items-center justify-center min-w-[44px] h-10 px-3 rounded-2xl border text-sm font-black
+                {% if got_score > 0 %}bg-rose-50 border-rose-200 text-rose-700
+                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+                {{ got_score if answer is not none else '-' }}
+              </span>
+            </div>
+          </div>
+
+          {% if num == 3 %}
+          <div class="px-4 pb-4">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="text-[11px] text-slate-500 font-extrabold mb-2">ข้อ 3 (แยก 2 ส่วน)</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2">
+                  <div class="text-sm font-semibold text-slate-700">3a: มีความคิด</div>
+                  <div class="text-sm font-extrabold {% if q3a == 1 %}text-rose-600{% else %}text-slate-400{% endif %}">
+                    {{ 'มี' if q3a == 1 else 'ไม่มี' }}
+                  </div>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2">
+                  <div class="text-sm font-semibold text-slate-700">3b: คิดบ่อย/ต่อเนื่อง</div>
+                  <div class="text-sm font-extrabold {% if q3b == 1 %}text-rose-600{% else %}text-slate-400{% endif %}">
+                    {{ 'มี' if q3b == 1 else 'ไม่มี' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <!-- lifetime -->
+      <div class="pt-2">
+        <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider">ประวัติตลอดชีวิต (ไม่นับคะแนน)</div>
+      </div>
+
+      {% for i in range(7, 9) %}
+        {% set num, text, weight = questions[i-1] %}
+        {% set answer = ans[num] %}
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden">
+          <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="mt-0.5 w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-extrabold text-slate-500">
+                {{ num }}
+              </div>
+              <div>
+                <div class="font-extrabold text-slate-800">{{ text }}</div>
+                <div class="text-[11px] text-slate-500 mt-1 font-semibold">ไม่นับคะแนน</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
+                {% if answer is not none and answer == 0 %}bg-emerald-50 border-emerald-200 text-emerald-700
+                {% else %}bg-white border-slate-200 text-slate-400{% endif %}">
+                <span class="w-2.5 h-2.5 rounded-full {% if answer is not none and answer == 0 %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></span>
+                ไม่มี
+              </span>
+
+              <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
+                {% if answer is not none and answer == 1 %}bg-rose-50 border-rose-200 text-rose-700
+                {% else %}bg-white border-slate-200 text-slate-400{% endif %}">
+                <span class="w-2.5 h-2.5 rounded-full {% if answer is not none and answer == 1 %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
+                มี
+              </span>
+
+              <span class="ml-1 inline-flex items-center justify-center min-w-[44px] h-10 px-3 rounded-2xl border border-slate-200 bg-white text-sm font-black text-slate-400">
+                —
+              </span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <!-- Interpretation chips -->
+      <div class="pt-2">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div class="text-sm font-extrabold text-slate-800 mb-3">การแปรผล</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs font-extrabold">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl border {% if total == 0 %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-white border-slate-200 text-slate-500{% endif %}">
+              <span class="w-2.5 h-2.5 rounded-full {% if total == 0 %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></span>
+              0 = ปกติ
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl border {% if total >= 1 and total <= 8 %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-white border-slate-200 text-slate-500{% endif %}">
+              <span class="w-2.5 h-2.5 rounded-full {% if total >= 1 and total <= 8 %}bg-amber-500{% else %}bg-slate-300{% endif %}"></span>
+              1–8 = มีแนวโน้ม
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl border {% if total >= 9 and total <= 16 %}bg-orange-50 border-orange-200 text-orange-700{% else %}bg-white border-slate-200 text-slate-500{% endif %}">
+              <span class="w-2.5 h-2.5 rounded-full {% if total >= 9 and total <= 16 %}bg-orange-500{% else %}bg-slate-300{% endif %}"></span>
+              9–16 = เสี่ยงปานกลาง
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl border {% if total >= 17 %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-white border-slate-200 text-slate-500{% endif %}">
+              <span class="w-2.5 h-2.5 rounded-full {% if total >= 17 %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
+              ≥17 = เสี่ยงรุนแรง
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result summary -->
+      <div class="pt-1">
+        {% if total == 0 or risk_level == 'low' %}
+          <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-white/70 border border-emerald-200 flex items-center justify-center font-black text-emerald-700">✓</div>
+              <div>
+                <div class="font-extrabold text-emerald-800">ผลการประเมิน: ปกติ</div>
+                <div class="text-sm text-emerald-700/90 mt-1">ไม่พบความเสี่ยงต่อการทำร้ายตนเอง</div>
+              </div>
+            </div>
+          </div>
+        {% elif total <= 8 %}
+          <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-white/70 border border-amber-200 flex items-center justify-center font-black text-amber-700">!</div>
+              <div>
+                <div class="font-extrabold text-amber-800">ผลการประเมิน: มีแนวโน้ม ({{ total }} คะแนน)</div>
+                <div class="text-sm text-amber-800/90 mt-1">ควรติดตามอาการและให้คำปรึกษา</div>
+              </div>
+            </div>
+          </div>
+        {% elif total <= 16 or risk_level == 'moderate' %}
+          <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-white/70 border border-orange-200 flex items-center justify-center font-black text-orange-700">!</div>
+              <div>
+                <div class="font-extrabold text-orange-800">ผลการประเมิน: เสี่ยงปานกลาง ({{ total }} คะแนน)</div>
+                <div class="text-sm text-orange-800/90 mt-1">ควรส่งพบจิตแพทย์ และติดตามอาการอย่างใกล้ชิด</div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-white/70 border border-rose-200 flex items-center justify-center font-black text-rose-700">!</div>
+              <div>
+                <div class="font-extrabold text-rose-800">ผลการประเมิน: เสี่ยงรุนแรง ({{ total }} คะแนน)</div>
+                <div class="text-sm text-rose-800/90 mt-1">
+                  <span class="font-extrabold">ต้องส่งพบจิตแพทย์ทันที</span> และเฝ้าระวังอย่างใกล้ชิด ห้ามปล่อยให้อยู่คนเดียว
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</div>

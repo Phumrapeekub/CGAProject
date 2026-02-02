@@ -1,16 +1,23 @@
-# Python cache
+# ===== Python =====
 __pycache__/
 *.pyc
 
-# Virtual environment
+# ===== Virtual environment =====
 .venv/
+venv/
+.env
 
-# AI / ML experiments
+# ===== AI / ML (skip for now) =====
 AI_test/
+ai_multi_models.py
+Train/
 *.pkl
+*.joblib
+*.csv
 
-# OS files
+# ===== OS files =====
 .DS_Store
 Thumbs.db
 
-ai_multi_models.py
+.vscode/
+CGA_*.csv
