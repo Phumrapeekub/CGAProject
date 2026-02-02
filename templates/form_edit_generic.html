@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-extrabold">{{ spec.title }}</h1>
+    <a href="{{ url_for('edit_patient', id=patient_id) }}"
+       class="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50">← กลับ</a>
+  </div>
+
+  {% if not base %}
+    <div class="p-4 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-900">
+      ยังไม่มีการประเมิน {{ form_code }} ของผู้ป่วยรายนี้
+    </div>
+  {% else %}
+    <form method="post"
+          action="{{ url_for('form_edit_save', patient_id=patient_id, form_code=form_code) }}"
+          class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+
+      <div class="text-sm text-slate-600 mb-4">
+        ประเมินเดิมเมื่อ: <span class="font-semibold">{{ base.created_at }}</span>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        {% for q in spec.questions %}
+          <div class="py-4">
+            <div class="font-semibold mb-2">{{ q }}</div>
+            <div class="flex gap-6">
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="{{ q }}" value="1" {% if answers.get(q)=='1' %}checked{% endif %}>
+                <span>ถูก / มี</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="{{ q }}" value="0" {% if answers.get(q)=='0' %}checked{% endif %}>
+                <span>ผิด / ไม่มี</span>
+              </label>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-1">เหตุผลที่แก้ไข</label>
+        <input name="reason" class="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="เช่น กรอกผิด / ผู้ป่วยให้ข้อมูลเพิ่ม">
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+          บันทึกการแก้ไข
+        </button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

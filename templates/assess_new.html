@@ -4,25 +4,40 @@
 <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
   <!-- 🔹 ปุ่มย้อนกลับ / หน้าหลัก -->
-  <div class="flex justify-between items-center mb-6">
-    <a href="{{ url_for('patient_list') }}" 
-       class="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition">
-      <span class="text-lg">←</span> ย้อนกลับ
-    </a>
-    <a href="{{ url_for('dashboard') }}" 
-       class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-      🏠 หน้าหลัก
-    </a>
-  </div>
+  <div class="flex items-center justify-between mb-6">
+  <!-- ซ้าย: หน้าหลัก -->
+  <a href="{{ url_for('dashboard') }}"
+     class="inline-flex items-center gap-2
+            px-4 py-2 rounded-xl
+            bg-blue-600 text-white font-semibold
+            shadow-sm hover:bg-blue-700 transition">
+    🏠 หน้าหลัก
+  </a>
+
+  <!-- ขวา: ย้อนกลับ -->
+  <a href="javascript:history.back()"
+     class="inline-flex items-center gap-2
+            px-4 py-2 rounded-xl
+            bg-white border border-slate-200
+            text-slate-700 font-medium
+            shadow-sm hover:bg-slate-50 transition">
+    ← ย้อนกลับ
+  </a>
+</div>
+
   
     <!-- breadcrumb / welcome -->
   <div class="text-slate-600 text-sm flex items-center gap-2">
-    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M12 11a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 1116 0" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    สวัสดี, {{ session.get('user') }}
-    <a href="#" class="text-blue-600 hover:underline">พยาบาล{{ session.get('role') }}</a>
-  </div>
+  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+    <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 11a4 4 0 100-8 4 4 0 000 8Zm4 10H8a6 6 0 0112 0Z"/>
+  </svg>
+
+  <span>สวัสดี, <span class="font-semibold text-slate-800">{{ session.get('user') }}</span></span>
+  <span class="text-slate-300">•</span>
+  <span class="text-slate-700 font-medium">{{ session.get('role') }}</span>
+</div>
+
 
   <!-- card -->
   <div class="rounded-[26px] shadow-xl bg-white/90 backdrop-blur border border-slate-100 overflow-hidden">

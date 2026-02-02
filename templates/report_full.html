@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto p-6">
+
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold">รายงานการประเมินผู้สูงอายุ (CGA) — ฉบับเต็ม</h1>
+      <p class="text-slate-600 mt-1">วันที่ประเมิน: <b>{{ assessed_th }}</b></p>
+      <p class="text-slate-600">ผู้ป่วย: <b>{{ patient.name }}</b> (HN {{ hn }} / GCN {{ gcn }})</p>
+      <p class="text-slate-600">อายุ: {{ patient.age }} ปี | เพศ: {{ patient.gender }}</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 text-white">พิมพ์ / บันทึก PDF</button>
+      <a href="{{ url_for('cga_summary', hn=hn, gcn=gcn) }}" class="px-4 py-2 rounded-xl bg-slate-100">กลับหน้าสรุป</a>
+    </div>
+  </div>
+
+  <hr class="my-6"/>
+
+  <!-- Summary -->
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border p-4">
+      <div class="font-semibold">MMSE-Thai 2002</div>
+      <div class="text-4xl font-bold mt-2">{{ mmse_total }}</div>
+      <div class="text-slate-600">เกณฑ์ ({{ edu_txt }}) จุดตัด ≤ {{ mmse_cutoff }}</div>
+      <div class="mt-2 font-semibold">{{ mmse_flag }}</div>
+    </div>
+
+    <div class="rounded-2xl border p-4">
+      <div class="font-semibold">TGDS-15</div>
+      <div class="text-4xl font-bold mt-2">{{ tgds_total }}</div>
+      <div class="text-slate-600">0–5 ปกติ, 6–10 สงสัย, 11–15 ซึมเศร้า</div>
+      <div class="mt-2 font-semibold">{{ tgds_flag }}</div>
+    </div>
+
+    <div class="rounded-2xl border p-4">
+      <div class="font-semibold">8Q / ความเสี่ยงฆ่าตัวตาย</div>
+      <div class="text-4xl font-bold mt-2">{{ sra_total }}</div>
+      <div class="text-slate-600">1–8 เล็กน้อย, 9–16 ปานกลาง, ≥17 รุนแรง</div>
+      <div class="mt-2 font-semibold">{{ sra_flag }}</div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="mt-6 rounded-2xl border p-4">
+    <div class="font-semibold mb-2">ข้อเสนอแนะ / การดำเนินการต่อ</div>
+    {% if recs and recs|length %}
+      <ul class="list-disc pl-5 space-y-1">
+        {% for r in recs %}<li>{{ r }}</li>{% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-slate-600">ติดตามตามนัด/ให้คำแนะนำทั่วไป</p>
+    {% endif %}
+  </div>
+
+  <!-- Detail answers -->
+  <div class="mt-8">
+    <h2 class="text-xl font-bold mb-3">รายละเอียดคำตอบรายข้อ</h2>
+
+    <div class="rounded-2xl border p-4 mb-4">
+      <div class="font-semibold mb-2">MMSE (ล่าสุด)</div>
+      {% if mmse_row %}
+        <pre class="bg-slate-50 p-3 rounded-xl overflow-auto text-sm">{{ mmse_row | tojson(indent=2) }}</pre>
+      {% else %}
+        <p class="text-slate-600">ยังไม่มีแบบประเมิน MMSE ในระบบ</p>
+      {% endif %}
+    </div>
+
+    <div class="rounded-2xl border p-4 mb-4">
+      <div class="font-semibold mb-2">TGDS-15 (ล่าสุด)</div>
+      {% if tgds_row %}
+        <pre class="bg-slate-50 p-3 rounded-xl overflow-auto text-sm">{{ tgds_row | tojson(indent=2) }}</pre>
+      {% else %}
+        <p class="text-slate-600">ยังไม่มีแบบประเมิน TGDS ในระบบ</p>
+      {% endif %}
+    </div>
+
+    <div class="rounded-2xl border p-4">
+      <div class="font-semibold mb-2">8Q / SRA (ล่าสุด)</div>
+      {% if sra_row %}
+        <pre class="bg-slate-50 p-3 rounded-xl overflow-auto text-sm">{{ sra_row | tojson(indent=2) }}</pre>
+      {% else %}
+        <p class="text-slate-600">ยังไม่มีแบบประเมิน 8Q/SRA ในระบบ</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="mt-10 grid grid-cols-2 gap-6">
+    <div class="border-t pt-4">
+      <div class="text-slate-600">ผู้ประเมิน</div>
+      <div class="mt-10">ลงชื่อ __________________________</div>
+    </div>
+    <div class="border-t pt-4">
+      <div class="text-slate-600">ผู้ตรวจทาน</div>
+      <div class="mt-10">ลงชื่อ __________________________</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

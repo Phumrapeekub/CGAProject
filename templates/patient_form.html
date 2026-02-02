@@ -37,74 +37,124 @@
     
 
         {% if mode == 'edit' %}
-    <!-- การ์ดผลการประเมินล่าสุด (แก้ไขได้) -->
-    <div class="col-span-2 mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
-      <div class="flex items-center justify-between mb-3">
-        <p class="font-semibold text-slate-800">
-          ผลการประเมินล่าสุด (แก้ไขได้หากใส่ผิด)
-        </p>
-        <p class="text-xs text-slate-500">
-          ใส่เฉพาะ “คะแนนรวม” จากแบบประเมินแต่ละแบบ
-        </p>
-      </div>
+<!-- ===== ผลการประเมินล่าสุด (ดูคำตอบ + กดแก้ไขได้) ===== -->
+<div class="col-span-2 mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <div>
+      <p class="font-semibold text-slate-800">ผลการประเมินล่าสุด</p>
+      <p class="text-xs text-slate-500">ดูคำตอบที่เคยกรอก และกดไปแก้ในแบบฟอร์มได้</p>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- MMSE -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            MMSE-T (0–30)
-          </label>
-          <input
-            type="number"
-            name="mmse"
-            min="0" max="30"
-            value="{{ patient.mmse if patient and patient.mmse is not none else 0 }}"
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-lg
-                   focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
-            placeholder="เช่น 24">
-          <p class="text-xs text-slate-400 mt-1">
-            คะแนนสมรรถภาพสมองรวม
-          </p>
-        </div>
-
-        <!-- TGDS -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            TGDS-15 (0–15)
-          </label>
-          <input
-            type="number"
-            name="tgds"
-            min="0" max="15"
-            value="{{ patient.tgds if patient and patient.tgds is not none else 0 }}"
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-lg
-                   focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
-            placeholder="เช่น 3">
-          <p class="text-xs text-slate-400 mt-1">
-            คะแนนภาวะซึมเศร้ารวม
-          </p>
-        </div>
-
-        <!-- 8Q / SRA -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            8Q / SRA
-          </label>
-          <input
-            type="number"
-            name="sra"
-            min="0"
-            value="{{ patient.sra if patient and patient.sra is not none else 0 }}"
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-lg
-                   focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
-            placeholder="เช่น 0">
-          <p class="text-xs text-slate-400 mt-1">
-            คะแนนรวมความเสี่ยงการฆ่าตัวตาย
-          </p>
-        </div>
-      </div>
+    {% if patient and patient.hn and patient.gcn %}
+    <div class="flex gap-2">
+      <a href="{{ url_for('mmse_next', hn=patient.hn, gcn=patient.gcn) }}"
+         class="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700">
+        แก้ MMSE
+      </a>
+      <a href="{{ url_for('affect_step', hn=patient.hn, gcn=patient.gcn) }}"
+         class="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700">
+        แก้ TGDS/SRA
+      </a>
     </div>
     {% endif %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+    <!-- MMSE -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+      <div class="text-sm font-semibold text-slate-800">MMSE-T</div>
+      <div class="text-xs text-slate-500 mt-1">
+        คะแนนรวม:
+        <span class="font-semibold">
+          {{ mmse_detail.total_score if mmse_detail else '-' }}
+        </span>
+      </div>
+
+      {% if mmse_items and mmse_items|length > 0 %}
+      <details class="mt-3">
+        <summary class="cursor-pointer text-xs font-medium text-slate-700">
+          ดูคำตอบที่ตอบไว้
+        </summary>
+        <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+          {% for it in mmse_items %}
+            <div class="p-2 rounded-xl bg-slate-50 flex items-start justify-between gap-3">
+              <div class="text-slate-700">{{ it.label }}</div>
+              <div class="font-semibold text-slate-900">{{ it.value }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </details>
+      {% else %}
+        <div class="mt-3 text-xs text-slate-500">ยังไม่มีข้อมูล</div>
+      {% endif %}
+    </div>
+
+    <!-- TGDS -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+      <div class="text-sm font-semibold text-slate-800">TGDS-15</div>
+      <div class="text-xs text-slate-500 mt-1">
+        คะแนนรวม:
+        <span class="font-semibold">
+          {{ tgds_detail.total_score if tgds_detail else '-' }}
+        </span>
+      </div>
+
+      {% if tgds_items and tgds_items|length > 0 %}
+      <details class="mt-3">
+        <summary class="cursor-pointer text-xs font-medium text-slate-700">
+          ดูคำตอบที่ตอบไว้
+        </summary>
+        <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+          {% for it in tgds_items %}
+            <div class="p-2 rounded-xl bg-slate-50 flex items-start justify-between gap-3">
+              <div class="text-slate-700">{{ it.label }}</div>
+              <div class="font-semibold text-slate-900">{{ it.value }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="mt-2 text-[11px] text-slate-400">หมายเหตุ: ค่า 1/0 คือ ใช่/ไม่ใช่ (ตามที่เก็บในระบบ)</div>
+      </details>
+      {% else %}
+        <div class="mt-3 text-xs text-slate-500">ยังไม่มีข้อมูล</div>
+      {% endif %}
+    </div>
+
+    <!-- SRA -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+      <div class="text-sm font-semibold text-slate-800">8Q / SRA</div>
+      <div class="text-xs text-slate-500 mt-1">
+        คะแนนรวม:
+        <span class="font-semibold">
+          {{ sra_detail.total_score if sra_detail else '-' }}
+        </span>
+      </div>
+
+      {% if sra_items and sra_items|length > 0 %}
+      <details class="mt-3">
+        <summary class="cursor-pointer text-xs font-medium text-slate-700">
+          ดูคำตอบที่ตอบไว้
+        </summary>
+        <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+          {% for it in sra_items %}
+            <div class="p-2 rounded-xl bg-slate-50 flex items-start justify-between gap-3">
+              <div class="text-slate-700">{{ it.label }}</div>
+              <div class="font-semibold text-slate-900">{{ it.value }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="mt-2 text-[11px] text-slate-400">หมายเหตุ: ค่า 1/0 คือ มี/ไม่มี (ตามที่เก็บในระบบ)</div>
+      </details>
+      {% else %}
+        <div class="mt-3 text-xs text-slate-500">ยังไม่มีข้อมูล</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+
 
 
     <div class="col-span-2 flex justify-end gap-3 mt-6">

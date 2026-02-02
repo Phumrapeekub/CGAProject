@@ -28,9 +28,11 @@
     <div class="text-xl font-semibold">{{ date }}</div>
   </div>
   <div class="text-right">
-    <a href="{{ url_for('assess_session', hn=hn, gcn=gcn) }}"
-       class="inline-block rounded-xl bg-white/20 backdrop-blur px-4 py-2 text-sm">รายงานฉบับเต็ม</a>
-  </div>
+  <a href="{{ url_for('report_full', hn=hn, gcn=gcn) }}"
+     class="inline-block rounded-xl bg-white/20 backdrop-blur px-4 py-2 text-sm">
+    รายงานฉบับเต็ม
+  </a>
+</div>
 </div>
   </div>
 
@@ -96,35 +98,31 @@
   </div>
 {% endif %}
 
-  <div class="flex flex-wrap justify-end mt-6 gap-4">
+  <div class="flex flex-wrap items-center justify-between mt-6 gap-4">
 
-  <!-- ปุ่มคำแนะนำเพิ่มเติม -->
+  <!-- ซ้าย: ปุ่มบันทึกคำแนะนำ -->
   <button type="button"
           id="open-note-modal"
-          class="bg-emerald-50 text-emerald-700 px-6 py-3 rounded-lg border border-emerald-200 hover:bg-emerald-100">
-    คำแนะนำเพิ่มเติม
+          class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-xl border border-emerald-200 hover:bg-emerald-100">
+    <span class="text-lg">＋</span>
+    <span>คำแนะนำเพิ่มเติม</span>
   </button>
 
-  <button onclick="window.print()" 
-          class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300">
-    พิมพ์รายงาน
-  </button>
+  <!-- ขวา: ปุ่มนำทางหลัก -->
+  <div class="flex flex-wrap gap-3">
+    <a href="{{ url_for('dashboard') }}"
+       class="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200">
+       กลับหน้าหลัก
+    </a>
 
-  <a href="#" 
-     class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
-     ดาวน์โหลด PDF
-  </a>
+    <a href="{{ url_for('ai_analysis', hn=hn, gcn=gcn) }}"
+       class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700">
+       วิเคราะห์ด้วย AI
+    </a>
+  </div>
 
-  <a href="{{ url_for('dashboard') }}"
-     class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300">
-     กลับหน้าหลัก
-  </a>
-
-  <a href="{{ url_for('ai_analysis', hn=hn, gcn=gcn) }}"
-     class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-     เสร็จสิ้น
-  </a>
 </div>
+
 
 
 <!-- Modal คำแนะนำเพิ่มเติม -->

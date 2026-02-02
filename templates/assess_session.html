@@ -23,8 +23,35 @@
       <span>ขั้นตอนที่</span>
       <span class="font-semibold text-emerald-600">1</span>
       <span>จาก</span>
-      <span class="font-semibold">5</span>
+      <span class="font-semibold">3</span>
     </div>
+  </div>
+
+  <!-- 🔹 Step Navigation -->
+  <div class="mt-4 flex items-center justify-center gap-3">
+    <!-- ขั้นตอนที่ 1: ไม่ต้อง submit -->
+    <button type="button"
+            class="px-4 py-2 rounded-full text-sm font-medium bg-blue-600 text-white">
+      ขั้นตอนที่ 1
+    </button>
+
+    <!-- ไป step 2 -->
+    <button type="submit"
+            form="step1-form"
+            name="goto_step"
+            value="2"
+            class="px-4 py-2 rounded-full text-sm font-medium bg-white border">
+      ขั้นตอนที่ 2
+    </button>
+
+    <!-- ไป step 3 -->
+    <button type="submit"
+            form="step1-form"
+            name="goto_step"
+            value="3"
+            class="px-4 py-2 rounded-full text-sm font-medium bg-white border">
+      ขั้นตอนที่ 3
+    </button>
   </div>
 
   <!-- กล่อง: ข้อมูลทั่วไป -->
@@ -38,7 +65,10 @@
       <div class="font-semibold">ข้อมูลทั่วไป</div>
     </div>
 
-    <form method="POST" action="{{ url_for('assess_session', hn=hn, gcn=gcn) }}" class="p-6 md:p-8 space-y-6">
+    <form id="step1-form"
+          method="POST"
+          action="{{ url_for('assess_session', hn=hn, gcn=gcn) }}"
+          class="p-6 md:p-8 space-y-6">
 
       <!-- ชื่อ-สกุล -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -47,16 +77,19 @@
             ชื่อ <span class="text-rose-600">*</span>
           </label>
           <input type="text"
-                 class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                 placeholder="ชื่อ" name="name">
+                 name="name"
+                 value="{{ patient.name if patient else '' }}"
+                 class="w-full rounded-2xl border border-slate-200 px-4 py-3">
         </div>
+
         <div>
           <label class="block text-slate-700 font-medium mb-2">
             สกุล <span class="text-rose-600">*</span>
           </label>
           <input type="text"
-                 class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                 placeholder="นามสกุล" name="surname">
+                 name="surname"
+                 value="{{ patient.surname if patient else '' }}"
+                 class="w-full rounded-2xl border border-slate-200 px-4 py-3">
         </div>
       </div>
 
@@ -77,21 +110,30 @@
 
         <div>
           <label class="block text-slate-700 font-medium mb-2">อายุ (ปี)</label>
-          <input id="age" type="number"
-                 class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                 placeholder="อายุ" name="age">
+          <input id="age"
+                 type="number"
+                 name="age"
+                 value="{{ patient.age if patient and patient.age else '' }}"
+                 class="w-full rounded-2xl border border-slate-200 px-4 py-3">
         </div>
-
+        
         <div>
           <label class="block text-slate-700 font-medium mb-2">
             เพศ <span class="text-rose-600">*</span>
           </label>
           <div class="flex items-center gap-6 mt-3">
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="gender" value="1" class="accent-blue-600"> ชาย
+              <input type="radio" name="gender" value="ชาย"
+                     class="accent-blue-600"
+                     {% if patient and patient.gender == 'ชาย' %}checked{% endif %}>
+              ชาย
             </label>
+
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="gender" value="2" class="accent-blue-600"> หญิง
+              <input type="radio" name="gender" value="หญิง"
+                     class="accent-blue-600"
+                     {% if patient and patient.gender == 'หญิง' %}checked{% endif %}>
+              หญิง
             </label>
           </div>
         </div>
@@ -101,8 +143,10 @@
       <div>
         <label class="block text-slate-700 font-medium mb-2">ที่อยู่ปัจจุบัน</label>
         <input type="text"
+               name="address"
                class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-               placeholder="บ้านเลขที่ หมู่ ตำบล อำเภอ จังหวัด">
+               placeholder="บ้านเลขที่ หมู่ ตำบล อำเภอ จังหวัด"
+               value="{{ patient.address if patient and patient.address else '' }}">
       </div>
 
       <!-- โทร + สถานภาพสมรส -->
@@ -110,23 +154,37 @@
         <div>
           <label class="block text-slate-700 font-medium mb-2">หมายเลขโทรศัพท์</label>
           <input type="text"
-                 class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                 placeholder="0XX-XXX-XXXX">
+                 name="phone"
+                 value="{{ patient.phone if patient and patient.phone else '' }}"
+                 class="w-full rounded-2xl border border-slate-200 px-4 py-3">
         </div>
+
         <div>
           <label class="block text-slate-700 font-medium mb-2">สถานภาพสมรส</label>
           <div class="grid grid-cols-4 gap-4">
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="marry" class="accent-blue-600"> โสด
+              <input type="radio" name="marry" value="โสด"
+                     class="accent-blue-600"
+                     {% if patient and patient.marry == 'โสด' %}checked{% endif %}>
+              โสด
             </label>
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="marry" class="accent-blue-600"> สมรส
+              <input type="radio" name="marry" value="สมรส"
+                     class="accent-blue-600"
+                     {% if patient and patient.marry == 'สมรส' %}checked{% endif %}>
+              สมรส
             </label>
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="marry" class="accent-blue-600"> หม้าย
+              <input type="radio" name="marry" value="หม้าย"
+                     class="accent-blue-600"
+                     {% if patient and patient.marry == 'หม้าย' %}checked{% endif %}>
+              หม้าย
             </label>
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="marry" class="accent-blue-600"> หย่า
+              <input type="radio" name="marry" value="หย่า"
+                     class="accent-blue-600"
+                     {% if patient and patient.marry == 'หย่า' %}checked{% endif %}>
+              หย่า
             </label>
           </div>
         </div>
@@ -135,22 +193,34 @@
       <!-- จำนวนคน / การพักอาศัย -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-slate-700 font-medium mb-2">จำนวนบุคคล</label>
+          <label class="block text-slate-700 font-medium mb-2">จำนวนบุคคลที่อาศัยด้วย</label>
           <input type="number"
+                 name="num_people"
                  class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                 placeholder="จำนวนบุคคล">
+                 placeholder="จำนวนบุคคล"
+                 value="{{ patient.num_people if patient and patient.num_people else '' }}">
         </div>
+
         <div>
           <label class="block text-slate-700 font-medium mb-2">การพักอาศัย</label>
           <div class="grid grid-cols-3 gap-4">
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="live" class="accent-blue-600"> อยู่คนเดียว
+              <input type="radio" name="live" value="alone"
+                     class="accent-blue-600"
+                     {% if patient and patient.live == 'alone' %}checked{% endif %}>
+              อยู่คนเดียว
             </label>
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="live" class="accent-blue-600"> อยู่กับครอบครัว
+              <input type="radio" name="live" value="family"
+                     class="accent-blue-600"
+                     {% if patient and patient.live == 'family' %}checked{% endif %}>
+              อยู่กับครอบครัว
             </label>
             <label class="inline-flex items-center gap-2">
-              <input type="radio" name="live" class="accent-blue-600"> อยู่กับผู้ดูแล
+              <input type="radio" name="live" value="caregiver"
+                     class="accent-blue-600"
+                     {% if patient and patient.live == 'caregiver' %}checked{% endif %}>
+              อยู่กับผู้ดูแล
             </label>
           </div>
         </div>
@@ -169,131 +239,225 @@
 
         <div class="p-6 md:p-8 space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- การสูบบุหรี่ -->
             <div>
               <label class="block text-slate-700 font-medium mb-2">การสูบบุหรี่</label>
               <div class="flex items-center gap-6">
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="smoke" class="accent-blue-600"> ไม่สูบ
+                  <input type="radio" name="smoke" value="no"
+                         class="accent-blue-600"
+                         {% if patient and patient.smoke == 'no' %}checked{% endif %}>
+                  ไม่สูบ
                 </label>
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="smoke" class="accent-blue-600"> สูบ
+                  <input type="radio" name="smoke" value="yes"
+                         class="accent-blue-600"
+                         {% if patient and patient.smoke == 'yes' %}checked{% endif %}>
+                  สูบ
                 </label>
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="smoke" class="accent-blue-600"> เลิกแล้ว
+                  <input type="radio" name="smoke" value="quit"
+                         class="accent-blue-600"
+                         {% if patient and patient.smoke == 'quit' %}checked{% endif %}>
+                  เลิกแล้ว
                 </label>
               </div>
             </div>
+
+            <!-- ส่วนสูง -->
             <div>
               <label class="block text-slate-700 font-medium mb-2">ส่วนสูง (ซม.)</label>
               <input type="number"
+                     name="height"
                      class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                     placeholder="160">
+                     placeholder="160"
+                     value="{{ patient.height_cm if patient and patient.height_cm else '' }}">
             </div>
+
+            <!-- การดื่มแอลกอฮอล์ -->
             <div>
               <label class="block text-slate-700 font-medium mb-2">การดื่มแอลกอฮอล์</label>
               <div class="flex items-center gap-4">
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="alcohol" class="accent-blue-600"> ไม่ดื่ม
+                  <input type="radio" name="alcohol" value="no"
+                         class="accent-blue-600"
+                         {% if patient and patient.alcohol == 'no' %}checked{% endif %}>
+                  ไม่ดื่ม
                 </label>
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="alcohol" class="accent-blue-600"> ดื่มบางครั้ง
+                  <input type="radio" name="alcohol" value="sometimes"
+                         class="accent-blue-600"
+                         {% if patient and patient.alcohol == 'sometimes' %}checked{% endif %}>
+                  ดื่มบางครั้ง
                 </label>
                 <label class="inline-flex items-center gap-2">
-                  <input type="radio" name="alcohol" class="accent-blue-600"> ดื่มทุกวัน
+                  <input type="radio" name="alcohol" value="daily"
+                         class="accent-blue-600"
+                         {% if patient and patient.alcohol == 'daily' %}checked{% endif %}>
+                  ดื่มทุกวัน
                 </label>
               </div>
             </div>
           </div>
 
+          <!-- น้ำหนัก / รอบเอว -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label class="block text-slate-700 font-medium mb-2">น้ำหนัก (กก.)</label>
               <input type="number"
+                     name="weight"
                      class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                     placeholder="60">
+                     placeholder="60"
+                     value="{{ patient.weight_kg if patient and patient.weight_kg else '' }}">
             </div>
             <div>
               <label class="block text-slate-700 font-medium mb-2">รอบเอว (ซม.)</label>
               <input type="number"
+                     name="waist"
                      class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                     placeholder="85">
+                     placeholder="85"
+                     value="{{ patient.waist_cm if patient and patient.waist_cm else '' }}">
             </div>
           </div>
 
+          <!-- โรคประจำตัว/อื่น ๆ (อันนี้ถ้ายังไม่มี column ใน DB ยังไม่ bind) -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-slate-700 font-medium mb-2">โรคประจำตัว</label>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" class="accent-blue-600"> เบาหวาน
-                </label>
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" class="accent-blue-600"> ไต
-                </label>
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" class="accent-blue-600"> ความดันโลหิตสูง
-                </label>
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" class="accent-blue-600"> หัวใจ
-                </label>
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" class="accent-blue-600"> มะเร็ง
-                </label>
-              </div>
-            </div>
-            <div>
-              <label class="block text-slate-700 font-medium mb-2">โรคอื่น ๆ (ระบุ)</label>
-              <input type="text"
-                     class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300">
-            </div>
-          </div>
-        </div>
-      </div>
+   <div>
+    <label class="block text-slate-700 font-medium mb-2">โรคประจำตัว</label>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox"
+               name="disease"
+               value="เบาหวาน"
+               class="accent-blue-600"
+               {% if disease_list and 'เบาหวาน' in disease_list %}checked{% endif %}>
+        เบาหวาน
+      </label>
+
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox"
+               name="disease"
+               value="ไต"
+               class="accent-blue-600"
+               {% if disease_list and 'ไต' in disease_list %}checked{% endif %}>
+        ไต
+      </label>
+
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox"
+               name="disease"
+               value="ความดันโลหิตสูง"
+               class="accent-blue-600"
+               {% if disease_list and 'ความดันโลหิตสูง' in disease_list %}checked{% endif %}>
+        ความดันโลหิตสูง
+      </label>
+
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox"
+               name="disease"
+               value="หัวใจ"
+               class="accent-blue-600"
+               {% if disease_list and 'หัวใจ' in disease_list %}checked{% endif %}>
+        หัวใจ
+      </label>
+
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox"
+               name="disease"
+               value="มะเร็ง"
+               class="accent-blue-600"
+               {% if disease_list and 'มะเร็ง' in disease_list %}checked{% endif %}>
+        มะเร็ง
+      </label>
+    </div>
+  </div>
+
+  <!-- โรคอื่น ๆ -->
+  <div>
+    <label class="block text-slate-700 font-medium mb-2">โรคอื่น ๆ (ระบุ)</label>
+    <input type="text"
+           name="disease_other"
+           class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
+           placeholder="เช่น ไขมันในเลือดสูง ฯลฯ"
+           value="{{ disease_other or '' }}">
+  </div>
+</div>
+
 
       <!-- กล่อง: การประเมินเบื้องต้น -->
-      <div class="rounded-[26px] bg-white/95 backdrop-blur shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 flex items-center gap-3 bg-emerald-50">
-          <div class="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-700 grid place-items-center">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-              <path d="M12 20l9-16H3l9 16z" />
-            </svg>
-          </div>
-          <div class="font-semibold">การประเมินเบื้องต้น</div>
-        </div>
+<div class="rounded-[26px] bg-white/95 backdrop-blur shadow-xl border border-slate-100 overflow-hidden">
+  <div class="px-6 py-4 flex items-center gap-3 bg-emerald-50">
+    <div class="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-700 grid place-items-center">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 20l9-16H3l9 16z" />
+      </svg>
+    </div>
+    <div class="font-semibold">การประเมินเบื้องต้น</div>
+  </div>
 
-        <div class="p-6 md:p-8 space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div class="font-medium mb-2">การได้ยิน</div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <div class="text-sm text-slate-600 mb-1">หูซ้าย</div>
-                  <label class="inline-flex items-center gap-2 mr-4">
-                    <input type="radio" name="hearing_left" class="accent-blue-600"> ปกติ
-                  </label>
-                  <label class="inline-flex items-center gap-2">
-                    <input type="radio" name="hearing_left" class="accent-blue-600"> ผิดปกติ
-                  </label>
-                </div>
-                <div>
-                  <div class="text-sm text-slate-600 mb-1">หูขวา</div>
-                  <label class="inline-flex items-center gap-2 mr-4">
-                    <input type="radio" name="hearing_right" class="accent-blue-600"> ปกติ
-                  </label>
-                  <label class="inline-flex items-center gap-2">
-                    <input type="radio" name="hearing_right" class="accent-blue-600"> ผิดปกติ
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div class="font-medium mb-2">การมองเห็น (Snellen chart)</div>
-              <textarea class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
-                        placeholder="ผลการตรวจสายตา เช่น ตาขวา 6/6 ตาซ้าย 6/9" rows="3"></textarea>
-            </div>
+  <div class="p-6 md:p-8 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- การได้ยิน -->
+      <div>
+        <div class="font-medium mb-2">การได้ยิน</div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-slate-600 mb-1">หูซ้าย</div>
+            <label class="inline-flex items-center gap-2 mr-4">
+              <input type="radio"
+                     name="hearing_left"
+                     value="normal"
+                     class="accent-blue-600"
+                     {% if patient and patient.hearing_left == 'normal' %}checked{% endif %}>
+              ปกติ
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="radio"
+                     name="hearing_left"
+                     value="abnormal"
+                     class="accent-blue-600"
+                     {% if patient and patient.hearing_left == 'abnormal' %}checked{% endif %}>
+              ผิดปกติ
+            </label>
+          </div>
+
+          <div>
+            <div class="text-sm text-slate-600 mb-1">หูขวา</div>
+            <label class="inline-flex items-center gap-2 mr-4">
+              <input type="radio"
+                     name="hearing_right"
+                     value="normal"
+                     class="accent-blue-600"
+                     {% if patient and patient.hearing_right == 'normal' %}checked{% endif %}>
+              ปกติ
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="radio"
+                     name="hearing_right"
+                     value="abnormal"
+                     class="accent-blue-600"
+                     {% if patient and patient.hearing_right == 'abnormal' %}checked{% endif %}>
+              ผิดปกติ
+            </label>
           </div>
         </div>
       </div>
+
+      <!-- การมองเห็น -->
+      <div>
+        <div class="font-medium mb-2">การมองเห็น (Snellen chart)</div>
+        <textarea name="vision_snellen"
+                  class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300"
+                  placeholder="ผลการตรวจสายตา เช่น ตาขวา 6/6 ตาซ้าย 6/9"
+                  rows="3">{{ patient.vision_snellen if patient and patient.vision_snellen else '' }}</textarea>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
       <!-- ปุ่มล่าง -->
       <div class="px-6 md:px-8 pb-6 mt-8 flex items-center justify-between">

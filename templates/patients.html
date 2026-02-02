@@ -12,34 +12,111 @@
   </a>
 </div>
 
-  <form method="get" class="mb-6 flex gap-2">
-    <input type="text" name="search" placeholder="ค้นหาชื่อ, HN, GCN..."
-           value="{{ search }}" class="w-full border rounded-lg px-4 py-2">
-    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-      🔍 ค้นหา
-    </button>
-    <a href="{{ url_for('add_patient') }}" 
-       class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">➕ เพิ่มผู้ป่วยใหม่</a>
-  </form>
+  <form method="GET" action="{{ url_for('patient_list') }}" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
 
-  <table class="w-full border-collapse bg-white shadow rounded-xl overflow-hidden">
-    <thead class="bg-indigo-100 text-gray-700">
-      <tr>
-        <th class="py-3 px-4 text-left">HN / GCN</th>
-        <th class="py-3 px-4 text-left">ชื่อ-นามสกุล</th>
-        <th class="py-3 px-4 text-center">อายุ</th>
-        <th class="py-3 px-4 text-center">โรคประจำตัว</th>
-        <th class="py-3 px-4 text-center">ความเสี่ยง</th>
-        <th class="py-3 px-4 text-center">จัดการ</th>
-      </tr>
-    </thead>
+    <!-- ชื่อ-นามสกุล -->
+    <div class="md:col-span-4">
+      <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+      <input type="text" name="name" value="{{ request.args.get('name','') }}"
+             placeholder="เช่น สมชาย"
+             class="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+    </div>
+
+    <!-- HN -->
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-slate-700 mb-1">HN</label>
+      <input type="text" name="hn" value="{{ request.args.get('hn','') }}"
+             placeholder="เช่น HN000001"
+             class="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+    </div>
+
+    <!-- GCN -->
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-slate-700 mb-1">GCN</label>
+      <input type="text" name="gcn" value="{{ request.args.get('gcn','') }}"
+             placeholder="เช่น GCN100001"
+             class="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+    </div>
+
+    <!-- โรคประจำตัว -->
+    <div class="md:col-span-3">
+      <label class="block text-sm font-medium text-slate-700 mb-1">โรคประจำตัว</label>
+      <input type="text" name="disease" value="{{ request.args.get('disease','') }}"
+             placeholder="เช่น เบาหวาน"
+             class="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+    </div>
+
+    <!-- ปุ่มค้นหา -->
+    <div class="md:col-span-1 flex gap-2">
+      <button type="submit"
+              class="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 font-semibold shadow">
+        ค้นหา
+      </button>
+    </div>
+
+    <!-- (optional) ความเสี่ยง -->
+    <div class="md:col-span-3">
+      <label class="block text-sm font-medium text-slate-700 mb-1">ความเสี่ยง</label>
+      <select name="risk" class="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        {% set risk = request.args.get('risk','') %}
+        <option value="">ทั้งหมด</option>
+<option value="ต่ำ">เสี่ยงต่ำ</option>
+<option value="ปานกลาง">เสี่ยงปานกลาง</option>
+<option value="สูง">เสี่ยงสูง</option>
+      </select>
+    </div>
+
+    <!-- (optional) ปุ่มล้าง -->
+    <div class="md:col-span-2">
+      <a href="{{ url_for('patient_list') }}"
+         class="block text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 font-semibold">
+        ล้าง
+      </a>
+    </div>
+
+  </div>
+</form>
+
+
+  <table class="w-full table-fixed border-collapse bg-white shadow rounded-xl overflow-hidden">
+    <thead class="bg-indigo-50 text-slate-700">
+  <tr>
+    <th class="py-3 px-4 font-semibold w-[180px] text-left">HN / GCN</th>
+
+    <th class="py-3 px-4 font-semibold border-l border-indigo-100 w-[220px] text-left">
+      ชื่อ-นามสกุล
+    </th>
+
+    <th class="py-3 px-4 font-semibold border-l border-indigo-100 w-[90px] text-center">
+      อายุ
+    </th>
+
+    <th class="py-3 px-4 font-semibold border-l border-indigo-100 w-[260px] text-center">
+      โรคประจำตัว
+    </th>
+
+    <th class="py-3 px-4 font-semibold border-l border-indigo-100 w-[120px] text-center">
+      ความเสี่ยง
+    </th>
+
+    <th class="py-3 px-4 font-semibold border-l border-indigo-100 w-[200px] text-center">
+      จัดการ
+    </th>
+  </tr>
+</thead>
+
     <tbody>
       {% for p in patients %}
       <tr class="border-t hover:bg-gray-50">
-        <td class="py-3 px-4">{{ p.hn }} / {{ p.gcn }}</td>
-        <td class="py-3 px-4">{{ p.name }}</td>
-        <td class="text-center">{{ p.age }} ปี</td>
-        <td class="text-center">{{ p.disease }}</td>
+        <td class="py-3 px-4 break-words">{{ p.hn }} / {{ p.gcn }}</td>
+
+<td class="py-3 px-4 break-words">{{ p.name }}</td>
+
+<td class="py-3 px-4 text-center whitespace-nowrap">{{ p.age }} ปี</td>
+
+<td class="py-3 px-4 text-center break-words">{{ p.disease }}</td>
+
         <td class="text-center">
           {% if p.risk_level == 'สูง' %}
             <span class="text-red-600 bg-red-100 px-3 py-1 rounded-full text-sm">เสี่ยงสูง</span>
@@ -50,13 +127,33 @@
           {% endif %}
         </td>
         <td class="text-center">
-          <a href="{{ url_for('edit_patient', id=p.id) }}" class="text-blue-600 hover:underline">แก้ไข</a> |
-          <a href="{{ url_for('patient_history', id=p.id) }}" class="text-blue-600 hover:underline">ดูประวัติ</a> |
-            <form method="post" action="{{ url_for('delete_patient', id=p.id) }}" class="inline">
-            <button type="submit" class="text-red-600 hover:underline"
-                    onclick="return confirm('ต้องการลบข้อมูลนี้หรือไม่?')">ลบ</button>
-          </form>
-        </td>
+  <div class="inline-flex items-center gap-2 text-sm whitespace-nowrap">
+    <a href="{{ url_for('edit_patient', id=p.id) }}"
+       class="text-blue-600 hover:underline">
+      แก้ไข
+    </a>
+
+    <span class="text-slate-300">|</span>
+
+    <a href="{{ url_for('patient_history', id=p.id) }}"
+       class="text-blue-600 hover:underline">
+      ดูประวัติ
+    </a>
+
+    <span class="text-slate-300">|</span>
+
+    <form method="post"
+          action="{{ url_for('delete_patient', id=p.id) }}"
+          class="inline"
+          onsubmit="return confirm('ต้องการลบข้อมูลนี้หรือไม่?')">
+      <button type="submit"
+              class="text-red-600 hover:underline">
+        ลบ
+      </button>
+    </form>
+  </div>
+</td>
+
       </tr>
       {% else %}
       <tr><td colspan="6" class="text-center py-6 text-gray-400">ไม่พบข้อมูลผู้ป่วย</td></tr>

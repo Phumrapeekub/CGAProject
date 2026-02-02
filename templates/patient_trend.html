@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}แนวโน้มสุขภาพ {{ patient.name or '' }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[320px,minmax(0,1fr)] gap-6">
+
+  <!-- ================= LEFT : PATIENT CARD ================= -->
+  <div class="space-y-4">
+    <div class="rounded-3xl bg-white shadow border border-slate-100 p-6">
+      <div class="w-20 h-20 rounded-3xl bg-orange-500/90 grid place-items-center text-4xl mb-4">
+        🧑
+      </div>
+
+      <div class="font-semibold text-lg">
+        {{ patient.name or 'ไม่ระบุชื่อ' }}
+      </div>
+      <div class="text-sm text-slate-500 mb-4">
+        HN / GCN : {{ patient.hn }} / {{ patient.gcn }}
+      </div>
+
+      <div class="space-y-2 text-sm text-slate-700">
+        <div>👤 {{ patient.age or '-' }} ปี</div>
+        <div>📞 {{ patient.phone or '-' }}</div>
+        <div>📌 โรคประจำตัว: {{ patient.disease or 'ไม่ระบุ' }}</div>
+        <div>⚠️ ความเสี่ยง: {{ patient.risk_level or 'ไม่ประเมิน' }}</div>
+      </div>
+    </div>
+
+    <a href="{{ url_for('patient_list') }}"
+       class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
+      ← กลับหน้าผู้ป่วย
+    </a>
+  </div>
+
+  <!-- ================= RIGHT : TREND ================= -->
+  <div class="space-y-4">
+
+    <!-- Tabs -->
+    <div class="rounded-2xl bg-white shadow border border-slate-100 p-1 flex text-sm">
+      <a href="{{ url_for('patient_trend', id=patient.id) }}"
+         class="flex-1 py-2 text-center rounded-xl bg-blue-600 text-white font-medium">
+        แนวโน้มสุขภาพ
+      </a>
+      <a href="{{ url_for('patient_history', id=patient.id) }}"
+         class="flex-1 py-2 text-center rounded-xl text-slate-400">
+        ประวัติการประเมิน
+      </a>
+    </div>
+
+    <!-- ===== Summary Cards ===== -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="rounded-2xl bg-white shadow border border-slate-100 p-4">
+        <div class="text-sm text-slate-500">MMSE ล่าสุด</div>
+        <div class="text-2xl font-bold text-blue-600">
+          {{ summary.mmse_last or 0 }}/30
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white shadow border border-slate-100 p-4">
+        <div class="text-sm text-slate-500">TGDS-15 ล่าสุด</div>
+        <div class="text-2xl font-bold text-rose-500">
+          {{ summary.tgds_last or 0 }}/15
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white shadow border border-slate-100 p-4">
+        <div class="text-sm text-slate-500">SRA ล่าสุด</div>
+        <div class="text-2xl font-bold text-slate-700">
+          {{ summary.sra_last or 0 }}
+        </div>
+      </div>
+    </div>
+
+    {# helper badge สี #}
+{% macro badge(text, color) %}
+  {% if color == 'green' %}
+    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">{{ text }}</span>
+  {% elif color == 'amber' %}
+    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">{{ text }}</span>
+  {% else %}
+    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">{{ text }}</span>
+  {% endif %}
+{% endmacro %}
+
+<div class="rounded-3xl bg-white shadow border border-slate-100 p-5">
+  <div class="font-semibold text-slate-800 mb-3">สรุปการเปลี่ยนแปลงจากครั้งก่อน</div>
+
+  {% if summary.n_points < 2 %}
+    <div class="text-slate-400 text-sm">ต้องมีอย่างน้อย 2 ครั้ง เพื่อคำนวณแนวโน้ม/การเปลี่ยนแปลง</div>
+  {% else %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <!-- MMSE -->
+      <div class="rounded-2xl border border-slate-100 p-4">
+        <div class="text-sm text-slate-500 mb-1">MMSE</div>
+        <div class="text-2xl font-bold text-slate-900">{{ summary.mmse_last }}/30</div>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          {% if summary.mmse_delta > 0 %}
+            <span class="text-emerald-600 font-semibold">▲ +{{ summary.mmse_delta }}</span>
+            <span class="text-slate-500">ดีขึ้น</span>
+          {% elif summary.mmse_delta < 0 %}
+            <span class="text-rose-600 font-semibold">▼ {{ summary.mmse_delta }}</span>
+            <span class="text-slate-500">แย่ลง</span>
+          {% else %}
+            <span class="text-slate-600 font-semibold">— 0</span>
+            <span class="text-slate-500">คงที่</span>
+          {% endif %}
+        </div>
+        <div class="mt-3">{{ badge(summary.mmse_label, summary.mmse_color) }}</div>
+      </div>
+
+      <!-- TGDS -->
+      <div class="rounded-2xl border border-slate-100 p-4">
+        <div class="text-sm text-slate-500 mb-1">TGDS-15</div>
+        <div class="text-2xl font-bold text-slate-900">{{ summary.tgds_last }}/15</div>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          {% if summary.tgds_delta > 0 %}
+            <span class="text-rose-600 font-semibold">▲ +{{ summary.tgds_delta }}</span>
+            <span class="text-slate-500">แย่ลง (คะแนนสูงขึ้น)</span>
+          {% elif summary.tgds_delta < 0 %}
+            <span class="text-emerald-600 font-semibold">▼ {{ summary.tgds_delta }}</span>
+            <span class="text-slate-500">ดีขึ้น (คะแนนลดลง)</span>
+          {% else %}
+            <span class="text-slate-600 font-semibold">— 0</span>
+            <span class="text-slate-500">คงที่</span>
+          {% endif %}
+        </div>
+        <div class="mt-3">{{ badge(summary.tgds_label, summary.tgds_color) }}</div>
+      </div>
+
+      <!-- SRA -->
+      <div class="rounded-2xl border border-slate-100 p-4">
+        <div class="text-sm text-slate-500 mb-1">SRA</div>
+        <div class="text-2xl font-bold text-slate-900">{{ summary.sra_last }}</div>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          {% if summary.sra_delta > 0 %}
+            <span class="text-rose-600 font-semibold">▲ +{{ summary.sra_delta }}</span>
+            <span class="text-slate-500">แย่ลง</span>
+          {% elif summary.sra_delta < 0 %}
+            <span class="text-emerald-600 font-semibold">▼ {{ summary.sra_delta }}</span>
+            <span class="text-slate-500">ดีขึ้น</span>
+          {% else %}
+            <span class="text-slate-600 font-semibold">— 0</span>
+            <span class="text-slate-500">คงที่</span>
+          {% endif %}
+        </div>
+        <div class="mt-3">{{ badge(summary.sra_label, summary.sra_color) }}</div>
+      </div>
+
+    </div>
+  {% endif %}
+</div>
+
+    <!-- ===== Trend Chart ===== -->
+    <div class="rounded-3xl bg-white shadow border border-slate-100 p-6">
+      <div class="font-semibold mb-4">แนวโน้มคะแนนย้อนหลัง</div>
+
+      {% if labels and labels|length > 1 %}
+        <div class="relative" style="height:320px">
+          <canvas id="trendChart"
+                  data-labels='{{ labels|tojson }}'
+                  data-mmse='{{ mmse_series|tojson }}'
+                  data-tgds='{{ tgds_series|tojson }}'
+                  data-sra='{{ sra_series|tojson }}'>
+          </canvas>
+        </div>
+      {% else %}
+        <div class="text-center text-slate-400 py-10">
+          ยังมีข้อมูลไม่เพียงพอสำหรับแสดงแนวโน้ม
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/patient_trend.js') }}"></script>
+{% endblock %}
