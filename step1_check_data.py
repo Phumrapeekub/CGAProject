@@ -2,7 +2,7 @@ import h2o
 
 h2o.init()
 
-df = h2o.import_file("cga_train_500.csv")
+df = h2o.import_file("cga_train_1000.csv")
 
 print("Rows:", df.nrows)
 print("Cols:", df.ncols)

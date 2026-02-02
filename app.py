@@ -58,7 +58,7 @@ def get_db_connection():
     """
     host = os.environ.get("DB_HOST", "localhost")
     user = os.environ.get("DB_USER", "root")
-    password = os.environ.get("DB_PASSWORD", "")
+    password = os.environ.get("DB_PASSWORD", "Siriyakorn05_")
     dbname = os.environ.get("DB_NAME", "cga_system")
     port = int(os.environ.get("DB_PORT", "3306"))
 

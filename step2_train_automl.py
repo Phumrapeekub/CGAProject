@@ -5,7 +5,7 @@ from h2o.automl import H2OAutoML
 h2o.init()
 
 # 2) load data
-df = h2o.import_file("cga_train_500.csv")
+df = h2o.import_file("cga_train_1000.csv")
 
 # 3) set target + features
 y = "risk_binary"

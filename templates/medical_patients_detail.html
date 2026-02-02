@@ -6,52 +6,6 @@
 <style>
   #global-back-wrapper { display:none; }
 
-  /* =========================================================
-     ✅ KILL OUTER FRAME (กรอบแดงรอบนอกสุดที่ครอบทั้งหน้า)
-     ใช้ CSS ทับ wrapper จาก medical_base โดยไม่ต้องไปแก้ base
-     ========================================================= */
-
-  /* 1) บังคับ main ให้โปร่ง/ไม่สร้างกรอบ */
-  main, main#main, #main, #content, #page, .page, .page-content {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* 2) เอากรอบ/เงา/โค้ง ออกจาก “กล่องใหญ่” ที่มักครอบ block content */
-  main > div,
-  main > section,
-  main > article,
-  main > div > div,
-  main > section > div {
-    border: 0 !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-  }
-
-  /* 3) กรณี base ใช้ container แล้วครอบด้วย card ชั้นนอก */
-  main .max-w-7xl,
-  main .max-w-6xl,
-  main .max-w-5xl,
-  main .container {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* 4) กรณี base ใส่ padding แล้วมีพื้นหลังขาวเป็นกรอบ */
-  main .max-w-7xl > div,
-  main .max-w-6xl > div,
-  main .max-w-5xl > div,
-  main .container > div {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-  }
-
   /* Sleek scrollbar */
   .scroller::-webkit-scrollbar { width: 10px; height: 10px; }
   .scroller::-webkit-scrollbar-track { background: rgba(241,245,249,.85); border-radius: 999px; }
@@ -87,27 +41,7 @@
   /* ลดความรู้สึก "มีกรอบ" ของชิ้นย่อย */
   .soft-chip{ background: rgba(248,250,252,.9); border: 1px solid rgba(226,232,240,.6); }
 
-  /* ==== EMBED RESET: ทำให้ partial ที่ include มา "ไม่สร้างกรอบซ้อน" ==== */
-  .embed-plain > div{
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  .embed-plain > div > div{
-    border: 0 !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-  }
-  .embed-plain .border{ border-width:0 !important; }
-  .embed-plain .shadow,
-  .embed-plain .shadow-sm,
-  .embed-plain .shadow-md,
-  .embed-plain .shadow-lg{ box-shadow:none !important; }
-  .embed-plain .rounded-2xl,
-  .embed-plain .rounded-3xl,
-  .embed-plain .rounded-b-2xl,
-  .embed-plain .rounded-t-2xl{ border-radius:0 !important; }
+  /* ✅ ลบ/ไม่ใช้ EMBED RESET แล้ว เพราะทำให้ข้อมูลด้านใน (partial) หาย/พัง */
 </style>
 {% endblock %}
 
@@ -161,7 +95,7 @@
     <!-- ===== Top bar (same page / no extra footer block) ===== -->
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
       <div class="min-w-0">
-        <div class="text-slate-500 text-sm">รายละเอียดผู้ป่วย</div>
+        <div class="text-slate-100 text-sm">รายละเอียดผู้ป่วย</div>
         <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight truncate">
           {{ p_name or 'ไม่ระบุชื่อ' }}
           <span class="ml-2 text-sm font-bold text-slate-500">HN: {{ hn }}</span>
@@ -257,21 +191,328 @@
             {% endif %}
           </div>
 
-          <!-- ... (ที่เหลือของไฟล์คุณเหมือนเดิมทุกอย่าง) ... -->
+          <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+            <div class="text-sm font-extrabold text-slate-900 mb-2">2. ดื่มแอลกอฮอล์</div>
+            {% set alc = g.get('alcohol_level') %}
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='never' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่เคยดื่ม</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='sometimes' %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มบางครั้ง</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='daily' %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มทุกวัน</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+            <div class="text-sm font-extrabold text-slate-900 mb-3">3. ส่วนสูงและรอบเอว</div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
+                <div class="text-[11px] text-slate-500 font-bold">ส่วนสูง (ซม.)</div>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('height') or '-' }}</div>
+              </div>
+              <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
+                <div class="text-[11px] text-slate-500 font-bold">รอบเอว (ซม.)</div>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('waist') or '-' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MMSE -->
+          <div class="rounded-3xl overflow-hidden bg-white/85 border border-indigo-200/50">
+            <div class="bg-gradient-to-r from-indigo-50/80 to-violet-50/70 p-4 flex items-center justify-between">
+              <div class="text-sm font-extrabold text-indigo-950">7. สมรรถภาพสมอง (MMSE-T 2002)</div>
+              <span class="text-xs bg-white/90 text-indigo-700 px-2.5 py-1 rounded-xl border border-indigo-200/60 font-extrabold">เต็ม 30</span>
+            </div>
+
+            <div class="p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-slate-600 font-bold">คะแนนรวม</span>
+                <span class="text-3xl font-extrabold {% if mmse < 24 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                  {{ mmse }} <span class="text-sm font-bold text-slate-400">/30</span>
+                </span>
+              </div>
+
+              <details class="mt-4 group rounded-2xl bg-indigo-50/50 border border-indigo-200/50 overflow-hidden">
+                <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+                  <span class="text-sm font-extrabold text-indigo-900">แสดงแบบฟอร์ม MMSE (จากไฟล์)</span>
+                  <span class="text-indigo-700 font-extrabold group-open:rotate-180 transition">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </span>
+                </summary>
+                <div class="p-4 bg-white/80 soft-divider">
+                  {# ✅ คืน partial ให้แสดงเต็ม ไม่ครอบ embed-plain #}
+                  {% include "assess/mmse_form_partial.html" %}
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- Depression block -->
+          <div class="rounded-3xl overflow-hidden bg-white/85 border border-fuchsia-200/50">
+            <div class="bg-gradient-to-r from-fuchsia-50/80 to-pink-50/70 p-4">
+              <div class="text-sm font-extrabold text-fuchsia-950">10. ภาวะซึมเศร้า & ฆ่าตัวตาย</div>
+            </div>
+
+            <div class="p-4 space-y-4">
+
+              <!-- 2Q -->
+              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-extrabold text-slate-800">2Q</span>
+                  <span class="text-sm font-extrabold {% if twoq > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                    {{ 'เสี่ยง' if twoq > 0 else 'ปกติ' }} ({{ twoq }}/2)
+                  </span>
+                </div>
+
+                <details class="mt-3 group rounded-2xl bg-slate-50/80 border border-slate-200/60 overflow-hidden">
+                  <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-slate-700">แสดงแบบฟอร์ม 2Q (จากไฟล์)</span>
+                    <span class="text-slate-600 font-extrabold group-open:rotate-180 transition">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </span>
+                  </summary>
+                  <div class="p-4 bg-white/80 soft-divider">
+                    {% include "assess/twoq_form_partial.html" %}
+                  </div>
+                </details>
+              </div>
+
+              <!-- TGDS -->
+              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-extrabold text-slate-800">TGDS-15</span>
+                  <span class="text-sm font-extrabold {% if tgds >= 6 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                    {{ tgds }} / 15
+                  </span>
+                </div>
+
+                <details class="mt-3 group rounded-2xl bg-slate-50/80 border border-slate-200/60 overflow-hidden">
+                  <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-slate-700">แสดงแบบฟอร์ม TGDS-15 (จากไฟล์)</span>
+                    <span class="text-slate-600 font-extrabold group-open:rotate-180 transition">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </span>
+                  </summary>
+                  <div class="p-4 bg-white/80 soft-divider">
+                    {% include "assess/tgds15_form_partial.html" %}
+                  </div>
+                </details>
+              </div>
+
+              <!-- 8Q -->
+              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-extrabold text-slate-800">8Q (SRA)</span>
+                  <span class="text-sm font-extrabold {% if sra > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                    {{ sra }} / 24
+                  </span>
+                </div>
+
+                <details class="mt-3 group rounded-2xl bg-slate-50/80 border border-slate-200/60 overflow-hidden">
+                  <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-slate-700">แสดงแบบฟอร์ม 8Q (จากไฟล์)</span>
+                    <span class="text-slate-600 font-extrabold group-open:rotate-180 transition">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </span>
+                  </summary>
+                  <div class="p-4 bg-white/80 soft-divider">
+                    {% include "assess/8q_form_partial.html" %}
+                  </div>
+                </details>
+              </div>
+
+            </div>
+          </div>
 
         </div>
       </section>
 
       <!-- ========= AI Summary (keep as strong card) ========= -->
       <section class="col-span-12 lg:col-span-4 overflow-hidden rounded-[26px] bg-gradient-to-br from-slate-900 to-indigo-900 shadow-lg">
-        <!-- ... เหมือนเดิม ... -->
+        <div class="p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/15 border border-white/10 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-xs uppercase tracking-wider text-white/70 font-extrabold">AI</div>
+              <div class="text-lg font-extrabold">สรุปความเสี่ยง</div>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-2xl bg-white/10 border border-white/10 p-4">
+            <div class="text-sm text-white/90 leading-relaxed">
+              ผู้ป่วยมีความเสี่ยงด้าน <span class="font-extrabold">Cognitive (MMSE &lt; 24)</span> และมีความเสี่ยงหกล้มสูง
+              แนะนำติดตาม CGA ต่อเนื่อง และพิจารณาส่งต่อคลินิกความจำ
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
+                <div class="text-[11px] text-white/70 font-extrabold">MMSE</div>
+                <div class="text-2xl font-extrabold mt-1">{{ mmse }}/30</div>
+              </div>
+              <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
+                <div class="text-[11px] text-white/70 font-extrabold">TGDS</div>
+                <div class="text-2xl font-extrabold mt-1">{{ tgds }}/15</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <!-- ========= Diagnosis / History / Appointments ... เหมือนเดิมทั้งหมด ========= -->
+      <!-- ========= Diagnosis ========= -->
+      <section class="col-span-12 lg:col-span-6 surface overflow-hidden">
+        <div class="surface-head px-5 py-4 flex items-center justify-between">
+          <div class="font-extrabold text-slate-900">บันทึกวินิจฉัย</div>
+          <div class="text-[11px] text-slate-400 font-bold">โน้ต</div>
+        </div>
 
-      <div class="col-span-12 pt-2 text-center text-slate-400 text-sm">
-        © 2024-2025 | ระบบประเมินสุขภาพผู้สูงอายุ โรงพยาบาลพะเยา
-      </div>
+        <div class="p-5">
+          <form method="post" action="/doctor/patient/{{ hn }}/{{ gcn }}/visit/create" class="space-y-3">
+            <input type="hidden" name="status" value="closed">
+
+            <div class="hidden">
+              <input type="datetime-local" name="visit_datetime" id="quick_visit_datetime" required>
+            </div>
+            <script>
+              const now = new Date();
+              now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+              const el = document.getElementById('quick_visit_datetime');
+              if (el) el.value = now.toISOString().slice(0,16);
+            </script>
+
+            <input type="text" name="chief_complaint" placeholder="อาการสำคัญ (Chief Complaint)..." required
+                   class="w-full text-sm bg-white/80 border border-slate-200/70 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+            <textarea name="note" rows="5" placeholder="บันทึกผลการตรวจ / วินิจฉัย / การรักษา..."
+                      class="w-full text-sm bg-white/80 border border-slate-200/70 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+
+            <div class="flex justify-end">
+              <button type="submit"
+                      class="px-6 py-2.5 rounded-2xl bg-slate-900 text-white font-extrabold hover:bg-black transition">
+                บันทึก
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========= Diagnosis History ========= -->
+      <section class="col-span-12 lg:col-span-6 surface overflow-hidden">
+        <div class="surface-head px-5 py-4">
+          <div class="font-extrabold text-slate-900">ประวัติบันทึกวินิจฉัย</div>
+        </div>
+
+        <div class="h-[260px] overflow-y-auto scroller p-4 space-y-3">
+          {% if _visits and _visits|length > 0 %}
+            {% for v in _visits %}
+              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4 hover:bg-white transition">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-extrabold text-slate-900 text-sm truncate">
+                      {{ v.chief_complaint or v.reason or 'บันทึกการตรวจ' }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-bold mt-1">
+                      {{ v.visit_datetime.strftime("%d/%m/%Y %H:%M") if v.visit_datetime else (v.encounter_datetime.strftime("%d/%m/%Y %H:%M") if v.encounter_datetime else '-') }}
+                    </div>
+                  </div>
+                  <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-600 font-extrabold">
+                    {{ v.status or 'Done' }}
+                  </span>
+                </div>
+
+                {% if v.note %}
+                  <div class="mt-2 text-sm text-slate-700 leading-relaxed line-clamp-3">
+                    {{ v.note }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-10 text-slate-400 font-semibold">ยังไม่มีประวัติบันทึกวินิจฉัย</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ========= CGA History ========= -->
+      <section class="col-span-12 lg:col-span-6 surface overflow-hidden">
+        <div class="surface-head px-5 py-4">
+          <div class="font-extrabold text-slate-900">ประวัติ การประเมิน CGA</div>
+        </div>
+
+        <div class="h-[220px] overflow-y-auto scroller p-4 space-y-3">
+          {% if _visits and _visits|length > 0 %}
+            {% for v in _visits %}
+              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-extrabold text-slate-900 text-sm truncate">
+                      CGA Visit #{{ v.id if v.id is defined else loop.index }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-bold mt-1">
+                      {{ v.visit_datetime.strftime("%d/%m/%Y %H:%M") if v.visit_datetime else (v.encounter_datetime.strftime("%d/%m/%Y %H:%M") if v.encounter_datetime else '-') }}
+                    </div>
+                  </div>
+                  <div class="text-xs font-extrabold text-indigo-700 bg-indigo-50/80 border border-indigo-200/60 px-2.5 py-1 rounded-full">
+                    ดูรายละเอียด
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-10 text-slate-400 font-semibold">ยังไม่มีประวัติการประเมิน CGA</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ========= Appointments ========= -->
+      <section class="col-span-12 lg:col-span-6 surface overflow-hidden">
+        <div class="surface-head px-5 py-4 flex items-center justify-between">
+          <div class="font-extrabold text-slate-900">นัดหมาย</div>
+          <button onclick="openApptModal()"
+                  class="px-4 py-2 rounded-2xl bg-white/80 hover:bg-white font-extrabold text-slate-700 shadow-sm border border-slate-200/60 transition">
+            + เพิ่มนัดหมาย
+          </button>
+        </div>
+
+        <div class="h-[220px] overflow-y-auto scroller p-4 space-y-3">
+          {% if _upcoming and _upcoming|length > 0 %}
+            {% for a in _upcoming %}
+              <div class="flex gap-3 p-4 rounded-2xl bg-white/80 border border-slate-200/60 hover:bg-white transition">
+                <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-3 min-w-[72px] text-center">
+                  <div class="text-[10px] text-slate-400 font-extrabold uppercase">
+                    {{ a.appt_datetime.strftime("%b") if a.appt_datetime else '-' }}
+                  </div>
+                  <div class="text-2xl font-extrabold text-slate-900">
+                    {{ a.appt_datetime.strftime("%d") if a.appt_datetime else '-' }}
+                  </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-extrabold text-slate-900 text-sm truncate">{{ a.reason or 'ติดตามอาการ' }}</div>
+                  <div class="text-xs text-slate-500 font-bold mt-1">
+                    {{ a.appt_datetime.strftime("%H:%M") if a.appt_datetime else '-' }} น. • {{ a.location or 'OPD' }}
+                  </div>
+                  <div class="mt-2">
+                    <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-600 font-extrabold">
+                      {{ a.status or 'Pending' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-10 text-slate-400 font-semibold">ไม่มีนัดหมายเร็ว ๆ นี้</div>
+          {% endif %}
+        </div>
+      </section>
 
     </div>
   </div>
