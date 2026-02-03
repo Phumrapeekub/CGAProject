@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}สรุปผลการประเมิน CGA{% endblock %}
+{% block content %}
+
+
+<!-- 👇 context สำหรับ AI Chat -->
+<div id="ai-context"
+     data-hn="{{ hn }}"
+     data-gcn="{{ gcn }}"
+     data-name="{{ patient.name }}"
+     data-page="สรุปผลการประเมิน CGA">
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+
+  <div class="rounded-3xl overflow-hidden bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-400 text-white py-4 px-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
+  <div>
+    <div class="text-sm opacity-90">ชื่อผู้ป่วย</div>
+    <div class="text-xl font-semibold">{{ patient.name }}</div>
+  </div>
+  <div>
+    <div class="text-sm opacity-90">HN / GCN</div>
+    <div class="text-xl font-semibold">{{ patient.hn }} / {{ patient.gcn }}</div>
+  </div>
+  <div>
+    <div class="text-sm opacity-90">วันที่ประเมิน</div>
+    <div class="text-xl font-semibold">{{ date }}</div>
+  </div>
+  <div class="text-right">
+    <a href="{{ url_for('assess_session', hn=hn, gcn=gcn) }}"
+       class="inline-block rounded-xl bg-white/20 backdrop-blur px-4 py-2 text-sm">รายงานฉบับเต็ม</a>
+  </div>
+</div>
+  </div>
+
+  <!-- MMSE -->
+  <div class="rounded-3xl bg-white shadow-xl border">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="font-semibold">สมรรถภาพสมอง (MMSE-T)</div>
+      <div class="text-sm text-slate-500">ระดับการศึกษา: {{ edu }}</div>
+    </div>
+    <div class="px-6 pb-6">
+      <div class="text-5xl font-bold text-rose-500">{{ mmse }}</div>
+      <div class="text-slate-500">/ 30</div>
+      <div class="mt-3 inline-flex items-center gap-2 rounded-xl bg-rose-50 text-rose-700 px-3 py-1">
+        {{ mmse_flag }}
+      </div>
+    </div>
+  </div>
+
+  <!-- TGDS -->
+  <div class="rounded-3xl bg-white shadow-xl border">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="font-semibold">ภาวะซึมเศร้า (TGDS-15)</div>
+      <div class="text-sm text-slate-500">15 คะแนน</div>
+    </div>
+    <div class="px-6 pb-6">
+      <div class="text-5xl font-bold text-emerald-500">{{ tgds }}</div>
+      <div class="text-slate-500">/ 15</div>
+      <div class="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-50 text-emerald-700 px-3 py-1">
+        {{ tgds_flag }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Suicide Risk -->
+  <div class="rounded-3xl bg-white shadow-xl border">
+    <div class="px-6 py-4 font-semibold">ความเสี่ยงฆ่าตัวตาย</div>
+    <div class="px-6 pb-6">
+      <div class="inline-flex items-center gap-2 rounded-xl
+                  {{ 'bg-emerald-50 text-emerald-700' if sra==0 else 'bg-rose-50 text-rose-700' }} px-3 py-1">
+        {{ sra_flag }}
+      </div>
+    </div>
+  </div>
+
+
+  {% if notes %}
+  <div class="rounded-3xl bg-white shadow-xl border mt-2">
+    <div class="px-6 py-4 font-semibold">
+      คำแนะนำเพิ่มเติมย้อนหลัง
+    </div>
+    <div class="px-6 pb-6 space-y-2 max-h-64 overflow-y-auto">
+      {% for n in notes %}
+        <div class="border rounded-2xl px-4 py-2 bg-slate-50">
+          <div class="text-xs text-slate-400 mb-1">
+            {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}
+          </div>
+          <div class="text-sm text-slate-800 whitespace-pre-line">
+            {{ n.note }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+  <div class="flex flex-wrap justify-end mt-6 gap-4">
+
+  <!-- ปุ่มคำแนะนำเพิ่มเติม -->
+  <button type="button"
+          id="open-note-modal"
+          class="bg-emerald-50 text-emerald-700 px-6 py-3 rounded-lg border border-emerald-200 hover:bg-emerald-100">
+    คำแนะนำเพิ่มเติม
+  </button>
+
+  <button onclick="window.print()" 
+          class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300">
+    พิมพ์รายงาน
+  </button>
+
+  <a href="#" 
+     class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+     ดาวน์โหลด PDF
+  </a>
+
+  <a href="{{ url_for('dashboard') }}"
+     class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300">
+     กลับหน้าหลัก
+  </a>
+
+  <a href="{{ url_for('ai_analysis', hn=hn, gcn=gcn) }}"
+     class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+     เสร็จสิ้น
+  </a>
+</div>
+
+
+<!-- Modal คำแนะนำเพิ่มเติม -->
+<div id="note-modal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-40 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <h3 class="text-lg font-semibold mb-3">คำแนะนำเพิ่มเติม</h3>
+    <form method="post" action="{{ url_for('add_summary_note', hn=hn, gcn=gcn) }}">
+      <textarea name="note" rows="5"
+                class="w-full border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="พิมพ์คำแนะนำหรือข้อเสนอแนะเพิ่มเติมสำหรับผู้ป่วย..."></textarea>
+
+      <div class="flex justify-end gap-3 mt-4">
+        <button type="button"
+                id="close-note-modal"
+                class="px-4 py-2 rounded-xl bg-gray-200 text-slate-700 hover:bg-gray-300">
+          ยกเลิก
+        </button>
+        <button type="submit"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+          บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById("note-modal");
+  const openBtn = document.getElementById("open-note-modal");
+  const closeBtn = document.getElementById("close-note-modal");
+
+  if (openBtn && modal && closeBtn) {
+    openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+    closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.add("hidden");
+    });
+  }
+</script>
+
+{% endblock %}

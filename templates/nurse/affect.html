@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+{% block title %}ขั้นตอนที่ 3: ภาวะซึมเศร้าและอื่นๆ{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <span class="px-4 py-1.5 rounded-full bg-white shadow border text-slate-700">
+      <span class="font-medium">HN:</span> {{ hn }} <span class="mx-1">|</span>
+      <span class="font-medium">GCN:</span> {{ gcn }}
+    </span>
+    <span class="px-4 py-1.5 rounded-full bg-white shadow border text-slate-700">
+      ขั้นตอนที่ 3: ภาวะซึมเศร้าและอื่นๆ
+    </span>
+  </div>
+  <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+    <div class="h-full w-3/4 bg-gradient-to-r from-blue-400 via-teal-400 to-green-400"></div>
+  </div>
+
+  <form method="POST" action="" class="space-y-10">
+
+    <!-- 1. กลืนปัสสาวะ -->
+    <section class="rounded-[26px] bg-sky-50 border border-sky-100 shadow-xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-sky-200 text-sky-700 rounded-full grid place-items-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path d="M12 8v8m4-4H8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-sky-800">การกลั้นปัสสาวะ</h2>
+          <p class="text-slate-500 text-sm">การตรวจประเมินการกลั้นปัสสาวะโดยแพทย์</p>
+        </div>
+      </div>
+
+      <p class="text-slate-700 mb-4">
+        ผู้สูงอายุมีภาวะ ปัสสาวะเล็ด หรือ ปัสสาวะราด จนทำให้เกิดปัญหาในชีวิตประจำวัน
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label class="inline-flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+          <input type="radio" name="urine" value="0" class="accent-sky-600"> ไม่มี
+        </label>
+        <label class="inline-flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+          <input type="radio" name="urine" value="1" class="accent-sky-600">
+          มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา
+        </label>
+      </div>
+    </section>
+
+    <!-- 2. ปัญหาการนอน -->
+    <section class="rounded-[26px] bg-rose-50 border border-rose-100 shadow-xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-rose-200 text-rose-700 rounded-full grid place-items-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path d="M12 8v8m4-4H8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-rose-800">ปัญหาการนอน</h2>
+          <p class="text-slate-500 text-sm">การตรวจประเมินปัญหาการนอนโดยแพทย์</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label class="inline-flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+          <input type="radio" name="sleep" value="0" class="accent-rose-600"> ไม่มีปัญหา
+        </label>
+        <label class="inline-flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+          <input type="radio" name="sleep" value="1" class="accent-rose-600">
+          มีปัญหา - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา
+        </label>
+      </div>
+    </section>
+
+    <!-- 3. ภาวะซึมเศร้า (2Q) -->
+    <section class="rounded-[26px] bg-pink-50 border border-pink-100 shadow-xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-pink-200 text-pink-700 rounded-full grid place-items-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path d="M12 8v8m4-4H8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-pink-800">ภาวะซึมเศร้า (2Q)</h2>
+          <p class="text-slate-500 text-sm">2-Question Depression Screening</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <p>1. ใน 1 เดือนที่ผ่านมา รู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q2_1" value="0" class="accent-pink-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q2_1" value="1" class="accent-pink-600"> มี
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>2. ใน 1 เดือนที่ผ่านมา รู้สึกเบื่อ ทำอะไรไม่เพลิดเพลินหรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q2_2" value="0" class="accent-pink-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q2_2" value="1" class="accent-pink-600"> มี
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[26px] bg-pink-50 border border-pink-100 shadow-xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-pink-200 text-pink-700 rounded-full grid place-items-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path d="M12 8v8m4-4H8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-pink-800">แบบประเมินซึมเศร้า (TGDS-15)</h2>
+          <p class="text-slate-500 text-sm">Thai Geriatric Depression Scale (ฉบับ 15 ข้อ)</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        
+        <div>
+          <p>1. ท่านพอใจกับชีวิตความเป็นอยู่ตอนนี้หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_1" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_1" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <p>2. ท่านไม่อยากทำในสิ่งที่เคยสนใจ หรือเคยทำเป็นประจำใช่หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_2" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_2" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <p>3. ท่านรู้สึกชีวิตของคุณว่างเปล่า ไม่มีอะไรจะทำใช่หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_3" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_3" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <p>4. ท่านรู้สึกเบื่อหน่ายบ่อยๆ หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_4" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_4" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <p>5. ส่วนใหญ่แล้วท่านรู้สึกอารมณ์ดีหรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_5" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_5" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>6. ท่านรู้สึกกลัวว่าจะมีเรื่องไม่ดีเกิดขึ้นกับคุณหรือเปล่า</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_6" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_6" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>7. ส่วนใหญ่ท่านรู้สึกมีความสุขดีหรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_7" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_7" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>8. บ่อยครั้งที่ท่านรู้สึกไม่มีที่พึ่ง</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_8" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_8" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>9. ท่านชอบอยู่บ้านมากกว่าที่จะข้างนอกไปทำสิ่งใหม่ๆ หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_9" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_9" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>10. ท่านคิดว่าความจำของท่านมีปัญหาคนอื่นหรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_10" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_10" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>11. การมีชีวิตอยู่ถึงปัจจุบันเป็นเรื่องน่ายินดี หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_11" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_11" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>12. ท่านรู้สึกว่าชีวิตคุณด้อยค่า หรือไม่</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_12" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_12" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>13. ท่านรู้สึกกระตือรือร้น</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_13" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_13" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>14. ท่านรู้สึกสิ้นหวัง</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_14" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_14" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p>15. ท่านคิดว่าคนอื่นดีกว่าท่าน</p>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_15" value="yes" class="accent-pink-600"> ใช่
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="tgds_15" value="no" class="accent-pink-600"> ไม่ใช่
+            </label>
+          </div>
+        </div>
+        
+        <div class="mt-4 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+          <strong>การให้คะแนน:</strong><br>
+          ข้อที่ 1, 5, 7, 11, 13 ถ้าตอบ "ไม่ใช่" ได้ 1 คะแนน<br>
+          ข้อที่ 2, 3, 4, 6, 8, 9, 10, 12, 14, 15 ถ้าตอบ "ใช่" ได้ 1 คะแนน<br>
+          <strong>การแปลผล:</strong> คะแนนรวม >=6 = มีภาวะซึมเศร้า | 4-5 = เสี่ยง | <4 = ปกติ
+        </div>
+      </div>
+    </section>
+    
+    <!-- 4. แบบประเมินการฆ่าตัวตาย (8Q) -->
+    <section class="rounded-[26px] bg-red-50 border border-red-100 shadow-xl p-6">
+      
+      <div class="flex items-start gap-3 p-4 bg-red-100 border border-red-200 rounded-xl mb-6">
+        <div class="w-10 h-10 flex-shrink-0 bg-red-500 text-white rounded-full grid place-items-center mt-1">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-red-800">8Q การประเมินการฆ่าตัวตาย 8 คำถาม</h2>
+          <p class="text-red-700 text-sm mt-1">
+            ประเมินครั้งแรกเพื่อหาผู้ป่วยที่เสี่ยง 8 ข้อ ครึ่งต่อไปใช้แบบย่อ 1-7 เท่านั้น เพื่อติดตามประวัติการฆ่าตัวตายในอดีตข้อแรกไป จะเหลือความเสี่ยงใน 1 เดือนผ่านมา โดยข้อที่ 3 ต้องนำคะแนนจากการตอบมารวมกัน ถ้าหากตอบว่า "ใช่" ทั้ง 2 ข้อจะได้คะแนนในข้อที่ 14 คะแนน
+          </p>
+        </div>
+      </div>
+      <div class="space-y-4">
+
+        <h3 class="text-base font-semibold text-red-700 pt-2">
+          • รวม 1 เดือนที่ผ่านมาวันนี้
+        </h3>
+  
+        <div class="mb-3">
+          <p class="font-medium">1. คิดอยากตาย หรือคิดว่าตายไปจะดีกว่า</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_1" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_1" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">2. อยากทำร้ายตัวเอง หรือทำให้ตัวเองบาดเจ็บ</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_2" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_2" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">3. คิดเกี่ยวกับการฆ่าตัวตาย</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_3" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_3" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">4. มีแผนการที่จะฆ่าตัวตาย</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_4" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_4" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">5. (ข้อ 5 - ไม่มีคำอธิบายในรูปภาพอ้างอิงของคุณ)</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_5" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_5" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">6. ได้เตรียมการที่จะทำร้ายตนเองหรือเตรียมการจะฆ่าตัวตาย โดยตั้งใจว่าจะตายจริงๆ</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_6" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_6" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <p class="font-medium">7. ได้ทำให้ตนเองบาดเจ็บจนเกือบตาย หรือ (บาดเจ็บแต่คิดว่าไม่เป็นไร)</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_7" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_7" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+  
+        <h3 class="text-base font-semibold text-purple-700 pt-4 border-t border-red-100">
+          • ตลอดชีวิตที่ผ่านมา
+        </h3>
+  
+        <div class="mb-3">
+          <p class="font-medium">8. ท่านเคยพยายามฆ่าตัวตาย</p>
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_8" value="0" class="accent-red-600"> ไม่มี
+            </label>
+            <label class="border rounded-2xl px-4 py-3 bg-white flex items-center gap-2">
+              <input type="radio" name="q8_8" value="1" class="accent-red-600"> มี
+            </label>
+          </div>
+        </div>
+        
+        <div class="mt-6 p-4 bg-red-100 border border-red-200 rounded-xl text-red-700 text-sm space-y-1">
+          <p class="font-semibold text-base">⚠ หมายเหตุสำคัญ:</p>
+          <p>• หากตอบว่า "มี" ในข้อใดๆ โปรดพิจารณาส่งต่อผู้เชี่ยวชาญเพื่อประเมินและติดตามอย่างใกล้ชิด</p>
+          <p>• โดยข้อที่ 3 ต้องนำคะแนนจากการตอบมารวมกัน ถ้าหากตอบว่า "ใช่" ทั้ง 2 ข้อจะได้คะแนนในข้อที่ 14 คะแนน</p>
+        </div>
+        </div> </section>
+
+
+
+    <!-- ปุ่ม --><!-- ใหม่ -->
+<a href="{{ url_for('mmse_next', hn=hn, gcn=gcn) }}">
+
+      <a href="{{ url_for('mmse_next', hn=hn, gcn=gcn) }}"
+         class="px-6 py-3 rounded-2xl bg-gray-200 hover:bg-gray-300 text-gray-700 shadow">
+        ⬅ ย้อนกลับ
+      </a>
+      <button type="submit"
+              class="px-6 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 shadow">
+        ดูสรุปผล →
+      </button>
+    </div>
+
+
+    <input type="hidden" name="tgds_total" id="tgds_total_input" value="0"> <input type="hidden" name="sra_total" id="sra_total_input" value="0"> <input type="hidden" name="mmse" value="{{ mmse_current }}">
+    <input type="hidden" name="edu" value="{{ edu_current }}">
+    
+    <button type="submit">ต่อไป</button>
+
+  </form>
+</div>
+
+{% endblock %}
