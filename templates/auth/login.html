@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title or "Login" }}</title>
+
+  <!-- Tailwind CDN (dev-friendly) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: {
+            soft: "0 18px 55px rgba(2, 6, 23, .18)",
+            glow: "0 18px 55px rgba(56, 189, 248, .22)"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Prompt", "Sarabun", Arial; }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-900">
+  <!-- Background (light blue, modern) -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-sky-50 via-blue-50 to-slate-100"></div>
+
+    <div class="absolute -top-52 -left-52 h-[620px] w-[620px] rounded-full bg-sky-300/35 blur-3xl"></div>
+    <div class="absolute top-12 -right-52 h-[620px] w-[620px] rounded-full bg-blue-300/30 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-indigo-300/15 blur-3xl"></div>
+
+    <div class="absolute inset-0 opacity-[.07]"
+         style="background-image:linear-gradient(to_right,rgba(15,23,42,.35) 1px,transparent 1px),
+                linear-gradient(to_bottom,rgba(15,23,42,.35) 1px,transparent 1px);
+                background-size:58px 58px;"></div>
+  </div>
+
+  <main class="min-h-screen grid place-items-center px-4 py-10">
+    <section class="w-full max-w-lg rounded-3xl border border-slate-200/80 bg-white/70 backdrop-blur-xl shadow-soft">
+      <div class="p-8 sm:p-10">
+
+        <!-- Header: Logo -> Title -> Description (center, vertical) -->
+        <header class="flex flex-col items-center text-center">
+          {% if logo_path %}
+            <div class="h-24 w-24 rounded-3xl bg-white/80 border border-slate-200/80 shadow-glow grid place-items-center">
+              <img src="{{ logo_path }}" alt="logo" class="h-16 w-16 object-contain" />
+            </div>
+          {% endif %}
+
+          <h1 class="mt-5 text-2xl font-semibold tracking-tight text-slate-900">
+            {{ page_title or "Login" }}
+          </h1>
+
+          <p class="mt-1 text-sm text-slate-600">
+            {{ page_desc or "กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ" }}
+          </p>
+
+          {% if role_label %}
+            <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs text-slate-600">
+              <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+              กำลังเข้าสู่ระบบเป็น <span class="font-medium text-slate-800">{{ role_label }}</span>
+            </div>
+          {% endif %}
+        </header>
+
+        <!-- Flash / Error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mt-6 space-y-2">
+              {% for category, message in messages %}
+                <div class="rounded-2xl border border-slate-200 bg-white/75 px-4 py-3 text-sm text-slate-700">
+                  <span class="font-medium">
+                    {% if category == "error" %}⚠️{% else %}✅{% endif %}
+                  </span>
+                  <span class="ml-1">{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Form -->
+        <form class="mt-7 space-y-4" method="post" action="{{ post_url or '' }}">
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700">ชื่อผู้ใช้</label>
+            <input
+              name="username"
+              autocomplete="username"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-white/85 px-4 py-3
+                     text-slate-900 placeholder:text-slate-400 outline-none
+                     focus:border-sky-400 focus:ring-4 focus:ring-sky-200/70"
+              placeholder="เช่น nurse01 / doctor01 / admin"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700">รหัสผ่าน</label>
+            <input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-white/85 px-4 py-3
+                     text-slate-900 placeholder:text-slate-400 outline-none
+                     focus:border-sky-400 focus:ring-4 focus:ring-sky-200/70"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div class="flex items-center justify-between gap-4 pt-1">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-600 select-none">
+              <input type="checkbox" name="remember"
+                     class="h-4 w-4 rounded border-slate-300 text-sky-500 focus:ring-sky-200">
+              จำฉันไว้
+            </label>
+            <a href="{{ forgot_url or '#' }}" class="text-sm text-sky-700 hover:text-sky-800">
+              ลืมรหัสผ่าน?
+            </a>
+          </div>
+
+          <button
+            class="w-full rounded-2xl bg-gradient-to-b from-sky-500 to-blue-600 px-4 py-3
+                   font-semibold text-white shadow-soft
+                   hover:from-sky-400 hover:to-blue-500
+                   focus:outline-none focus:ring-4 focus:ring-sky-200/80">
+            เข้าสู่ระบบ
+          </button>
+
+          <p class="pt-3 text-xs text-slate-500 leading-relaxed text-center">
+            โดยการเข้าสู่ระบบ คุณยอมรับนโยบายความปลอดภัยของระบบ และการเข้าถึงข้อมูลผู้ป่วยตามสิทธิ์ของคุณ
+          </p>
+        </form>
+
+      </div>
+    </section>
+  </main>
+</body>
+</html>
