@@ -156,12 +156,15 @@
 
 <!-- ส่งข้อมูลจากเซิร์ฟเวอร์เป็น JSON (ไม่ใช่ JS) -->
 <script id="chart-data" type="application/json">
-  {{ {
-      "bar_labels": bar_labels,
-      "bar_values": bar_values,
-      "risk": risk
-    } | tojson }}
+  {{
+    {
+      "bar_labels": bar_labels | default([]),
+      "bar_values": bar_values | default([]),
+      "risk": risk | default({})
+    } | tojson
+  }}
 </script>
+
 
 
 

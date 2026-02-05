@@ -21,7 +21,7 @@ def dashboard():
     if session.get("role") != "nurse":
         return redirect(url_for("auth.login"))
 
-    kpis = {"today": 0, "month": 0, "year": 0, "total": 0}
+    kpis = {"today": 0, "week": 0, "month": 0, "year": 0, "total": 0}
 
     conn = get_db_connection()
     if not conn:
@@ -83,7 +83,12 @@ def dashboard():
         )
         kpis["year"] = (cur.fetchone() or {}).get("c", 0) or 0
 
-        return render_template("nurse/dashboard.html", kpis=kpis)
+        return render_template(
+    "nurse/dashboard.html",
+    kpis=kpis,
+    chart_data={}
+)
+
 
     finally:
         try:
