@@ -1,18 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from werkzeug.security import check_password_hash
+from __future__ import annotations
+
+from flask import Blueprint, render_template, redirect, url_for, flash, session
 from db.db import get_db_connection
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
-from flask import Blueprint, render_template, redirect, url_for, session
 
-nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
+def _require_nurse():
+    # มาตรฐานเดียวกับระบบรวม
+    return session.get("logged_in") and session.get("role") == "nurse" and session.get("user_id")
 
-@nurse_bp.get("/")
-def index():
-    if session.get("role") == "nurse" and session.get("user_id"):
-        return redirect(url_for("nurse.dashboard"))
-    return redirect(url_for("auth.login"))
 
 def _first_existing(colset: set[str], candidates: list[str]) -> str | None:
     for c in candidates:
@@ -20,9 +17,18 @@ def _first_existing(colset: set[str], candidates: list[str]) -> str | None:
             return c
     return None
 
+
+@nurse_bp.get("/")
+def index():
+    if _require_nurse():
+        return redirect(url_for("nurse.dashboard"))
+    return redirect(url_for("auth.login"))
+
+
 @nurse_bp.get("/dashboard")
 def dashboard():
-    if session.get("role") != "nurse":
+    if not _require_nurse():
+        flash("ไม่มีสิทธิ์เข้าหน้านี้", "error")
         return redirect(url_for("auth.login"))
 
     kpis = {"today": 0, "month": 0, "year": 0, "total": 0}
@@ -32,6 +38,7 @@ def dashboard():
         flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "error")
         return render_template("nurse/dashboard.html", kpis=kpis)
 
+    cur = None
     try:
         cur = conn.cursor(dictionary=True)
 
@@ -39,22 +46,27 @@ def dashboard():
         cur.execute("SELECT COUNT(*) AS c FROM patients")
         kpis["total"] = (cur.fetchone() or {}).get("c", 0) or 0
 
-        # --- detect datetime column in encounters ---
-        cur.execute("""
+        # detect datetime column in encounters
+        cur.execute(
+            """
             SELECT COLUMN_NAME AS c
             FROM information_schema.columns
             WHERE table_schema = DATABASE()
               AND table_name = 'encounters'
-        """)
+            """
+        )
         cols = {r["c"] for r in (cur.fetchall() or []) if r.get("c")}
 
-        dt_col = _first_existing(cols, [
-            "encounter_datetime",
-            "visit_datetime",
-            "encounter_date",
-            "created_at",
-            "updated_at",
-        ])
+        dt_col = _first_existing(
+            cols,
+            [
+                "encounter_datetime",
+                "visit_datetime",
+                "encounter_date",
+                "created_at",
+                "updated_at",
+            ],
+        )
 
         if not dt_col:
             # ไม่มีคอลัมน์เวลาเลย ก็โชว์ 0 ไปก่อน ไม่ให้พัง
@@ -73,7 +85,7 @@ def dashboard():
             FROM encounters
             WHERE YEAR({dt_col})=YEAR(CURDATE())
               AND MONTH({dt_col})=MONTH(CURDATE())
-            """
+        """
         )
         kpis["month"] = (cur.fetchone() or {}).get("c", 0) or 0
 
@@ -83,7 +95,7 @@ def dashboard():
             SELECT COUNT(DISTINCT patient_id) AS c
             FROM encounters
             WHERE YEAR({dt_col})=YEAR(CURDATE())
-            """
+        """
         )
         kpis["year"] = (cur.fetchone() or {}).get("c", 0) or 0
 
@@ -91,13 +103,16 @@ def dashboard():
 
     finally:
         try:
-            cur.close()
+            if cur:
+                cur.close()
         except Exception:
             pass
         conn.close()
 
+
 @nurse_bp.get("/assess/start", endpoint="assess_start")
 def assess_start():
-    if session.get("role") != "nurse":
+    if not _require_nurse():
+        flash("ไม่มีสิทธิ์เข้าหน้านี้", "error")
         return redirect(url_for("auth.login"))
-    return render_template("nurse/assess_start.html")  # หรือจะ redirect ไปหน้าที่มีอยู่
+    return render_template("nurse/assess_start.html")
