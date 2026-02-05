@@ -47,18 +47,24 @@ def login():
             flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
             return redirect(url_for("auth.login"))
 
-        session.clear()
-        session["user_id"] = user["id"]
-        session["username"] = user["username"]
-        session["role"] = user.get("role") or ""
-        session["full_name"] = user.get("full_name") or ""
+        # ✅ session มาตรฐาน (compatible ทั้งของเก่าและใหม่)
+        raw_role = (user.get("role") or "").strip()
+        role_norm = raw_role.lower()
 
-        role = (user.get("role") or "").lower()
-        if role == "nurse":
+        session.clear()
+        session["logged_in"] = True
+        session["user_id"] = int(user["id"])
+        session["username"] = (user.get("username") or "").strip()
+        session["full_name"] = (user.get("full_name") or "").strip()
+        session["role"] = raw_role
+        session["role_norm"] = role_norm
+
+        # redirect ตาม role
+        if role_norm == "nurse":
             return redirect("/nurse/dashboard")
-        if role == "doctor":
+        if role_norm == "doctor":
             return redirect("/doctor/dashboard")
-        if role == "admin":
+        if role_norm == "admin":
             return redirect("/admin/dashboard")
 
         flash("role ไม่ถูกต้อง", "error")
