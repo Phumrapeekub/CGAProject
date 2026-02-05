@@ -1,4 +1,3 @@
-# CGAProject/auth/__init__.py
-from flask import Blueprint
-auth_bp = Blueprint("auth", __name__)
-from . import routes_auth  # noqa
+from .routes_auth import auth_bp
+
+

@@ -4,6 +4,9 @@ from db.db import get_db_connection  # ถ้า db.py อยู่ root ให�
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
+@admin_bp.route("/login", methods=["GET"])
+def admin_login_redirect():
+    return redirect(url_for("auth.login"))
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():

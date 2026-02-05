@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "nurse/base.html" %}
 {% block title %}Dashboard | CGA{% endblock %}
 {% block content %}
 <div class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
@@ -29,7 +29,7 @@
           {{ role }}
         </div>
       </div>
-      <a href="{{ url_for('logout') }}"
+      <a href="{{ url_for('auth.logout') }}"
          class="px-3 py-1.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 text-sm font-medium">
         ออกจากระบบ
       </a>
@@ -103,7 +103,7 @@
   <div class="rounded-3xl bg-white p-5 shadow-md border border-slate-100">
     <div class="font-semibold mb-3">การดำเนินการด่วน</div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <a href="{{ url_for('assess_start') }}"
+      <a href="{{ url_for('nurse.assess_start') }}">
          class="block text-center rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg relative"
          style="z-index: 10;">
         ➕ ประเมินผู้ป่วยใหม่

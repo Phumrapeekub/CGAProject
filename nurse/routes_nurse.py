@@ -1,59 +1,103 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash
-from db.db import get_db_connection  # หรือ from db import get_db_connection
+from db.db import get_db_connection
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
+from flask import Blueprint, render_template, redirect, url_for, session
 
-@nurse_bp.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = (request.form.get("username") or "").strip()
-        password = request.form.get("password") or ""
+nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
-        conn = get_db_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute(
-            "SELECT id, username, password_hash, role, is_active FROM users WHERE username=%s LIMIT 1",
-            (username,),
-        )
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        role_db = (user.get("role") if user else "") or ""
-        role_db = role_db.strip().lower()  # กันพิมพ์เล็ก/ใหญ่ใน DB
-
-        ok = (
-            user
-            and user.get("is_active", 1) == 1
-            and role_db == "nurse"
-            and user.get("password_hash")
-            and check_password_hash(user["password_hash"], password)
-        )
-
-        if not ok:
-            flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
-            return redirect(url_for("nurse.login"))
-
-        session.clear()
-        session["logged_in"] = True
-        session["user_id"] = user["id"]
-        session["role"] = role_db  # เก็บเป็นตัวเล็กมาตรฐาน
+@nurse_bp.get("/")
+def index():
+    if session.get("role") == "nurse" and session.get("user_id"):
         return redirect(url_for("nurse.dashboard"))
+    return redirect(url_for("auth.login"))
 
-    return render_template(
-        "auth/login.html",
-        role_label="พยาบาล",
-        page_title="Nurse Login",
-        page_desc="กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ",
-        post_url=url_for("nurse.login"),
-        logo_path=url_for("static", filename="logo_phayao.png"),
-    )
-
+def _first_existing(colset: set[str], candidates: list[str]) -> str | None:
+    for c in candidates:
+        if c in colset:
+            return c
+    return None
 
 @nurse_bp.get("/dashboard")
 def dashboard():
-    if not session.get("logged_in") or session.get("role") != "nurse":
-        return redirect(url_for("nurse.login"))
-    return "NURSE DASHBOARD OK"
+    if session.get("role") != "nurse":
+        return redirect(url_for("auth.login"))
+
+    kpis = {"today": 0, "month": 0, "year": 0, "total": 0}
+
+    conn = get_db_connection()
+    if not conn:
+        flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "error")
+        return render_template("nurse/dashboard.html", kpis=kpis)
+
+    try:
+        cur = conn.cursor(dictionary=True)
+
+        # total patients
+        cur.execute("SELECT COUNT(*) AS c FROM patients")
+        kpis["total"] = (cur.fetchone() or {}).get("c", 0) or 0
+
+        # --- detect datetime column in encounters ---
+        cur.execute("""
+            SELECT COLUMN_NAME AS c
+            FROM information_schema.columns
+            WHERE table_schema = DATABASE()
+              AND table_name = 'encounters'
+        """)
+        cols = {r["c"] for r in (cur.fetchall() or []) if r.get("c")}
+
+        dt_col = _first_existing(cols, [
+            "encounter_datetime",
+            "visit_datetime",
+            "encounter_date",
+            "created_at",
+            "updated_at",
+        ])
+
+        if not dt_col:
+            # ไม่มีคอลัมน์เวลาเลย ก็โชว์ 0 ไปก่อน ไม่ให้พัง
+            return render_template("nurse/dashboard.html", kpis=kpis)
+
+        # today
+        cur.execute(
+            f"SELECT COUNT(DISTINCT patient_id) AS c FROM encounters WHERE DATE({dt_col}) = CURDATE()"
+        )
+        kpis["today"] = (cur.fetchone() or {}).get("c", 0) or 0
+
+        # month
+        cur.execute(
+            f"""
+            SELECT COUNT(DISTINCT patient_id) AS c
+            FROM encounters
+            WHERE YEAR({dt_col})=YEAR(CURDATE())
+              AND MONTH({dt_col})=MONTH(CURDATE())
+            """
+        )
+        kpis["month"] = (cur.fetchone() or {}).get("c", 0) or 0
+
+        # year
+        cur.execute(
+            f"""
+            SELECT COUNT(DISTINCT patient_id) AS c
+            FROM encounters
+            WHERE YEAR({dt_col})=YEAR(CURDATE())
+            """
+        )
+        kpis["year"] = (cur.fetchone() or {}).get("c", 0) or 0
+
+        return render_template("nurse/dashboard.html", kpis=kpis)
+
+    finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
+        conn.close()
+
+@nurse_bp.get("/assess/start", endpoint="assess_start")
+def assess_start():
+    if session.get("role") != "nurse":
+        return redirect(url_for("auth.login"))
+    return render_template("nurse/assess_start.html")  # หรือจะ redirect ไปหน้าที่มีอยู่
