@@ -1,4 +1,4 @@
-{% extends "medical_base.html" %}
+{% extends "doctor/medical_base.html" %}
 {% block title %}ตารางเข้าเวร - แพทย์{% endblock %}
 
 {% block head %}
@@ -13,13 +13,13 @@
 
   /* ===== Mini calendar (1 month pager + swipe) ===== */
   #miniViewport{
-    overflow: hidden;          /* ไม่ให้เลื่อนยาว */
-    touch-action: pan-x;       /* ให้ลากซ้ายขวา */
+    overflow: hidden;
+    touch-action: pan-x;
     user-select: none;
   }
   #miniTrack{
     display:flex;
-    width:300%;                /* 3 หน้า: prev/current/next */
+    width:300%;
     transform: translateX(-33.3333%);
     transition: transform .26s ease;
     will-change: transform;
@@ -50,6 +50,18 @@
   .mini-day.has-event{ border-color:#bfdbfe; background:#eff6ff; color:#1d4ed8; }
   .mini-day.is-selected{ outline:2px solid #2563eb; outline-offset:2px; }
   .mini-day.is-today{ box-shadow: inset 0 0 0 2px rgba(37,99,235,.25); }
+
+  /* ทำให้ event ใน month view ดูโค้งนิดๆ */
+  .fc .fc-daygrid-event{
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-weight: 800;
+  }
+
+  /* ✅ ซ่อนเวลาเฉพาะ "มุมมองเดือน" (dayGridMonth) */
+  .fc-dayGridMonth-view .fc-event-time{
+    display:none !important;
+  }
 </style>
 {% endblock %}
 
@@ -87,20 +99,20 @@
   <div class="bg-white rounded-2xl soft-card p-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <div class="text-base font-bold text-slate-900">ตารางเข้าเวรของฉัน</div>
-      <div class="text-sm text-slate-500">คลิก “วัน” เพื่อดูเวรวันนั้น • กด “ยืนยันวัน” เพื่อเพิ่มเวร • คลิก “เวร” เพื่อแก้ไขโน้ต</div>
+      <div class="text-sm text-slate-500">คลิก “วัน” เพื่อดูเวรวันนั้น • กด “ยืนยันวัน” เพื่อเพิ่มเวร • คลิก “เวร” เพื่อแก้ไขโน้ต/ลบ</div>
     </div>
 
     <div class="flex flex-wrap items-center gap-2 text-sm" id="legendChips">
-      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
         <span class="w-2 h-2 rounded-full bg-blue-500"></span> Day
       </span>
-      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
         <span class="w-2 h-2 rounded-full bg-amber-500"></span> Evening
       </span>
-      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-700">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-700 border border-red-100">
         <span class="w-2 h-2 rounded-full bg-red-500"></span> Night
       </span>
-      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span> On-call
       </span>
     </div>
@@ -147,7 +159,7 @@
     <!-- Right -->
     <aside class="lg:col-span-3 space-y-5">
 
-      <!-- ✅ Mini calendar (1 month, swipe + buttons) -->
+      <!-- Mini calendar -->
       <div class="bg-white rounded-2xl soft-card p-5">
         <div class="flex items-center justify-between">
           <div class="font-bold text-slate-900" id="miniTitle">-</div>
@@ -183,7 +195,7 @@
       <!-- Detail -->
       <div class="bg-white rounded-2xl soft-card p-5">
         <h2 class="text-base font-bold text-slate-900">รายละเอียดเวร</h2>
-        <p class="text-sm text-slate-500 mt-1">คลิกเวรจากปฏิทินหรือ list เพื่อแก้ไขโน้ต</p>
+        <p class="text-sm text-slate-500 mt-1">คลิกเวรจากปฏิทินหรือ list เพื่อแก้ไขโน้ต หรือกดลบ</p>
 
         <div id="detailEmpty" class="mt-5 rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
           ยังไม่ได้เลือกเวร
@@ -215,6 +227,14 @@
 
             <p id="saveMsg" class="text-xs text-emerald-600 hidden">บันทึกแล้ว ✓</p>
           </form>
+
+          <div class="pt-2 border-t border-slate-100">
+            <button id="deleteBtn" type="button"
+              class="w-full rounded-2xl bg-red-600 hover:bg-red-700 text-white py-2.5 text-sm font-extrabold transition">
+              ลบเวรนี้
+            </button>
+            <p id="deleteMsg" class="text-xs text-slate-500 mt-2 hidden">ลบแล้ว ✓</p>
+          </div>
         </div>
       </div>
 
@@ -222,7 +242,7 @@
   </div>
 </div>
 
-<!-- Modal เลือกประเภทเวร -->
+<!-- Modal -->
 <div id="dutyModal" class="hidden fixed inset-0 z-[999]">
   <div class="absolute inset-0 bg-slate-900/40"></div>
 
@@ -280,14 +300,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const calendarEl = document.getElementById('calendar');
+  // ---------- DOM ----------
+  const calendarEl  = document.getElementById('calendar');
 
   const detailEmpty = document.getElementById('detailEmpty');
   const detailBox   = document.getElementById('detailBox');
-  const dTitle = document.getElementById('dTitle');
-  const dType  = document.getElementById('dType');
-  const dTime  = document.getElementById('dTime');
-  const dLoc   = document.getElementById('dLoc');
+  const dTitle      = document.getElementById('dTitle');
+  const dType       = document.getElementById('dType');
+  const dTime       = document.getElementById('dTime');
+  const dLoc        = document.getElementById('dLoc');
 
   const shiftIdInput = document.getElementById('shift_id');
   const noteInput    = document.getElementById('note');
@@ -298,7 +319,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const todayListEl  = document.getElementById('todayList');
   const searchBox    = document.getElementById('searchBox');
 
-  // -------- helpers --------
+  const deleteBtn = document.getElementById('deleteBtn');
+  const deleteMsg = document.getElementById('deleteMsg');
+
+  // ---------- STYLE MAP ----------
+  const SHIFT_STYLE = {
+    day:     { bg:"#eff6ff", border:"#bfdbfe", text:"#1d4ed8" },
+    evening: { bg:"#fffbeb", border:"#fde68a", text:"#b45309" },
+    night:   { bg:"#fef2f2", border:"#fecaca", text:"#b91c1c" },
+    oncall:  { bg:"#ecfdf5", border:"#a7f3d0", text:"#047857" },
+  };
+
+  // ---------- helpers ----------
   function fmtThai(dt) {
     return dt ? dt.toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'short' }) : '-';
   }
@@ -312,19 +344,47 @@ document.addEventListener('DOMContentLoaded', function() {
   function thaiMonthTitle(d){
     return d.toLocaleDateString('th-TH', { month:'long', year:'numeric' });
   }
+  function normalizeType(t){
+    t = (t || '').toLowerCase().trim();
+    if (t === 'on-call') return 'oncall';
+    return t;
+  }
+
+  function applyEventStyle(ev){
+    const t = normalizeType(ev.extendedProps?.shift_type || ev.title || '');
+    const st = SHIFT_STYLE[t] || SHIFT_STYLE.day;
+
+    ev.setProp("backgroundColor", st.bg);
+    ev.setProp("borderColor", st.border);
+    ev.setProp("textColor", st.text);
+
+    if (["day","evening","night","oncall"].includes(t)) {
+      ev.setProp("title", t === "oncall" ? "on-call" : t);
+    }
+  }
 
   function showDetailByEvent(e) {
     detailEmpty.classList.add('hidden');
     detailBox.classList.remove('hidden');
 
     const p = e.extendedProps || {};
+    const typ = normalizeType(p.shift_type || e.title || '-');
+    const st = SHIFT_STYLE[typ] || SHIFT_STYLE.day;
+
     dTitle.textContent = e.title || '-';
-    dType.textContent  = ((p.shift_type || '-') + '').toUpperCase();
+    dType.textContent  = (typ || '-').toUpperCase();
+    dType.style.background = "#fff";
+    dType.style.borderColor = st.border;
+    dType.style.color = st.text;
+
     dTime.textContent = `${fmtThai(e.start)} – ${fmtThai(e.end)}`;
     dLoc.textContent  = p.location || '-';
     shiftIdInput.value = e.id;
+
     noteInput.value = p.note || '';
     saveMsg.classList.add('hidden');
+    saveMsg.style.display = "";
+    deleteMsg.classList.add('hidden');
   }
 
   function renderList(targetEl, events, emptyText) {
@@ -332,20 +392,28 @@ document.addEventListener('DOMContentLoaded', function() {
       targetEl.innerHTML = `<div class="text-sm text-slate-500">${emptyText}</div>`;
       return;
     }
+
     targetEl.innerHTML = events.map(e => {
       const p = e.extendedProps || {};
-      const st = timeHM(e.startStr);
-      const en = timeHM(e.endStr);
+      const typ = normalizeType(p.shift_type || e.title || '');
+      const st = SHIFT_STYLE[typ] || SHIFT_STYLE.day;
+
+      const stTime = timeHM(e.startStr);
+      const enTime = timeHM(e.endStr);
       const loc = p.location || '-';
       const note = p.note || '';
+
       return `
         <button class="w-full text-left p-3 rounded-2xl border border-slate-200 hover:bg-slate-50 transition"
                 data-shift="${e.id}">
           <div class="flex items-center justify-between gap-2">
             <div class="font-bold text-slate-900 text-sm">${e.title}</div>
-            <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">${(p.shift_type||'-').toUpperCase()}</span>
+            <span class="text-xs px-2 py-1 rounded-full border"
+              style="background:${st.bg}; border-color:${st.border}; color:${st.text};">
+              ${(typ||'-').toUpperCase()}
+            </span>
           </div>
-          <div class="text-xs text-slate-500 mt-1">${st}-${en} • ${loc}</div>
+          <div class="text-xs text-slate-500 mt-1">${stTime}-${enTime} • ${loc}</div>
           ${note ? `<div class="text-xs text-slate-600 mt-1 line-clamp-2">📝 ${note}</div>` : ``}
         </button>
       `;
@@ -359,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // -------- FullCalendar --------
+  // ---------- FullCalendar ----------
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
@@ -367,7 +435,18 @@ document.addEventListener('DOMContentLoaded', function() {
     locale: 'th',
     nowIndicator: true,
     eventDisplay: 'block',
-    events: { url: "{{ url_for('doctor_duty_events') }}", method: 'GET' },
+    events: { url: "{{ url_for('doctor.doctor_duty_events') }}", method: 'GET' },
+
+    eventDidMount: (info) => {
+      const typ = normalizeType(info.event.extendedProps?.shift_type || info.event.title || '');
+      const st = SHIFT_STYLE[typ] || SHIFT_STYLE.day;
+      if (info.el) {
+        info.el.style.backgroundColor = st.bg;
+        info.el.style.borderColor = st.border;
+        info.el.style.color = st.text;
+      }
+    },
+
     eventClick: (info) => showDetailByEvent(info.event),
     dateClick: (info) => {
       document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('ring-2','ring-blue-600','bg-blue-50'));
@@ -406,35 +485,101 @@ document.addEventListener('DOMContentLoaded', function() {
     renderList(todayListEl, events, "ไม่มีเวรวันนี้");
   }
 
-  // Search affects picked list
+  // Search
   searchBox.addEventListener('input', () => {
     const picked = pickedDateEl.textContent;
     if (!picked || picked === '-') return;
     setPickedDate(picked);
   });
 
-  // Save note
+  // ✅ Save note: แสดง “บันทึกแล้ว” + เคลียร์เฉพาะช่องพิมพ์ (ไม่แตะข้อมูลใน event/DB)
   document.getElementById('noteForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     saveMsg.classList.add('hidden');
+    saveMsg.style.display = "";
 
-    const formData = new FormData(e.target);
-    const res = await fetch("{{ url_for('doctor_duty_note_save') }}", { method: "POST", body: formData });
-    const data = await res.json();
+    try {
+      const formData = new FormData(e.target);
+      const res = await fetch("{{ url_for('doctor.doctor_duty_note_save') }}", { method: "POST", body: formData });
 
-    if (data.ok) {
+      let data = null;
+      try { data = await res.json(); } catch (_) { data = { ok:false, msg:"ตอบกลับไม่ใช่ JSON" }; }
+
+      if (!data.ok) return;
+
+      // ✅ โชว์ข้อความบันทึกแบบชัวร์ ๆ
+      saveMsg.textContent = "บันทึกแล้ว ✓";
       saveMsg.classList.remove('hidden');
-      const id = shiftIdInput.value;
+      saveMsg.style.display = "block";
+
+      // ✅ เคลียร์เฉพาะช่องพิมพ์ (UI)
+      noteInput.value = "";
+
+      // ✅ อัปเดต event.note ให้ตรงกับค่าที่บันทึก (ถ้า backend ส่ง note กลับมา)
+      const id = String(shiftIdInput.value || "");
       const ev = calendar.getEventById(id);
-      if (ev) ev.setExtendedProp("note", noteInput.value);
+      if (ev) {
+        const savedNote = (data.note !== undefined) ? (data.note || "") : (formData.get("note") || "");
+        ev.setExtendedProp("note", savedNote);
+      }
+
+      setTimeout(() => {
+        saveMsg.classList.add('hidden');
+        saveMsg.style.display = "";
+      }, 1500);
 
       refreshTodayList();
       const picked = pickedDateEl.textContent;
       if (picked && picked !== '-') setPickedDate(picked);
+
+    } catch (_) {
+      // เงียบไว้
     }
   });
 
-  // ===== Mini calendar pager =====
+  // Delete shift
+  deleteBtn.addEventListener('click', async () => {
+    const id = (shiftIdInput.value || "").trim();
+    if (!id) return;
+
+    // ถ้ายังไม่มี endpoint delete จริง ๆ ให้คอมเมนต์ทั้งก้อนนี้ออก
+    if (!confirm("ยืนยันลบเวรนี้?")) return;
+
+    deleteBtn.disabled = true;
+    deleteBtn.classList.add("opacity-70");
+
+    try {
+      const fd = new FormData();
+      fd.append("shift_id", id);
+
+      const res = await fetch("{{ url_for('doctor.doctor_duty_delete') }}", { method:"POST", body: fd });
+      let data = null;
+      try { data = await res.json(); } catch (_) { data = { ok:false, msg:"ตอบกลับไม่ใช่ JSON" }; }
+
+      if (data.ok) {
+        const ev = calendar.getEventById(id);
+        if (ev) ev.remove();
+
+        deleteMsg.classList.remove('hidden');
+        detailBox.classList.add('hidden');
+        detailEmpty.classList.remove('hidden');
+
+        refreshTodayList();
+        const picked = pickedDateEl.textContent;
+        if (picked && picked !== '-') setPickedDate(picked);
+      } else {
+        alert(data.msg || "ลบไม่สำเร็จ");
+      }
+    } catch (_) {
+      alert("ลบไม่สำเร็จ");
+    } finally {
+      deleteBtn.disabled = false;
+      deleteBtn.classList.remove("opacity-70");
+    }
+  });
+
+  // ---------- Mini calendar pager ----------
   const miniTitle = document.getElementById('miniTitle');
   const miniViewport = document.getElementById('miniViewport');
   const miniTrack = document.getElementById('miniTrack');
@@ -499,7 +644,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     miniTitle.textContent = thaiMonthTitle(miniMonth);
 
-    // reset ให้อยู่กลางเสมอ
     miniTrack.style.transition = "none";
     miniTrack.style.transform = "translateX(-33.3333%)";
     requestAnimationFrame(() => {
@@ -511,7 +655,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (animLock) return;
     animLock = true;
 
-    // slide ไปหน้า prev/next
     miniTrack.style.transform = (delta > 0) ? "translateX(-66.6666%)" : "translateX(0%)";
 
     const onEnd = () => {
@@ -537,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
   miniPrevBtn.addEventListener('click', () => changeMiniMonth(-1));
   miniNextBtn.addEventListener('click', () => changeMiniMonth(+1));
 
-  // swipe (pointer)
+  // swipe
   let startX = 0, lastX = 0, startT = 0, dragging = false;
 
   miniViewport.addEventListener('pointerdown', (e) => {
@@ -563,20 +706,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const dx = lastX - startX;
     const dt = Math.max(1, performance.now() - startT);
-    const vx = dx / dt; // px/ms
+    const vx = dx / dt;
     const threshold = miniViewport.clientWidth * 0.22;
 
     miniTrack.style.transition = "transform .26s ease";
 
-    // velocity ช่วยให้รู้สึกลื่นแบบ iOS
     if (dx < -threshold || vx < -0.55) return changeMiniMonth(+1);
     if (dx >  threshold || vx >  0.55) return changeMiniMonth(-1);
 
-    // snap กลับกลาง
     miniTrack.style.transform = "translateX(-33.3333%)";
   });
 
-  // confirm button (เปิด modal)
+  // confirm -> open modal
   document.getElementById('miniConfirm').addEventListener('click', () => {
     const picked = pickedDateEl.textContent;
     const t = (!picked || picked === '-') ? ymd(new Date()) : picked;
@@ -584,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
     openModal(t);
   });
 
-  // ===== Modal create shift =====
+  // ---------- Modal create shift ----------
   const dutyModal   = document.getElementById('dutyModal');
   const modalDateEl = document.getElementById('modalDate');
   const modalClose  = document.getElementById('modalClose');
@@ -598,23 +739,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
   let selectedType = "";
   let selectedDate = "";
+  let saving = false;
 
   function openModal(dateStr){
     selectedDate = dateStr;
     modalDateEl.textContent = dateStr;
     modalErr.classList.add('hidden');
+    modalErr.textContent = "";
+
     selectedType = "";
-    document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('ring-2','ring-blue-600'));
+    document.querySelectorAll('#typeChips .chip').forEach(c => {
+      c.classList.remove('ring-2','ring-blue-600','ring-amber-500','ring-red-500','ring-emerald-500');
+    });
+
     dutyModal.classList.remove('hidden');
   }
-  function closeModal(){ dutyModal.classList.add('hidden'); }
+  function closeModal(){
+    dutyModal.classList.add('hidden');
+    modalErr.classList.add('hidden');
+    modalErr.textContent = "";
+  }
+
+  function chipRingFor(type){
+    if (type === "day") return "ring-blue-600";
+    if (type === "evening") return "ring-amber-500";
+    if (type === "night") return "ring-red-500";
+    if (type === "oncall") return "ring-emerald-500";
+    return "ring-blue-600";
+  }
 
   document.querySelectorAll('#typeChips .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       selectedType = btn.dataset.type;
       modalErr.classList.add('hidden');
-      document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('ring-2','ring-blue-600'));
-      btn.classList.add('ring-2','ring-blue-600');
+
+      document.querySelectorAll('#typeChips .chip').forEach(c => {
+        c.classList.remove('ring-2','ring-blue-600','ring-amber-500','ring-red-500','ring-emerald-500');
+      });
+
+      btn.classList.add('ring-2', chipRingFor(selectedType));
     });
   });
 
@@ -623,50 +786,78 @@ document.addEventListener('DOMContentLoaded', function() {
   dutyModal.addEventListener('click', (e) => { if (e.target === dutyModal) closeModal(); });
 
   modalSave.addEventListener('click', async () => {
+    if (saving) return;
+
     if (!selectedType) {
       modalErr.textContent = "กรุณาเลือกประเภทเวร";
       modalErr.classList.remove('hidden');
       return;
     }
 
-    const fd = new FormData();
-    fd.append("shift_date", selectedDate);
-    fd.append("shift_type", selectedType);
-    fd.append("start_time", startTimeEl.value || "08:00");
-    fd.append("end_time", endTimeEl.value || "16:00");
-    fd.append("location", (locEl.value || "").trim());
+    saving = true;
+    modalSave.disabled = true;
+    modalSave.classList.add("opacity-70");
 
-    const res = await fetch("{{ url_for('doctor_duty_create') }}", { method:"POST", body: fd });
-    const data = await res.json();
+    try {
+      const fd = new FormData();
+      fd.append("shift_date", selectedDate);
+      fd.append("shift_type", selectedType);
+      fd.append("start_time", startTimeEl.value || "08:00");
+      fd.append("end_time", endTimeEl.value || "16:00");
+      fd.append("location", (locEl.value || "").trim());
 
-    if (!data.ok) {
-      modalErr.textContent = data.msg || "บันทึกไม่สำเร็จ";
+      const res = await fetch("{{ url_for('doctor.doctor_duty_create') }}", { method:"POST", body: fd });
+
+      let data = null;
+      try { data = await res.json(); } catch (_) { data = { ok:false, msg:"ตอบกลับไม่ใช่ JSON" }; }
+
+      if (!data.ok) {
+        modalErr.textContent = data.msg || "บันทึกไม่สำเร็จ";
+        modalErr.classList.remove('hidden');
+        return;
+      }
+
+      const ev = data.event || data;
+
+      calendar.addEvent({
+        id: ev.id,
+        title: ev.title || selectedType,
+        start: ev.start_datetime || ev.start || (selectedDate + " " + (startTimeEl.value || "08:00") + ":00"),
+        end: ev.end_datetime || ev.end || (selectedDate + " " + (endTimeEl.value || "16:00") + ":00"),
+        extendedProps: {
+          shift_type: selectedType,
+          location: ev.location || (locEl.value || "").trim(),
+          note: ev.note || ""
+        }
+      });
+
+      const added = calendar.getEventById(String(ev.id));
+      if (added) applyEventStyle(added);
+
+      closeModal();
+      refreshTodayList();
+      setPickedDate(selectedDate);
+
+    } catch (_) {
+      modalErr.textContent = "บันทึกไม่สำเร็จ";
       modalErr.classList.remove('hidden');
-      return;
+    } finally {
+      saving = false;
+      modalSave.disabled = false;
+      modalSave.classList.remove("opacity-70");
     }
-
-    calendar.addEvent({
-      id: data.event.id,
-      title: data.event.title,
-      start: data.event.start,
-      end: data.event.end,
-      backgroundColor: data.event.backgroundColor,
-      borderColor: data.event.borderColor,
-      extendedProps: data.event.extendedProps || {}
-    });
-
-    closeModal();
-    refreshTodayList();
-    setPickedDate(selectedDate);
   });
 
-  // init
+  // ---------- init ----------
   setTimeout(() => {
     refreshTodayList();
     const today = ymd(new Date());
     setPickedDate(today);
+
     miniMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     buildMiniPager();
+
+    calendar.getEvents().forEach(ev => applyEventStyle(ev));
   }, 450);
 });
 </script>
