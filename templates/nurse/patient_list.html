@@ -1,0 +1,6 @@
+{% extends "nurse/base.html" %}
+{% block content %}
+<h1 class="text-xl font-semibold">รายการผู้ป่วย</h1>
+<p>หน้านี้ไว้แสดงรายชื่อผู้ป่วย (ทำต่อได้)</p>
+<a href="{{ url_for('nurse.assess_start') }}">กลับ</a>
+{% endblock %}

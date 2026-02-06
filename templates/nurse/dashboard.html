@@ -126,23 +126,23 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
     <!-- ประเมินผู้ป่วยใหม่ -->
-    <a href="{{ url_for('nurse.assess_start') }}"
-       class="block text-center rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg relative"
-       style="z-index: 10;">
-      ➕ ประเมินผู้ป่วยใหม่
-    </a>
+<a href="{{ url_for('nurse.assess_new') }}"
+   class="block text-center rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg">
+  ➕ ประเมินผู้ป่วยใหม่
+</a>
 
-    <!-- จัดการข้อมูลผู้ป่วย -->
-    <a href="{{ url_for('nurse.index') }}"
-       class="block text-center rounded-2xl border-2 border-purple-300 text-purple-600 py-4 font-semibold hover:bg-purple-50">
-      👤 จัดการข้อมูลผู้ป่วย
-    </a>
+<!-- จัดการข้อมูลผู้ป่วย -->
+<a href="{{ url_for('nurse.patients') }}"
+   class="block text-center rounded-2xl border-2 border-purple-300 text-purple-600 py-4 font-semibold hover:bg-purple-50">
+  👤 จัดการข้อมูลผู้ป่วย
+</a>
 
-    <!-- รายงานสรุป -->
-    <a href="{{ url_for('nurse.dashboard') }}"
-       class="block text-center rounded-2xl border-2 border-emerald-300 text-emerald-600 py-4 font-semibold hover:bg-emerald-50">
-      📊 ดูรายงานสรุป
-    </a>
+<!-- ดูรายงานสรุป -->
+<a href="{{ url_for('nurse.dashboard') }}"
+   class="block text-center rounded-2xl border-2 border-emerald-300 text-emerald-600 py-4 font-semibold hover:bg-emerald-50">
+  📊 ดูรายงานสรุป
+</a>
+
 
   </div>
 </div>

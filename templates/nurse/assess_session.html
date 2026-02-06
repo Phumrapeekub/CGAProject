@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "nurse/base.html" %}
 {% block title %}เริ่มประเมิน | CGA{% endblock %}
 {% block content %}
 
@@ -38,7 +38,7 @@
       <div class="font-semibold">ข้อมูลทั่วไป</div>
     </div>
 
-    <form method="POST" action="{{ url_for('assess_session', hn=hn, gcn=gcn) }}" class="p-6 md:p-8 space-y-6">
+    <form method="POST" action="{{ url_for('nurse.assess_step1_save', header_id=header_id) }}" class="p-6 md:p-8 space-y-6">
 
       <!-- ชื่อ-สกุล -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -298,10 +298,11 @@
       <!-- ปุ่มล่าง -->
       <div class="px-6 md:px-8 pb-6 mt-8 flex items-center justify-between">
         <div class="flex flex-wrap gap-3">
-          <a href="{{ url_for('dashboard') }}"
-             class="px-6 py-2 bg-gray-200 text-slate-700 rounded-2xl shadow hover:bg-gray-300 transition">
-            หน้าหลัก
-          </a>
+          <a href="{{ url_for('nurse.assess_new') }}"
+   class="px-6 py-2 bg-gray-200 text-slate-700 rounded-2xl shadow hover:bg-gray-300 transition">
+  หน้าหลัก
+</a>
+
         </div>
 
         <button type="submit"
