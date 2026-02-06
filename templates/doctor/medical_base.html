@@ -63,9 +63,9 @@
                 <div class="hidden md:flex items-center gap-2 text-sm font-medium">
 
                     <!-- Dashboard -->
-                    <a href="{{ url_for('doctor_dashboard') }}"
+                    <a href="{{ url_for('doctor.dashboard') }}"
                        class="px-3 py-1.5 rounded-full transition-colors
-                              {% if request.endpoint == 'doctor_dashboard' %}
+                              {% if request.endpoint == 'doctor.dashboard' %}
                                   bg-primary text-white
                               {% else %}
                                   text-gray-700 hover:bg-gray-100
@@ -74,9 +74,9 @@
                     </a>
 
                     <!-- รายชื่อผู้ป่วย -->
-                    <a href="{{ url_for('doctor_patients') }}"
+                    <a href="{{ url_for('doctor.patients') }}"
                        class="px-3 py-1.5 rounded-full transition-colors
-                              {% if request.endpoint in ['doctor_patients', 'doctor_patient_detail', 'doctor_patients_summary'] %}
+                              {% if request.endpoint in ['doctor.patients', 'doctor.patient_detail', 'doctor.patients_summary'] %}
                                   bg-primary text-white
                               {% else %}
                                   text-gray-700 hover:bg-gray-100
@@ -85,9 +85,9 @@
                     </a>
 
                     <!-- รายงาน -->
-                    <a href="{{ url_for('doctor_reports') }}"
+                    <a href="{{ url_for('doctor.reports') }}"
                        class="px-3 py-1.5 rounded-full transition-colors
-                              {% if request.endpoint == 'doctor_reports' %}
+                              {% if request.endpoint == 'doctor.reports' %}
                                   bg-primary text-white
                               {% else %}
                                   text-gray-700 hover:bg-gray-100
@@ -96,9 +96,9 @@
                     </a>
 
                     <!-- ตารางเข้าเวร -->
-                    <a href="{{ url_for('doctor_duty') }}"
+                    <a href="{{ url_for('doctor.duty') }}"
                        class="px-3 py-1.5 rounded-full transition-colors
-                              {% if request.endpoint == 'doctor_duty' %}
+                              {% if request.endpoint == 'doctor.duty' %}
                                   bg-primary text-white
                               {% else %}
                                   text-gray-700 hover:bg-gray-100
@@ -129,7 +129,7 @@
                 <p class="text-gray-700 font-semibold">
                     👨‍⚕️ แพทย์
                 </p>
-                <a href="{{ url_for('logout') }}"
+                <a href="{{ url_for('auth.logout') }}"
                    class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow">
                     ออกจากระบบ
                 </a>
@@ -142,10 +142,10 @@
 
         {% block content %}{% endblock %}
 
-        {% if request.endpoint != 'doctor_dashboard' %}
+        {% if request.endpoint != 'doctor.dashboard' %}
             <!-- ปุ่มกลับหน้าหลัก (ใช้ทุกหน้าปกติ) -->
             <div id="global-back-wrapper" class="mt-6">
-                <a href="{{ url_for('doctor_dashboard') }}"
+                <a href="{{ url_for('doctor.dashboard') }}"
                    class="inline-flex items-center gap-3 px-6 py-3 mb-6
                           rounded-full bg-slate-900 text-white text-lg font-semibold
                           shadow-md hover:shadow-lg hover:bg-slate-800
