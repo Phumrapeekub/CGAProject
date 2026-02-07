@@ -1,13 +1,47 @@
 {% extends "admin/admin_base.html" %}
+
 {% block title %}จัดการพยาบาล | CGA Admin{% endblock %}
 
 {% block content %}
-  <div class="glass rounded-2xl p-6">
-    <h1 class="text-2xl font-semibold text-slate-900">จัดการพยาบาล</h1>
-    <p class="text-slate-600 mt-1">หน้านี้ยังเป็นโครง (กัน error) เดี๋ยวค่อยเชื่อม DB</p>
-
-    <div class="mt-6 soft-card rounded-2xl p-5">
-      <div class="text-slate-600 text-sm">ยังไม่มีข้อมูล</div>
+<div class="soft-card rounded-2xl p-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">จัดการพยาบาล</h1>
+      <p class="text-slate-600 text-sm mt-1">รายชื่อพยาบาลทั้งหมดในระบบ</p>
     </div>
   </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
+        <tr>
+          <th class="px-4 py-3">ชื่อ-นามสกุล</th>
+          <th class="px-4 py-3">ชื่อผู้ใช้</th>
+          <th class="px-4 py-3">สถานะ</th>
+          <th class="px-4 py-3">วันที่เข้าร่วม</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for n in nurses %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-4 py-3 font-medium text-slate-900">{{ n.full_name }}</td>
+          <td class="px-4 py-3 text-slate-600">{{ n.username }}</td>
+          <td class="px-4 py-3">
+            {% if n.is_active %}
+            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">ปกติ</span>
+            {% else %}
+            <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">ระงับ</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-slate-500">{{ n.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลพยาบาล</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

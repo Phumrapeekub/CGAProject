@@ -1,27 +1,24 @@
 # CGAProject/db/db.py
 import os
-import mysql.connector
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def get_db_connection():
     """
-    คืนค่า connection ถ้าเชื่อมได้
-    คืนค่า None ถ้าเชื่อมไม่ได้ (กันพัง)
+    คืนค่า Supabase Client แทน Connection ดั้งเดิม
     """
-
-    host = os.getenv("DB_HOST", "127.0.0.1")
-    user = os.getenv("DB_USER", "root")
-    password = os.getenv("DB_PASSWORD", "Kantiya203_")
-    database = os.getenv("DB_NAME", "cga_system_dev")  # หรือ cga_system_dev
+    url: str = os.getenv("SUPABASE_URL")
+    key: str = os.getenv("SUPABASE_KEY")
+    
+    if not url or not key:
+        print("❌ Error: SUPABASE_URL or SUPABASE_KEY missing in .env")
+        return None
 
     try:
-        conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database,
-        )
-        return conn
-    except mysql.connector.Error as err:
-        print("❌ DB connect error:", err)
+        supabase: Client = create_client(url, key)
+        return supabase
+    except Exception as err:
+        print("❌ Supabase API connect error:", err)
         return None

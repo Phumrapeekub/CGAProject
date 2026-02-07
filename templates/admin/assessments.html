@@ -1,0 +1,56 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}การประเมิน CGA | CGA Admin{% endblock %}
+
+{% block content %}
+<div class="soft-card rounded-2xl p-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">ประวัติการประเมิน CGA</h1>
+      <p class="text-slate-600 text-sm mt-1">รายการการประเมินทั้งหมดในระบบ</p>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
+        <tr>
+          <th class="px-4 py-3">วันที่ประเมิน</th>
+          <th class="px-4 py-3">HN</th>
+          <th class="px-4 py-3">ชื่อผู้ป่วย</th>
+          <th class="px-4 py-3">ระดับความเสี่ยง</th>
+          <th class="px-4 py-3">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for a in assessments %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-4 py-3 font-medium text-slate-900">{{ a.assessment_date }}</td>
+          <td class="px-4 py-3 text-blue-600">{{ a.encounters.patients.hn }}</td>
+          <td class="px-4 py-3">{{ a.encounters.patients.full_name }}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase
+              {% if a.risk_level == 'high' %}bg-red-100 text-red-700
+              {% elif a.risk_level == 'medium' %}bg-orange-100 text-orange-700
+              {% else %}bg-green-100 text-green-700{% endif %}">
+              {{ a.risk_level or 'N/A' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            {% if a.is_completed %}
+            <span class="text-green-600 text-xs">✓ สมบูรณ์</span>
+            {% else %}
+            <span class="text-slate-400 text-xs">กำลังดำเนินการ</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการประเมิน</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

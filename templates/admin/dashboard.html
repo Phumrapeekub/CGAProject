@@ -1,122 +1,93 @@
 {% extends "admin/admin_base.html" %}
-{% block title %}CGA Admin Dashboard{% endblock %}
 
-{% block head_extra %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
+{% block title %}แดชบอร์ด | CGA Admin{% endblock %}
 
 {% block content %}
-
-<div class="max-w-[1200px] 2xl:max-w-[1400px] mx-auto">
-
-  {% set rk = (range_key|default('month')) %}
-
-  {% if rk == 'week' %}
-    {% set line_title = 'จำนวนผู้ป่วยรายวัน (สัปดาห์นี้)' %}
-    {% set line_sub = '7 วันที่ผ่านมา' %}
-    {% set bar_title = 'สัดส่วนการให้บริการตามประเภท' %}
-    {% set bar_sub = 'สัปดาห์นี้' %}
-  {% elif rk == 'year' %}
-    {% set line_title = 'จำนวนผู้ป่วยรายเดือน (ปีนี้)' %}
-    {% set line_sub = '12 เดือนที่ผ่านมา' %}
-    {% set bar_title = 'สัดส่วนการให้บริการตามประเภท' %}
-    {% set bar_sub = 'ปีนี้' %}
-  {% else %}
-    {% set line_title = 'จำนวนผู้ป่วยรายสัปดาห์ (เดือนนี้)' %}
-    {% set line_sub = '4 สัปดาห์ที่ผ่านมา' %}
-    {% set bar_title = 'สัดส่วนการให้บริการตามประเภท' %}
-    {% set bar_sub = 'เดือนนี้' %}
-  {% endif %}
-
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+<div class="soft-card rounded-2xl p-6">
+  <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
     <div>
-      <h1 class="text-3xl font-semibold tracking-tight text-slate-900">ภาพรวมระบบ</h1>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">ภาพรวมระบบ</h1>
       <p class="text-slate-600 text-sm mt-1">ข้อมูล ณ วันที่ {{ today.strftime('%d/%m/%Y') }}</p>
     </div>
-
-    <div class="rounded-2xl p-1 flex bg-white/70 border border-slate-900/10">
-      <a href="/admin/dashboard?range=week" class="px-3 py-2 rounded-xl text-sm {% if rk=='week' %} bg-blue-600/10 border border-blue-600/10 font-semibold {% else %} hover:bg-slate-900/5 {% endif %}">สัปดาห์</a>
-      <a href="/admin/dashboard?range=month" class="px-3 py-2 rounded-xl text-sm {% if rk=='month' %} bg-blue-600/10 border border-blue-600/10 font-semibold {% else %} hover:bg-slate-900/5 {% endif %}">เดือน</a>
-      <a href="/admin/dashboard?range=year" class="px-3 py-2 rounded-xl text-sm {% if rk=='year' %} bg-blue-600/10 border border-blue-600/10 font-semibold {% else %} hover:bg-slate-900/5 {% endif %}">ปี</a>
+    <div class="flex items-center gap-2">
+      <select onchange="window.location.href='?range='+this.value" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+        <option value="month" {% if range_key=='month' %}selected{% endif %}>เดือนนี้</option>
+        <option value="week" {% if range_key=='week' %}selected{% endif %}>สัปดาห์นี้</option>
+        <option value="year" {% if range_key=='year' %}selected{% endif %}>ปีนี้</option>
+      </select>
     </div>
   </div>
 
-  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
-
-    <a href="/admin/patients" class="block group">
-      <div class="kpi-card kpi-blue">
-        <div class="text-3xl font-bold">{{ stats.patients if stats else 0 }}</div>
-        <div class="text-slate-600 text-sm">ผู้ป่วยทั้งหมด</div>
-        <div class="mt-3 text-sm text-blue-700 font-semibold group-hover:underline">คลิกเพื่อดูทั้งหมด →</div>
-      </div>
-    </a>
-
-    <a href="/admin/patients?filter=today" class="block group">
-      <div class="kpi-card kpi-orange">
-        <div class="text-3xl font-bold">{{ stats.today_patients if stats and stats.today_patients is defined else 0 }}</div>
-        <div class="text-slate-600 text-sm">ผู้ป่วยวันนี้</div>
-        <div class="mt-3 text-sm text-blue-700 font-semibold group-hover:underline">ดูรายการวันนี้ →</div>
-      </div>
-    </a>
-
-    <a href="/admin/appointments?date=today" class="block group">
-       <div class="kpi-card kpi-green">
-        <div class="text-3xl font-bold">{{ stats.appointments_today if stats and stats.appointments_today is defined else 0 }}</div>
-        <div class="text-slate-600 text-sm">นัดหมายวันนี้</div>
-        <div class="mt-3 text-sm text-blue-700 font-semibold group-hover:underline">ไปหน้านัดหมาย →</div>
-      </div>
-    </a>
-
-    <a href="/admin/assessments?date=today" class="block group">
-     <div class="kpi-card kpi-purple">
-        <div class="text-slate-600 text-sm">การประเมิน CGA (วันนี้)</div>
-        <div class="mt-3 text-sm text-blue-700 font-semibold group-hover:underline">ดูการประเมิน →</div>
-      </div>
-    </a>
-
-  </section>
-
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-5 mt-6">
-    <div class="bg-white/85 border border-slate-900/10 rounded-2xl p-5 xl:col-span-2">
-      <div class="flex items-center justify-between">
-        <h2 class="font-semibold">{{ line_title }}</h2>
-        <div class="text-xs text-slate-500">{{ line_sub }}</div>
-      </div>
-      <div class="mt-4 h-[280px]">
-        <canvas id="lineChart"></canvas>
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+    <div class="kpi-card kpi-blue p-5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยทั้งหมด</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.patients }}</h3>
+        </div>
+        <div class="kpi-icon">👤</div>
       </div>
     </div>
-
-    <div class="bg-white/85 border border-slate-900/10 rounded-2xl p-5">
-      <div class="flex items-center justify-between">
-        <h2 class="font-semibold">{{ bar_title }}</h2>
-        <div class="text-xs text-slate-500">{{ bar_sub }}</div>
-      </div>
-      <div class="mt-4 h-[280px]">
-        <canvas id="barChart"></canvas>
+    <div class="kpi-card kpi-green p-5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยใหม่วันนี้</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.today_patients }}</h3>
+        </div>
+        <div class="kpi-icon">✨</div>
       </div>
     </div>
-  </section>
+    <div class="kpi-card kpi-purple p-5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">นัดหมายวันนี้</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.appointments_today }}</h3>
+        </div>
+        <div class="kpi-icon">📅</div>
+      </div>
+    </div>
+    <div class="kpi-card kpi-orange p-5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ใช้งานระบบ</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.users }}</h3>
+        </div>
+        <div class="kpi-icon">🔐</div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Latest Users -->
+  <div class="mt-10">
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">ผู้ใช้งานล่าสุด</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="text-slate-500 border-b border-slate-100">
+          <tr>
+            <th class="px-4 py-3 font-medium text-xs uppercase tracking-wider">ชื่อผู้ใช้</th>
+            <th class="px-4 py-3 font-medium text-xs uppercase tracking-wider">บทบาท</th>
+            <th class="px-4 py-3 font-medium text-xs uppercase tracking-wider">วันที่สร้าง</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for u in latest_users %}
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-4 py-3 font-medium text-slate-900">{{ u.username }}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tighter
+                {% if u.role == 'admin' %}bg-purple-100 text-purple-700
+                {% elif u.role == 'doctor' %}bg-blue-100 text-blue-700
+                {% else %}bg-green-100 text-green-700{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-slate-500">{{ u.created_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
-
-<script>
-  const weeklyLabels = {{ (weekly_labels or ["สัปดาห์ 1","สัปดาห์ 2","สัปดาห์ 3","สัปดาห์ 4"]) | tojson }};
-  const weeklyValues = {{ (weekly_values or [0,0,0,0]) | tojson }};
-  const deptLabels   = {{ (type_labels or ["ติดตามอาการ","ประเมิน CGA","อื่นๆ"]) | tojson }};
-  const deptValues   = {{ (type_values or [0,0,0]) | tojson }};
-
-  new Chart(document.getElementById("lineChart"), {
-    type: "line",
-    data: { labels: weeklyLabels, datasets: [{ data: weeklyValues, tension: 0.35, borderWidth: 3, fill: true }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display:false } }, scales: { y: { beginAtZero:true } } }
-  });
-
-  new Chart(document.getElementById("barChart"), {
-    type: "bar",
-    data: { labels: deptLabels, datasets: [{ data: deptValues, borderWidth: 0, borderRadius: 10 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display:false } }, scales: { y: { beginAtZero:true } } }
-  });
-</script>
-
 {% endblock %}
