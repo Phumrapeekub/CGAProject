@@ -1,140 +1,158 @@
 {% extends "nurse/base.html" %}
+{% block title %}รายชื่อผู้ป่วย | CGA Hospital System{% endblock %}
 {% block content %}
-<div class="max-w-6xl mx-auto px-6 py-8">
-  <h1 class="text-2xl font-semibold text-indigo-600 mb-6">จัดการข้อมูลผู้สูงอายุ</h1>
 
-  <!-- ปุ่มกลับหน้าหลัก -->
-<!-- ปุ่มกลับไปหน้าหลัก (Dashboard พยาบาล) -->
-<div class="flex justify-end mb-4">
-  <a href="{{ url_for('nurse.dashboard') }}" 
-     class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-xl shadow-md">
-     ⬅️ กลับหน้าหลัก
-  </a>
-</div>
+<div class="max-w-7xl mx-auto px-6 py-10 space-y-8 text-slate-700 font-normal">
 
-  <form method="get" action="{{ url_for('nurse.patients') }}"
-      class="mb-6 rounded-2xl bg-white/70 backdrop-blur border border-white/60 shadow-lg p-4">
-
-  <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-    <!-- ชื่อ-สกุล -->
-    <div class="md:col-span-4">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อ-นามสกุล</label>
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
-        <input type="text" name="name" value="{{ name or '' }}"
-               placeholder=""
-               class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-      </div>
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="space-y-1">
+      <h1 class="text-4xl font-black text-slate-900 tracking-tight">จัดการข้อมูลผู้ป่วย</h1>
+      <p class="text-slate-500 text-lg font-medium">ทะเบียนรายชื่อผู้สูงอายุและประวัติการประเมิน</p>
     </div>
-
-    <!-- HN -->
-    <div class="md:col-span-2">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">HN</label>
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
-        <input type="text" name="hn" value="{{ hn or '' }}"
-               placeholder=""
-               class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-      </div>
-    </div>
-
-    <!-- GCN -->
-    <div class="md:col-span-2">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">GCN</label>
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
-        <input type="text" name="gcn" value="{{ gcn or '' }}"
-               placeholder=""
-               class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-      </div>
-    </div>
-
-    <!-- โรคประจำตัว -->
-    <div class="md:col-span-2">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">โรคประจำตัว</label>
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
-        <input type="text" name="dx" value="{{ dx or '' }}"
-               placeholder=""
-               class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-      </div>
-    </div>
-
-    <!-- ความเสี่ยง -->
-    <div class="md:col-span-2">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">ความเสี่ยง</label>
-      <select name="risk"
-              class="w-full h-11 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-        <option value="" {{ 'selected' if not risk else '' }}>ทั้งหมด</option>
-        <option value="ต่ำ" {{ 'selected' if risk=='ต่ำ' else '' }}>ต่ำ</option>
-        <option value="ปานกลาง" {{ 'selected' if risk=='ปานกลาง' else '' }}>ปานกลาง</option>
-        <option value="สูง" {{ 'selected' if risk=='สูง' else '' }}>สูง</option>
-      </select>
-    </div>
-
-    <!-- ปุ่ม -->
-    <div class="md:col-span-12 flex flex-col md:flex-row gap-2 md:justify-end pt-1">
-      <button type="submit"
-              class="h-11 px-5 rounded-xl bg-blue-600 text-white font-semibold shadow hover:opacity-95 active:scale-[0.99]">
-        🔍 ค้นหา
-      </button>
-
-      <a href="{{ url_for('nurse.patients') }}"
-         class="h-11 px-5 rounded-xl bg-gray-200 text-gray-800 font-semibold flex items-center justify-center hover:bg-gray-300">
-        ล้าง
+    
+    <div class="flex items-center gap-4">
+      <a href="{{ url_for('nurse.dashboard') }}" 
+         class="px-6 py-3 bg-white border-2 border-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-50 transition-all text-lg">
+         กลับหน้าหลัก
       </a>
-
-      <a href="{{ url_for('nurse.add_patient') }}"
-         class="h-11 px-5 rounded-xl bg-green-600 text-white font-semibold shadow flex items-center justify-center hover:opacity-95">
-        ➕ เพิ่มผู้ป่วยใหม่
+      <a href="{{ url_for('nurse.assess_new') }}" 
+         class="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all transform hover:-translate-y-1 flex items-center gap-3 text-lg text-center">
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+         เพิ่มผู้ป่วยใหม่
       </a>
     </div>
   </div>
-</form>
 
+  <!-- Advanced Search Filters (Separated Channels) -->
+  <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 space-y-8">
+    <div class="flex items-center gap-2 text-indigo-600 font-black uppercase tracking-widest text-xs border-b border-slate-50 pb-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3"/></svg>
+        ระบุข้อมูลที่ต้องการค้นหา
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <!-- 1. ค้นหาด้วย HN -->
+        <div class="space-y-2">
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Number (HN)</label>
+            <input type="text" placeholder="ระบุเลข HN..." 
+                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+        </div>
+        
+        <!-- 2. ค้นหาด้วย GCN -->
+        <div class="space-y-2">
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Daily Queue (GCN)</label>
+            <input type="text" placeholder="ระบุเลข GCN..." 
+                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+        </div>
 
+        <!-- 3. ค้นหาด้วย ชื่อ-นามสกุล -->
+        <div class="space-y-2 lg:col-span-1">
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ชื่อ-นามสกุล</label>
+            <input type="text" placeholder="ระบุชื่อผู้ป่วย..." 
+                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+        </div>
 
-  <table class="w-full border-collapse bg-white shadow rounded-xl overflow-hidden">
-    <thead class="bg-indigo-100 text-gray-700">
-      <tr>
-        <th class="py-3 px-4 text-left">HN / GCN</th>
-        <th class="py-3 px-4 text-left">ชื่อ-นามสกุล</th>
-        <th class="py-3 px-4 text-center">อายุ</th>
-        <th class="py-3 px-4 text-center">โรคประจำตัว</th>
-        <th class="py-3 px-4 text-center">ความเสี่ยง</th>
-        <th class="py-3 px-4 text-center">จัดการ</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in patients %}
-      <tr class="border-t hover:bg-gray-50">
-        <td class="py-3 px-4">{{ p.hn }} / {{ p.gcn }}</td>
-        <td class="py-3 px-4">{{ p.name }}</td>
-        <td class="text-center">{{ p.age }} ปี</td>
-        <td class="text-center">{{ p.disease }}</td>
-        <td class="text-center">
-          {% if p.risk_level == 'สูง' %}
-            <span class="text-red-600 bg-red-100 px-3 py-1 rounded-full text-sm">เสี่ยงสูง</span>
-          {% elif p.risk_level == 'ปานกลาง' %}
-            <span class="text-orange-600 bg-orange-100 px-3 py-1 rounded-full text-sm">เสี่ยงปานกลาง</span>
-          {% else %}
-            <span class="text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">เสี่ยงต่ำ</span>
-          {% endif %}
-        </td>
-        <td class="text-center">
-          <a href="{{ url_for('nurse.edit_patient', id=p.id) }}" class="text-blue-600 hover:underline">แก้ไข</a> |
-          <a href="{{ url_for('nurse.patient_history', id=p.id) }}" class="text-blue-600 hover:underline">ดูประวัติ</a> |
-          <form method="post" action="{{ url_for('nurse.delete_patient', id=p.id) }}" class="inline">
+        <!-- 4. ค้นหาด้วย โรคประจำตัว -->
+        <div class="space-y-2">
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">โรคประจำตัว</label>
+            <input type="text" placeholder="ระบุชื่อโรค..." 
+                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+        </div>
 
-            <button type="submit" class="text-red-600 hover:underline"
-                    onclick="return confirm('ต้องการลบข้อมูลนี้หรือไม่?')">ลบ</button>
-          </form>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6" class="text-center py-6 text-gray-400">ไม่พบข้อมูลผู้ป่วย</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        <!-- 5. ค้นหาด้วย ความเสี่ยง -->
+        <div class="space-y-2">
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ระดับความเสี่ยง</label>
+            <select class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner appearance-none cursor-pointer">
+                <option value="">แสดงทั้งหมด</option>
+                <option value="high">เสี่ยงสูง (Risk Detected)</option>
+                <option value="normal">ปกติ (Normal)</option>
+            </select>
+        </div>
+    </div>
+  </div>
+
+  <!-- Patient Table -->
+  <div class="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-900">
+            <th class="px-8 py-6 text-sm font-black text-white uppercase tracking-widest border-r border-slate-800">ข้อมูลคนไข้</th>
+            <th class="px-8 py-6 text-sm font-black text-white uppercase tracking-widest border-r border-slate-800 text-center">HN / GCN</th>
+            <th class="px-8 py-6 text-sm font-black text-white uppercase tracking-widest border-r border-slate-800 text-center">เพศ / อายุ</th>
+            <th class="px-8 py-6 text-sm font-black text-white uppercase tracking-widest">การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for patient in patients %}
+          <tr class="hover:bg-indigo-50/30 transition-all group">
+            <!-- ข้อมูลคนไข้ -->
+            <td class="px-8 py-8">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 bg-indigo-100 rounded-3xl flex items-center justify-center text-indigo-700 text-2xl font-black shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  {{ patient.full_name[0] if patient.full_name else '?' }}
+                </div>
+                <div>
+                  <div class="text-2xl font-black text-indigo-950 tracking-tight mb-1">{{ patient.full_name }}</div>
+                  <div class="text-base font-bold text-slate-400 tracking-wider">📞 {{ patient.phone if patient.phone else 'N/A' }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- หมายเลขกำกับ -->
+            <td class="px-8 py-8 text-center">
+              <div class="flex flex-col items-center gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-black text-slate-300 uppercase tracking-widest">HN</span>
+                    <span class="text-2xl font-black text-slate-800 tabular-nums bg-slate-50 px-4 py-1 rounded-xl border border-slate-100 shadow-inner">{{ patient.hn }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-black text-slate-300 uppercase tracking-widest">GCN</span>
+                    <span class="text-2xl font-black text-indigo-600 tabular-nums tracking-widest">{{ patient.gcn if patient.gcn else '---' }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- เพศ / อายุ -->
+            <td class="px-8 py-8 text-center">
+              <div class="space-y-1">
+                <div class="text-2xl font-black text-slate-700 uppercase tracking-tighter">{{ patient.sex or patient.gender or '-' }}</div>
+                <div class="text-xl font-bold text-indigo-500 tracking-wide">{{ patient.age_year if patient.age_year else '-' }} <span class="text-xs font-medium text-slate-400 uppercase">Years</span></div>
+              </div>
+            </td>
+
+            <!-- การดำเนินการ -->
+            <td class="px-8 py-8">
+              <div class="flex flex-col gap-3">
+                <button class="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 hover:shadow-lg transition-all shadow-md">
+                  ดูประวัติการประเมิน
+                </button>
+                <div class="flex gap-2">
+                    <button class="flex-1 px-4 py-3 bg-white border-2 border-slate-100 text-slate-500 rounded-xl text-xs font-black hover:bg-slate-50 hover:text-slate-800 transition-all">
+                      แก้ไข
+                    </button>
+                    <form method="POST" action="{{ url_for('nurse.patient_delete', patient_id=patient.id) }}" onsubmit="return confirm('ยืนยันการลบ?');" class="flex-1">
+                        <button type="submit" class="w-full px-4 py-3 bg-rose-50 text-rose-500 rounded-xl text-xs font-black hover:bg-rose-500 hover:text-white transition-all">
+                          ลบ
+                        </button>
+                    </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Registry Footer -->
+  <div class="flex flex-col items-center gap-4 py-10 border-t border-slate-100">
+    <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">Global Clinical Patient Registry</p>
+    <div class="h-1 w-12 bg-indigo-100 rounded-full"></div>
+  </div>
+
 </div>
+
 {% endblock %}

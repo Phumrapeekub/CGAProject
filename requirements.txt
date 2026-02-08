@@ -1,0 +1,11 @@
+flask
+supabase
+mysql-connector-python
+python-dotenv
+werkzeug
+pandas
+h2o
+customtkinter
+tkcalendar
+matplotlib
+numpy

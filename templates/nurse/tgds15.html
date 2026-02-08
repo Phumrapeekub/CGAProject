@@ -1,269 +1,269 @@
-{% extends 'base.html' %}
-
-{% block head %}
-    {{ super() }}
-    <style>
-        body {
-            font-family: 'Sarabun', sans-serif; /* (ต้องมี Font Sarabun ใน base.html) */
-            background-color: #f8f9fc;
-        }
-
-        .tgds-main-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        .card {
-            background-color: #fdf6f6;
-            border: 1px solid #f5eaea;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid #f5eaea;
-        }
-
-        .card-header-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background-color: #fbebee;
-            color: #d9534f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-right: 12px;
-        }
-
-        .card-header-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #d9534f;
-        }
-        
-        .card-header-subtitle {
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .card-content {
-            padding: 20px;
-            display: grid;
-            gap: 24px; /* เพิ่มระยะห่างระหว่างข้อ */
-        }
-
-        .question-item {
-            display: grid;
-            gap: 12px;
-            border-bottom: 1px solid #f5eaea; /* เพิ่มเส้นคั่นบางๆ */
-            padding-bottom: 16px;
-        }
-        
-        .question-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .question-text {
-            font-size: 1rem;
-            color: #333;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .button-group input[type="radio"] {
-            display: none; /* ซ่อนปุ่ม radio จริง */
-        }
-
-        .button-group label {
-            flex: 1;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1rem;
-        }
-
-        /* สถานะเมื่อถูกเลือก */
-        .button-group input[type="radio"]:checked + label {
-            background-color: #fbebee;
-            border-color: #d9534f;
-            color: #d9534f;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(217, 83, 79, 0.1);
-        }
-
-        .info-box {
-            background-color: #eef7ff;
-            border: 1px solid #d1e7fd;
-            border-radius: 8px;
-            padding: 16px;
-            color: #0a58ca;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-top: 10px;
-        }
-    </style>
-{% endblock %}
-
-
+{% extends "nurse/base.html" %}
+{% block title %}ขั้นตอนที่ 3: สุขภาพจิตและกลุ่มอาการสูงอายุ | CGA Hospital{% endblock %}
 {% block content %}
-<div class="tgds-main-container">
-    <section class="card">
-        <div class="card-header">
-            <div class="card-header-icon">😊</div>
-            <div>
-                <div class="card-header-title">แบบประเมินซึมเศร้า (TGDS-15)</div>
-                <div class="card-header-subtitle">Thai Geriatric Depression Scale - กรุณาตอบคำถามเกี่ยวกับความรู้สึกใน 1 สัปดาห์ที่ผ่านมา</div>
+
+<div class="max-w-6xl mx-auto px-4 py-6 space-y-6 text-slate-700 font-normal">
+
+  <!-- HN/GCN + Step -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a href="{{ url_for('nurse.dashboard') }}" 
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">
+        <span>หน้าหลัก</span>
+      </a>
+      <span class="px-4 py-1.5 rounded-full bg-white shadow border text-slate-600">
+        <span class="font-normal text-slate-400">HN:</span> {{ hn if hn else '-' }} <span class="mx-1">|</span>
+        <span class="font-normal text-slate-400">GCN:</span> {{ gcn if gcn else '-' }}
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+        ขั้นตอนที่ 3: สุขภาพจิตและกลุ่มอาการ
+      </span>
+    </div>
+  </div>
+
+  <!-- แถบนำทางขั้นตอน 1-3 -->
+  <div class="flex justify-center items-center gap-2 md:gap-4 py-4">
+    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')"
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
+              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">1</button>
+    <div class="w-10 h-0.5 bg-slate-200"></div>
+    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')"
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
+              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">2</button>
+    <div class="w-10 h-0.5 bg-slate-200"></div>
+    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_tgds', header_id=header_id) }}')"
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all
+              bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">3</button>
+  </div>
+
+  <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_tgds_save', header_id=header_id) }}" class="space-y-8 font-normal">
+    <input type="hidden" name="next_url" id="nextUrlInput">
+
+    <!-- 1. การกลั้นปัสสาวะ (Sky Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-sky-100 overflow-hidden">
+        <div class="px-6 py-4 bg-sky-50 border-b border-sky-100 text-lg text-sky-800 font-medium tracking-tight">
+            1. การกลั้นปัสสาวะ - การตรวจประเมินภาวะกลั้นปัสสาวะโดยแพทย์
+        </div>
+        <div class="p-8 space-y-6">
+            <p class="text-slate-700 text-lg leading-relaxed font-normal">ผู้สูงอายุมีภาวะ ปัสสาวะเล็ด หรือ ปัสสาวะราด จนทำให้เกิดปัญหาในการใช้ชีวิตประจําวันหรือไม่?</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="cursor-pointer">
+                    <input type="radio" name="incontinence" value="normal" class="hidden peer">
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี</div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="incontinence" value="abnormal" class="hidden peer">
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
+                </label>
             </div>
         </div>
+    </div>
 
-        <div class="card-content">
-            <form action="" method="POST"> 
-                
-                <div class="question-item">
-                    <p class="question-text">1. ท่านพอใจกับชีวิตความเป็นอยู่ตอนนี้หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q1_yes" name="q1" value="yes"><label for="q1_yes">ใช่</label>
-                        <input type="radio" id="q1_no" name="q1" value="no"><label for="q1_no">ไม่ใช่</label>
-                    </div>
-                </div>
-                
-                <div class="question-item">
-                    <p class="question-text">2. ท่านไม่อยากทำในสิ่งที่เคยสนใจ หรือเคยทำเป็นประจำใช่หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q2_yes" name="q2" value="yes"><label for="q2_yes">ใช่</label>
-                        <input type="radio" id="q2_no" name="q2" value="no"><label for="q2_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">3. ท่านรู้สึกชีวิตของคุณว่างเปล่า ไม่มีอะไรจะทำใช่หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q3_yes" name="q3" value="yes"><label for="q3_yes">ใช่</label>
-                        <input type="radio" id="q3_no" name="q3" value="no"><label for="q3_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">4. ท่านรู้สึกเบื่อหน่ายบ่อยๆ หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q4_yes" name="q4" value="yes"><label for="q4_yes">ใช่</label>
-                        <input type="radio" id="q4_no" name="q4" value="no"><label for="q4_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">5. ส่วนใหญ่แล้วท่านรู้สึกอารมณ์ดีหรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q5_yes" name="q5" value="yes"><label for="q5_yes">ใช่</label>
-                        <input type="radio" id="q5_no" name="q5" value="no"><label for="q5_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">6. ท่านรู้สึกกลัวว่าจะมีเรื่องไม่ดีเกิดขึ้นกับคุณหรือเปล่า</p>
-                    <div class="button-group">
-                        <input type="radio" id="q6_yes" name="q6" value="yes"><label for="q6_yes">ใช่</label>
-                        <input type="radio" id="q6_no" name="q6" value="no"><label for="q6_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">7. ส่วนใหญ่ท่านรู้สึกมีความสุขดีหรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q7_yes" name="q7" value="yes"><label for="q7_yes">ใช่</label>
-                        <input type="radio" id="q7_no" name="q7" value="no"><label for="q7_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">8. บ่อยครั้งที่ท่านรู้สึกไม่มีที่พึ่ง</p>
-                    <div class="button-group">
-                        <input type="radio" id="q8_yes" name="q8" value="yes"><label for="q8_yes">ใช่</label>
-                        <input type="radio" id="q8_no" name="q8" value="no"><label for="q8_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">9. ท่านชอบอยู่บ้านมากกว่าที่จะข้างนอกไปทำสิ่งใหม่ๆ หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q9_yes" name="q9" value="yes"><label for="q9_yes">ใช่</label>
-                        <input type="radio" id="q9_no" name="q9" value="no"><label for="q9_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">10. ท่านคิดว่าความจำของท่านมีปัญหาคนอื่นหรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q10_yes" name="q10" value="yes"><label for="q10_yes">ใช่</label>
-                        <input type="radio" id="q10_no" name="q10" value="no"><label for="q10_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">11. การมีชีวิตอยู่ถึงปัจจุบันเป็นเรื่องน่ายินดี หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q11_yes" name="q11" value="yes"><label for="q11_yes">ใช่</label>
-                        <input type="radio" id="q11_no" name="q11" value="no"><label for="q11_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">12. ท่านรู้สึกว่าชีวิตคุณด้อยค่า หรือไม่</p>
-                    <div class="button-group">
-                        <input type="radio" id="q12_yes" name="q12" value="yes"><label for="q12_yes">ใช่</label>
-                        <input type="radio" id="q12_no" name="q12" value="no"><label for="q12_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">13. ท่านรู้สึกกระตือรือร้น</p>
-                    <div class="button-group">
-                        <input type="radio" id="q13_yes" name="q13" value="yes"><label for="q13_yes">ใช่</label>
-                        <input type="radio" id="q13_no" name="q13" value="no"><label for="q13_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">14. ท่านรู้สึกสิ้นหวัง</p>
-                    <div class="button-group">
-                        <input type="radio" id="q14_yes" name="q14" value="yes"><label for="q14_yes">ใช่</label>
-                        <input type="radio" id="q14_no" name="q14" value="no"><label for="q14_no">ไม่ใช่</label>
-                    </div>
-                </div>
-
-                <div class="question-item">
-                    <p class="question-text">15. ท่านคิดว่าคนอื่นดีกว่าท่าน</p>
-                    <div class="button-group">
-                        <input type="radio" id="q15_yes" name="q15" value="yes"><label for="q15_yes">ใช่</label>
-                        <input type="radio" id="q15_no" name="q15" value="no"><label for="q15_no">ไม่ใช่</label>
-                    </div>
-                </div>
-            </form>
-            
-            <div class="info-box">
-                <strong>การให้คะแนน:</strong> ข้อที่ 1, 5, 7, 11, 13 ถ้าตอบ "ไม่ใช่" ได้ 1 คะแนน<br>
-                ข้อที่ 2, 3, 4, 6, 8, 9, 10, 12, 14, 15 ถ้าตอบ "ใช่" ได้ 1 คะแนน<br>
-                <strong>การแปลผล:</strong> คะแนนรวม >=6 คะแนน = มีภาวะซึมเศร้า | 4-5 คะแนน = เสี่ยง | <4 คะแนน = ปกติ
+    <!-- 2. ปัญหาการนอน (Indigo Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-indigo-100 overflow-hidden">
+        <div class="px-6 py-4 bg-indigo-50 border-b border-indigo-100 text-lg text-indigo-800 font-medium tracking-tight">
+            2. ปัญหาการนอน - การตรวจประเมินปัญหาการนอนโดยแพทย์
+        </div>
+        <div class="p-8 space-y-6">
+            <p class="text-slate-700 text-lg leading-relaxed font-normal">ผู้สูงอายุมีปัญหาเกี่ยวกับการนอนหรือไม่? (เช่น นอนไม่หลับ หลับยาก หรือตื่นบ่อย)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="cursor-pointer">
+                    <input type="radio" name="sleepProblems" value="normal" class="hidden peer">
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มีปัญหา</div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="sleepProblems" value="abnormal" class="hidden peer">
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มีปัญหา - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา ปัญหาการนอน</div>
+                </label>
             </div>
         </div>
-    </section>
+    </div>
+
+    <!-- 3. คัดกรอง 2Q (Cyan Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-cyan-100 overflow-hidden">
+        <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100 text-lg text-cyan-800 font-medium tracking-tight">
+            3. การคัดกรองภาวะซึมเศร้า (2Q)
+        </div>
+        <div class="p-8 space-y-6">
+            {% for q in [
+                "1. ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่?",
+                "2. ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกเบื่อ ทำอะไรก็ไม่เพลิดเพลินหรือไม่?"
+            ] %}
+            <div class="space-y-3">
+                <div class="text-slate-700 leading-relaxed font-medium">{{ loop.index }}. {{ q }}</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="depression2Q_q{{ loop.index }}" value="no" class="hidden peer">
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 font-medium bg-slate-50 border-transparent">ไม่มี</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="depression2Q_q{{ loop.index }}" value="yes" class="hidden peer">
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all text-slate-400 font-medium bg-slate-50 border-transparent">มี</div>
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 4. TGDS-15 (Emerald Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-emerald-100 overflow-hidden">
+      <div class="px-6 py-5 bg-emerald-50 flex items-center justify-between border-b border-emerald-100">
+        <div class="flex items-center gap-3 text-emerald-900">
+          <div class="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-700 grid place-items-center font-normal">T</div>
+          <div class="text-lg uppercase font-medium tracking-tight">แบบประเมินภาวะซึมเศร้า (TGDS-15)</div>
+        </div>
+        <div class="text-sm bg-white px-4 py-1.5 rounded-full border border-emerald-100 text-emerald-700 shadow-sm font-medium">
+          คะแนน: <span id="tgds_score_display">0</span> / 15
+        </div>
+      </div>
+
+      <div class="p-8 space-y-2">
+        {% set tgds_qs = [
+          "ท่านพึงพอใจกับชีวิตความเป็นอยู่ปัจจุบันหรือไม่",
+          "ท่านได้ละทิ้งกิจกรรมหรือสิ่งที่เคยสนใจไปหลายอย่างหรือไม่",
+          "ท่านรู้สึกว่าชีวิตของท่านว่างเปล่าหรือไม่",
+          "ท่านรู้สึกเบื่อหน่ายบ่อยครั้งหรือไม่",
+          "ท่านมีความหวังที่ดีกับอนาคตอยู่เสมอหรือไม่",
+          "ท่านมีความวิตกกังวล มีเรื่องไม่สบายใจหรือไม่",
+          "ส่วนใหญ่ท่านมีความรู้สึกร่าเริง แจ่มใสหรือไม่",
+          "ท่านรู้สึกกลัวว่าจะมีเหตุการณ์ร้ายๆ เกิดกับท่านหรือไม่",
+          "ส่วนใหญ่ท่านมีความรู้สึกมีความสุขหรือไม่",
+          "ท่านรู้สึกหมดหวังบ่อยครั้งหรือไม่",
+          "ท่านรู้สึกกระสับกระส่าย กระวนกระวายบ่อยๆ หรือไม่",
+          "ท่านชอบอยู่กับบ้านมากกว่าออกไปนอกบ้านหรือไม่",
+          "ท่านมีความกังวลเกี่ยวกับอนาคตหรือไม่",
+          "ท่านรู้สึกว่าความจำไม่ดีเท่าที่ควรหรือไม่",
+          "ท่านรู้สึกว่าการมีชีวิตอยู่เป็นเรื่องที่น่าประทับใจหรือไม่"
+        ] %}
+        
+        {% for q_text in tgds_qs %}
+        <div class="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-slate-50 last:border-0 gap-4">
+            <div class="text-slate-700 font-medium">{{ loop.index }}. {{ q_text }}</div>
+            <div class="grid grid-cols-2 gap-3 shrink-0">
+              <label class="cursor-pointer">
+                <input type="radio" name="tgds15Answers_{{ loop.index }}" value="yes" class="hidden peer q-radio" onchange="calcTGDS()">
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent">ใช่</div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="tgds15Answers_{{ loop.index }}" value="no" class="hidden peer q-radio" onchange="calcTGDS()">
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent">ไม่ใช่</div>
+              </label>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 5. 8Q การประเมินการฆ่าตัวตาย (Rose Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-rose-100 overflow-hidden">
+        <div class="px-6 py-4 bg-rose-50 border-b border-rose-100 text-lg text-rose-900 font-medium tracking-tight">
+            5. 8Q การประเมินการฆ่าตัวตาย 8 คำถาม
+        </div>
+        <div class="p-8 space-y-8">
+            <div class="p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-100">
+                <p>คำแนะนำ: ประเมินครั้งแรกถามให้ครบ 8 ข้อ ครั้งต่อไปถามเฉพาะข้อ 1-7 เพื่อตัดประวัติตลอดชีวิตออก</p>
+            </div>
+
+            {% set q8_qs = [
+                "คิดอยากตาย หรือคิดว่าตายไปจะดีกว่า",
+                "อยากทำร้ายตัวเอง หรือทำให้ตัวเองบาดเจ็บ",
+                "คิดเกี่ยวกับการฆ่าตัวตาย",
+                "มีแผนการที่จะฆ่าตัวตายหรือไม่",
+                "ได้เตรียมการที่จะทำร้ายตนเองหรือเตรียมการจะฆ่าตัวตาย โดยตั้งใจว่าจะให้ตายจริงๆ",
+                "ได้ทำให้ตนเองบาดเจ็บแต่ไม่ตั้งใจที่จะทำให้เสียชีวิต",
+                "ได้พยายามฆ่าตัวตายโดยคาดหวัง/ตั้งใจที่จะให้ตาย",
+                "ตลอดชีวิต ท่านเคยพยายามฆ่าตัวตาย"
+            ] %}
+
+            {% for q_text in q8_qs %}
+            {% set q_idx = loop.index %}
+            <div class="py-6 border-b border-slate-50 last:border-0 space-y-4">
+                <div class="text-slate-700 font-medium leading-relaxed">{{ q_idx }}. {{ q_text }}</div>
+                
+                {% if q_idx == 3 %}
+                <div class="p-4 bg-blue-50 rounded-xl text-sm text-blue-800 border border-blue-100 italic">
+                    Note: ถ้าตอบว่าคิดเกี่ยวกับการฆ่าตัวตายให้ถามต่อ "ท่านสามารถควบคุมความอยากฆ่าตัวตายที่ท่านคิดอยู่นั้นได้หรือไม่ หรือบอกได้ไหมว่าคงจะไม่ทำตามความคิดนั้นในขณะนี้"
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="depression8Q_{{ q_idx }}" value="no" class="hidden peer">
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="depression8Q_{{ q_idx }}" value="yes" class="hidden peer">
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี</div>
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 6. สรุปความเสี่ยงฆ่าตัวตาย (Slate Dark Theme) -->
+    <div class="rounded-[26px] bg-white shadow-xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 bg-slate-800 text-lg text-white font-medium tracking-tight">
+            6. สรุปความเสี่ยงฆ่าตัวตาย (Suicide Risk Summary)
+        </div>
+        <div class="p-10 bg-slate-50/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <label class="cursor-pointer">
+                    <input type="radio" name="suicideRisk" value="none" class="hidden peer">
+                    <div class="py-6 border-2 rounded-[32px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 transition-all text-slate-400 font-bold bg-white shadow-sm">ไม่มีความเสี่ยง</div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="suicideRisk" value="yes" class="hidden peer">
+                    <div class="py-6 border-2 rounded-[32px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 transition-all text-slate-400 font-bold bg-white shadow-sm">มีความเสี่ยง</div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ปุ่มนำทาง -->
+    <div class="flex justify-between items-center mt-12 pb-16">
+      <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')" 
+         class="px-10 py-4 bg-slate-100 text-slate-600 rounded-[20px] text-lg hover:bg-slate-200 transition-all font-medium">ย้อนกลับ</button>
+      <button type="submit" 
+              class="px-16 py-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[20px] text-xl shadow-2xl shadow-emerald-100 hover:opacity-95 transition-all font-medium">บันทึกและดูสรุปผล</button>
+    </div>
+    
+    <input type="hidden" name="tgds_score" id="tgds_score_input" value="0">
+  </form>
 </div>
+
+<script>
+  function calcTGDS() {
+    let sum = 0;
+    const reverseQ = [1, 5, 7, 11, 13];
+    for(let i=1; i<=15; i++) {
+      const selected = document.querySelector(`input[name="tgds15Answers_${i}"]:checked`);
+      if(selected) {
+        const val = selected.value;
+        if(reverseQ.includes(i)) { if(val === 'no') sum += 1; } 
+        else { if(val === 'yes') sum += 1; }
+      }
+    }
+    document.getElementById('tgds_score_display').textContent = sum;
+    document.getElementById('tgds_score_input').value = sum;
+  }
+
+  function saveAndNavigate(url) {
+    document.getElementById('nextUrlInput').value = url;
+    document.getElementById('mainForm').submit();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const existing = {{ answers|tojson|safe if answers else '{}' }};
+    Object.keys(existing).forEach(k => {
+        const val = existing[k];
+        const el = document.querySelector(`input[name="${k}"][value="${val}"]`);
+        if(el) el.checked = true;
+    });
+    calcTGDS();
+  });
+</script>
 {% endblock %}

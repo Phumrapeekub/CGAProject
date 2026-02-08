@@ -1,13 +1,13 @@
-{% extends "base.html" %}
+{% extends "nurse/base.html" %}
 {% block content %}
 <div class="max-w-3xl mx-auto bg-white shadow rounded-2xl p-8 mt-8">
   <h2 class="text-2xl font-semibold text-indigo-600 mb-6">
     {% if mode == "add" %}เพิ่มผู้ป่วยใหม่{% else %}แก้ไขข้อมูลผู้ป่วย{% endif %}
   </h2>
   <form method="post" class="grid grid-cols-2 gap-4">
-    <input name="hn" placeholder="HN" value="{{ patient.hn if patient else '' }}" class="border rounded-lg px-4 py-2">
-    <input name="gcn" placeholder="GCN" value="{{ patient.gcn if patient else '' }}" class="border rounded-lg px-4 py-2">
-    <input name="name" placeholder="ชื่อ-นามสกุล" value="{{ patient.name if patient else '' }}" class="col-span-2 border rounded-lg px-4 py-2">
+    <input name="hn" placeholder="HN" value="{{ patient.hn if patient else (form.hn if form else '') }}" class="border rounded-lg px-4 py-2">
+    <input name="gcn" placeholder="GCN" value="{{ patient.gcn if patient else (form.gcn if form else '') }}" class="border rounded-lg px-4 py-2">
+    <input name="name" placeholder="ชื่อ-นามสกุล" value="{{ patient.name if patient else (form.full_name if form else '') }}" class="col-span-2 border rounded-lg px-4 py-2">
     <input name="age" placeholder="อายุ" value="{{ patient.age if patient else '' }}" class="border rounded-lg px-4 py-2">
     <!-- วันเดือนปีเกิด (พ.ศ.) -->
 <div class="col-span-2">
@@ -108,7 +108,7 @@
 
 
     <div class="col-span-2 flex justify-end gap-3 mt-6">
-      <a href="{{ url_for('patient_list') }}" class="px-6 py-2 bg-gray-200 rounded-lg">ยกเลิก</a>
+      <a href="{{ url_for('nurse.patients') }}" class="px-6 py-2 bg-gray-200 rounded-lg">ยกเลิก</a>
       <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">บันทึก</button>
     </div>
   </form>
