@@ -1,4 +1,4 @@
-from __future__ import annotations
+from _future_ import annotations
 from datetime import date
 from typing import Dict, Optional, Tuple, List
 
@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from mysql.connector import Error  # type: ignore
 from db.db import get_db_connection
 
-nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
+nurse_bp = Blueprint("nurse", _name_, url_prefix="/nurse")
 
 
 # -------------------------
@@ -29,7 +29,7 @@ def _get_db_name(conn) -> str:
 
 def _q_ident(name: str) -> str:
     # quote identifier with backticks safely
-    return "`" + name.replace("`", "``") + "`"
+    return "" + name.replace("", "``") + "`"
 
 
 def _pick_first(cols: set, names: List[str]) -> Optional[str]:
@@ -365,217 +365,174 @@ def _find_headers_table(conn) -> Tuple[str, str, str, Optional[str], Optional[st
 # -------------------------
 # Routes
 # -------------------------
-@nurse_bp.get("/assess/new", endpoint="assess_new")
+@nurse_bp.route("/assess/new", methods=["GET", "POST"], endpoint="assess_new")
 def assess_new():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    return render_template("nurse/assess_new.html")
 
+    # ---------- GET ----------
+    if request.method == "GET":
+        return render_template("nurse/assess_new.html")
 
-@nurse_bp.post("/assess", endpoint="assess_create")
+    # ---------- POST ----------
+    hn = (request.form.get("hn") or "").strip()
+    gcn = (request.form.get("gcn") or "").strip()
+
+    if not hn or not gcn:
+        flash("กรุณากรอก HN และ GCN ให้ครบ", "error")
+        return redirect(url_for("nurse.assess_new"))
+
+    conn = None
+    cur = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
+
+        # 1) หา patient จาก HN + GCN
+        cur.execute(
+            """
+            SELECT id, hn, gcn
+            FROM patients
+            WHERE hn = %s AND gcn = %s
+            LIMIT 1
+            """,
+            (hn, gcn),
+        )
+        patient = cur.fetchone()
+        if not patient:
+            flash("ไม่พบผู้ป่วยจาก HN/GCN ที่กรอก กรุณาตรวจสอบอีกครั้ง", "error")
+            return redirect(url_for("nurse.assess_new"))
+
+        patient_id = patient["id"]
+
+        # 2) สร้าง encounter/visit (ถ้ามีตาราง encounters)
+        nurse_user_id = session.get("user_id")  # ต้องเซ็ตตอน login
+        now = datetime.now()
+
+        encounter_id = None
+
+        # ถ้าโปรเจคคุณมี encounters ให้ใช้ส่วนนี้
+        cur.execute(
+            """
+            INSERT INTO encounters (patient_id, created_by, created_at)
+            VALUES (%s, %s, %s)
+            """,
+            (patient_id, nurse_user_id, now),
+        )
+        encounter_id = cur.lastrowid
+
+        # 3) สร้าง assessment header (ถ้ามีตาราง assessment_headers)
+        cur.execute(
+            """
+            INSERT INTO assessment_headers (patient_id, encounter_id, created_by, created_at, status)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (patient_id, encounter_id, nurse_user_id, now, "IN_PROGRESS"),
+        )
+        assess_id = cur.lastrowid
+
+        conn.commit()
+
+        # 4) redirect ไปหน้าฟอร์มแรกของพยาบาล (ปรับ endpoint ตามโปรเจคคุณ)
+        # ตัวอย่าง: ไปหน้าเลือกแบบประเมินหรือหน้า 2Q/8Q/MMSE
+        return redirect(url_for("nurse.assess_detail", assess_id=assess_id))
+
+    except mysql.connector.Error as e:
+        if conn:
+            conn.rollback()
+        flash(f"เกิดข้อผิดพลาด DB: {e}", "error")
+        return redirect(url_for("nurse.assess_new"))
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        # กัน KeyError อย่าง 'table_name' ให้เห็นเป็น error ที่เข้าใจได้
+        flash(f"เกิดข้อผิดพลาดระบบ: {e}", "error")
+        return redirect(url_for("nurse.assess_new"))
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+@nurse_bp.get("/assess/<int:assess_id>", endpoint="assess_detail")
+def assess_detail(assess_id: int):
+    if not _require_nurse():
+        return redirect(url_for("auth.login"))
+    return render_template("nurse/assess_detail.html", assess_id=assess_id)
+
+@nurse_bp.post("/assess/create", endpoint="assess_create")
 def assess_create():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
 
     hn = (request.form.get("hn") or "").strip()
     gcn = (request.form.get("gcn") or "").strip()
+
     if not hn or not gcn:
-        flash("กรุณากรอก HN และ GCN", "warning")
+        flash("กรุณากรอก HN และ GCN ให้ครบ", "danger")
         return redirect(url_for("nurse.assess_new"))
 
-    conn = get_db_connection()
-    if not conn:
-        flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "danger")
-        return redirect(url_for("nurse.assess_new"))
-
-    cur = conn.cursor(dictionary=True)
-
+    conn = None
+    cur = None
     try:
-        # TX
-        try:
-            conn.start_transaction()
-        except Exception:
-            pass
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
 
-        # 1) PATIENT upsert by (hn,gcn) using real table/cols
-        patient_table, patient_id_col, hn_col, gcn_col = _find_patient_table(conn)
-
+        # หา patient
         cur.execute(
-            f"SELECT {_q_ident(patient_id_col)} AS id "
-            f"FROM {_q_ident(patient_table)} "
-            f"WHERE {_q_ident(hn_col)}=%s AND {_q_ident(gcn_col)}=%s "
-            f"LIMIT 1",
+            "SELECT id, hn, gcn FROM patients WHERE hn=%s AND gcn=%s LIMIT 1",
             (hn, gcn),
         )
-        row = cur.fetchone()
-        if row:
-            patient_id = row["id"]
-        else:
-            cur.execute(
-                f"INSERT INTO {_q_ident(patient_table)} ({_q_ident(hn_col)}, {_q_ident(gcn_col)}) "
-                f"VALUES (%s, %s)",
-                (hn, gcn),
-            )
-            patient_id = cur.lastrowid
+        patient = cur.fetchone()
+        if not patient:
+            flash("ไม่พบผู้ป่วยจาก HN/GCN ที่กรอก", "danger")
+            return redirect(url_for("nurse.assess_new"))
 
-        # 2) ENCOUNTER: find/create (same-day) using real encounter table/cols
-        enc_table, enc_patient_fk, enc_date_col, enc_created_col = _find_encounter_table(conn, patient_table)
+        patient_id = patient["id"]
+        nurse_user_id = session.get("user_id")
+        now = datetime.now()
 
-        today = date.today().isoformat()
-        encounter_id = None
-
-        # try match by date column first
-        if enc_date_col:
-            cur.execute(
-                f"SELECT id FROM {_q_ident(enc_table)} "
-                f"WHERE {_q_ident(enc_patient_fk)}=%s AND DATE({_q_ident(enc_date_col)})=%s "
-                f"ORDER BY id DESC LIMIT 1",
-                (patient_id, today),
-            )
-            r = cur.fetchone()
-            if r:
-                encounter_id = r["id"]
-
-        # fallback created_at
-        if not encounter_id and enc_created_col:
-            cur.execute(
-                f"SELECT id FROM {_q_ident(enc_table)} "
-                f"WHERE {_q_ident(enc_patient_fk)}=%s AND DATE({_q_ident(enc_created_col)})=%s "
-                f"ORDER BY id DESC LIMIT 1",
-                (patient_id, today),
-            )
-            r = cur.fetchone()
-            if r:
-                encounter_id = r["id"]
-
-        # create if not found
-        if not encounter_id:
-            insert_cols = [enc_patient_fk]
-            insert_vals = [patient_id]
-
-            # if table has a date column, set NOW()
-            if enc_date_col:
-                insert_cols.append(enc_date_col)
-            if enc_created_col and enc_created_col != enc_date_col:
-                insert_cols.append(enc_created_col)
-
-            cols_sql = ", ".join(_q_ident(c) for c in insert_cols)
-
-            # build values sql: patient_id as %s, datetime cols as NOW()
-            values_parts = []
-            for c in insert_cols:
-                if c == enc_patient_fk:
-                    values_parts.append("%s")
-                else:
-                    values_parts.append("NOW()")
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(enc_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(insert_vals),
-            )
-            encounter_id = cur.lastrowid
-
-        # 3) SESSIONS: find/create using real sessions table/cols
-        sess_table, sess_enc_fk, sess_created_col, sess_created_by_col = _find_sessions_table(conn, enc_table)
-
+        # สร้าง encounter (ถ้ามีตารางนี้)
         cur.execute(
-            f"SELECT id FROM {_q_ident(sess_table)} "
-            f"WHERE {_q_ident(sess_enc_fk)}=%s ORDER BY id DESC LIMIT 1",
-            (encounter_id,),
+            "INSERT INTO encounters (patient_id, created_by, created_at) VALUES (%s,%s,%s)",
+            (patient_id, nurse_user_id, now),
         )
-        r = cur.fetchone()
-        if r:
-            session_id = r["id"]
-        else:
-            cols = [sess_enc_fk]
-            vals = [encounter_id]
+        encounter_id = cur.lastrowid
 
-            if sess_created_by_col and session.get("user_id"):
-                cols.append(sess_created_by_col)
-                vals.append(session.get("user_id"))
-
-            if sess_created_col:
-                cols.append(sess_created_col)
-
-            cols_sql = ", ".join(_q_ident(c) for c in cols)
-
-            values_parts = []
-            bind_vals = []
-            for c, v in zip(cols, vals):
-                values_parts.append("%s")
-                bind_vals.append(v)
-            # created_at = NOW()
-            if sess_created_col:
-                values_parts[-1] = "NOW()"  # last col is created_at
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(sess_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(bind_vals),
-            )
-            session_id = cur.lastrowid
-
-        # 4) HEADERS: find/create using real header table/cols
-        hdr_table, hdr_enc_fk, hdr_sess_fk, hdr_assessed_by, hdr_assessed_at, hdr_created_at = _find_headers_table(conn)
-
+        # สร้าง assessment header (ถ้ามีตารางนี้)
         cur.execute(
-            f"SELECT id FROM {_q_ident(hdr_table)} "
-            f"WHERE {_q_ident(hdr_enc_fk)}=%s AND {_q_ident(hdr_sess_fk)}=%s "
-            f"ORDER BY id DESC LIMIT 1",
-            (encounter_id, session_id),
+            """
+            INSERT INTO assessment_headers (patient_id, encounter_id, created_by, created_at, status)
+            VALUES (%s,%s,%s,%s,%s)
+            """,
+            (patient_id, encounter_id, nurse_user_id, now, "IN_PROGRESS"),
         )
-        r = cur.fetchone()
-        if r:
-            header_id = r["id"]
-        else:
-            cols = [hdr_enc_fk, hdr_sess_fk]
-            bind_vals = [encounter_id, session_id]
-
-            if hdr_assessed_by and session.get("user_id"):
-                cols.append(hdr_assessed_by)
-                bind_vals.append(session.get("user_id"))
-            if hdr_assessed_at:
-                cols.append(hdr_assessed_at)
-            if hdr_created_at and hdr_created_at != hdr_assessed_at:
-                cols.append(hdr_created_at)
-
-            cols_sql = ", ".join(_q_ident(c) for c in cols)
-
-            values_parts = []
-            real_binds = []
-            bind_idx = 0
-            for c in cols:
-                if c in (hdr_assessed_at, hdr_created_at):
-                    values_parts.append("NOW()")
-                else:
-                    values_parts.append("%s")
-                    real_binds.append(bind_vals[bind_idx])
-                    bind_idx += 1
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(hdr_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(real_binds),
-            )
-            header_id = cur.lastrowid
+        assess_id = cur.lastrowid
 
         conn.commit()
 
-        # ✅ ไปหน้ากรอกประเมินจริง
-        return redirect(url_for("nurse.assess_session", header_id=header_id))
+        flash("เริ่มการประเมินสำเร็จ", "success")
+        return redirect(url_for("nurse.assess_detail", assess_id=assess_id))
 
-    except Exception as e:
-        try:
+    except mysql.connector.Error as e:
+        if conn:
             conn.rollback()
-        except Exception:
-            pass
         flash(f"เกิดข้อผิดพลาด DB: {e}", "danger")
         return redirect(url_for("nurse.assess_new"))
 
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        flash(f"เกิดข้อผิดพลาดระบบ: {e}", "danger")
+        return redirect(url_for("nurse.assess_new"))
+
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 @nurse_bp.get("/assess/session/<int:header_id>", endpoint="assess_session")

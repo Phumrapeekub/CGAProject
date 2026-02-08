@@ -1,5 +1,6 @@
 # CGAProject/db/db.py
 import os
+import os
 import mysql.connector
 
 
@@ -11,7 +12,7 @@ def get_db_connection():
 
     host = os.getenv("DB_HOST", "127.0.0.1")
     user = os.getenv("DB_USER", "root")
-    password = os.getenv("DB_PASSWORD", "Kantiya203_")
+    password = os.getenv("DB_PASSWORD")
     database = os.getenv("DB_NAME", "cga_system_dev")  # หรือ cga_system_dev
 
     try:
