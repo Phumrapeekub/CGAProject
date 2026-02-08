@@ -1,10 +1,12 @@
 from __future__ import annotations
 from datetime import date
+from datetime import datetime
 from typing import Dict, Optional, Tuple, List
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import mysql.connector
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from mysql.connector import Error  # type: ignore
 from db.db import get_db_connection
+from werkzeug.exceptions import Forbidden
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
@@ -12,8 +14,19 @@ nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 # -------------------------
 # Auth guard
 # -------------------------
-def _require_nurse() -> bool:
-    return session.get("role") == "nurse"
+def _require_nurse():
+    """
+    องค์กรมักแยกเป็น guard function เพื่อใช้ซ้ำ + audit ง่าย
+    """
+    role = session.get("role")
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("กรุณาเข้าสู่ระบบก่อน", "warning")
+        return False
+    if role != "nurse":
+        # ใช้ 403 จะชัดเจนกว่า redirect เงียบ ๆ ในระบบจริง
+        raise Forbidden("You do not have permission to access this resource.")
+    return True
 
 
 # -------------------------
@@ -365,217 +378,172 @@ def _find_headers_table(conn) -> Tuple[str, str, str, Optional[str], Optional[st
 # -------------------------
 # Routes
 # -------------------------
-@nurse_bp.get("/assess/new", endpoint="assess_new")
+@nurse_bp.route("/assess/new", methods=["GET", "POST"], endpoint="assess_new")
 def assess_new():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    return render_template("nurse/assess_new.html")
 
+    page_errors = []
+    form = {"hn": "", "gcn": "", "full_name": ""}
 
-@nurse_bp.post("/assess", endpoint="assess_create")
+    if request.method == "POST":
+        hn = (request.form.get("hn") or "").strip()
+        gcn = (request.form.get("gcn") or "").strip()
+        full_name = (request.form.get("full_name") or "").strip()
+
+        form = {"hn": hn, "gcn": gcn, "full_name": full_name}
+
+        if not hn:
+            page_errors.append("กรุณากรอกเลขที่ผู้ป่วย (HN)")
+        if not gcn:
+            page_errors.append("กรุณากรอกเลขที่คลินิกผู้สูงอายุ (GCN)")
+        if not full_name:
+            page_errors.append("กรุณากรอกชื่อ-นามสกุลผู้ป่วย")
+
+        if page_errors:
+            return render_template("nurse/assess_new.html", page_errors=page_errors, form=form)
+
+        conn = None
+        cur = None
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                page_errors.append("ระบบฐานข้อมูลไม่พร้อมใช้งาน")
+                return render_template("nurse/assess_new.html", page_errors=page_errors, form=form)
+
+            cur = conn.cursor()
+
+            # ✅ สร้าง “รอบประเมินใหม่” เสมอ (ไม่ lookup)
+            # ปรับชื่อคอลัมน์ให้ตรง schema ของคุณ
+            cur.execute("""
+                INSERT INTO assessment_sessions (hn, gcn, full_name, created_by, created_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (hn, gcn, full_name, session.get("user_id")))
+
+            conn.commit()
+            flash("เริ่มการประเมินสำเร็จ", "success")
+            return redirect(url_for("nurse.dashboard"))
+
+        except Exception as e:
+            try:
+                if conn: conn.rollback()
+            except Exception:
+                pass
+            current_app.logger.exception("assess_new failed: %s", e)
+            page_errors.append(f"เกิดข้อผิดพลาด DB: {e}")
+            return render_template("nurse/assess_new.html", page_errors=page_errors, form=form)
+
+        finally:
+            try:
+                if cur: cur.close()
+            except Exception:
+                pass
+            try:
+                if conn: conn.close()
+            except Exception:
+                pass
+
+    return render_template("nurse/assess_new.html", page_errors=page_errors, form=form)
+
+@nurse_bp.get("/assess/<int:assess_id>", endpoint="assess_detail")
+def assess_detail(assess_id: int):
+    if not _require_nurse():
+        return redirect(url_for("auth.login"))
+    return render_template("nurse/assess_detail.html", assess_id=assess_id)
+
+@nurse_bp.post("/assess/create", endpoint="assess_create")
 def assess_create():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
 
     hn = (request.form.get("hn") or "").strip()
     gcn = (request.form.get("gcn") or "").strip()
+
     if not hn or not gcn:
-        flash("กรุณากรอก HN และ GCN", "warning")
+        flash("กรุณากรอก HN และ GCN ให้ครบ", "danger")
         return redirect(url_for("nurse.assess_new"))
 
-    conn = get_db_connection()
-    if not conn:
-        flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "danger")
-        return redirect(url_for("nurse.assess_new"))
-
-    cur = conn.cursor(dictionary=True)
-
+    conn = None
+    cur = None
     try:
-        # TX
-        try:
-            conn.start_transaction()
-        except Exception:
-            pass
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
 
-        # 1) PATIENT upsert by (hn,gcn) using real table/cols
-        patient_table, patient_id_col, hn_col, gcn_col = _find_patient_table(conn)
-
+        # =========================
+        # 1) หา patient ถ้าไม่เจอ => สร้างใหม่
+        # =========================
         cur.execute(
-            f"SELECT {_q_ident(patient_id_col)} AS id "
-            f"FROM {_q_ident(patient_table)} "
-            f"WHERE {_q_ident(hn_col)}=%s AND {_q_ident(gcn_col)}=%s "
-            f"LIMIT 1",
+            "SELECT id, hn, gcn FROM patients WHERE hn=%s AND gcn=%s LIMIT 1",
             (hn, gcn),
         )
-        row = cur.fetchone()
-        if row:
-            patient_id = row["id"]
-        else:
+        patient = cur.fetchone()
+
+        if not patient:
+            # ⚠️ ถ้า patients ของคุณมีคอลัมน์บังคับมากกว่านี้ (ชื่อ-สกุล/เพศ/วันเกิด)
+            # ให้เพิ่ม field ตรงนี้ตาม schema จริง
             cur.execute(
-                f"INSERT INTO {_q_ident(patient_table)} ({_q_ident(hn_col)}, {_q_ident(gcn_col)}) "
-                f"VALUES (%s, %s)",
+                """
+                INSERT INTO patients (hn, gcn, created_at)
+                VALUES (%s, %s, NOW())
+                """,
                 (hn, gcn),
             )
             patient_id = cur.lastrowid
-
-        # 2) ENCOUNTER: find/create (same-day) using real encounter table/cols
-        enc_table, enc_patient_fk, enc_date_col, enc_created_col = _find_encounter_table(conn, patient_table)
-
-        today = date.today().isoformat()
-        encounter_id = None
-
-        # try match by date column first
-        if enc_date_col:
-            cur.execute(
-                f"SELECT id FROM {_q_ident(enc_table)} "
-                f"WHERE {_q_ident(enc_patient_fk)}=%s AND DATE({_q_ident(enc_date_col)})=%s "
-                f"ORDER BY id DESC LIMIT 1",
-                (patient_id, today),
-            )
-            r = cur.fetchone()
-            if r:
-                encounter_id = r["id"]
-
-        # fallback created_at
-        if not encounter_id and enc_created_col:
-            cur.execute(
-                f"SELECT id FROM {_q_ident(enc_table)} "
-                f"WHERE {_q_ident(enc_patient_fk)}=%s AND DATE({_q_ident(enc_created_col)})=%s "
-                f"ORDER BY id DESC LIMIT 1",
-                (patient_id, today),
-            )
-            r = cur.fetchone()
-            if r:
-                encounter_id = r["id"]
-
-        # create if not found
-        if not encounter_id:
-            insert_cols = [enc_patient_fk]
-            insert_vals = [patient_id]
-
-            # if table has a date column, set NOW()
-            if enc_date_col:
-                insert_cols.append(enc_date_col)
-            if enc_created_col and enc_created_col != enc_date_col:
-                insert_cols.append(enc_created_col)
-
-            cols_sql = ", ".join(_q_ident(c) for c in insert_cols)
-
-            # build values sql: patient_id as %s, datetime cols as NOW()
-            values_parts = []
-            for c in insert_cols:
-                if c == enc_patient_fk:
-                    values_parts.append("%s")
-                else:
-                    values_parts.append("NOW()")
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(enc_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(insert_vals),
-            )
-            encounter_id = cur.lastrowid
-
-        # 3) SESSIONS: find/create using real sessions table/cols
-        sess_table, sess_enc_fk, sess_created_col, sess_created_by_col = _find_sessions_table(conn, enc_table)
-
-        cur.execute(
-            f"SELECT id FROM {_q_ident(sess_table)} "
-            f"WHERE {_q_ident(sess_enc_fk)}=%s ORDER BY id DESC LIMIT 1",
-            (encounter_id,),
-        )
-        r = cur.fetchone()
-        if r:
-            session_id = r["id"]
+            flash("สร้างข้อมูลผู้ป่วยใหม่สำเร็จ", "success")
         else:
-            cols = [sess_enc_fk]
-            vals = [encounter_id]
+            patient_id = patient["id"]
 
-            if sess_created_by_col and session.get("user_id"):
-                cols.append(sess_created_by_col)
-                vals.append(session.get("user_id"))
+        nurse_user_id = session.get("user_id")  # ต้องมีตอน login
+        if not nurse_user_id:
+            flash("Session หลุด กรุณาเข้าสู่ระบบใหม่", "danger")
+            return redirect(url_for("auth.login"))
 
-            if sess_created_col:
-                cols.append(sess_created_col)
-
-            cols_sql = ", ".join(_q_ident(c) for c in cols)
-
-            values_parts = []
-            bind_vals = []
-            for c, v in zip(cols, vals):
-                values_parts.append("%s")
-                bind_vals.append(v)
-            # created_at = NOW()
-            if sess_created_col:
-                values_parts[-1] = "NOW()"  # last col is created_at
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(sess_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(bind_vals),
-            )
-            session_id = cur.lastrowid
-
-        # 4) HEADERS: find/create using real header table/cols
-        hdr_table, hdr_enc_fk, hdr_sess_fk, hdr_assessed_by, hdr_assessed_at, hdr_created_at = _find_headers_table(conn)
-
+        # =========================
+        # 2) สร้าง encounter (visit)
+        # =========================
         cur.execute(
-            f"SELECT id FROM {_q_ident(hdr_table)} "
-            f"WHERE {_q_ident(hdr_enc_fk)}=%s AND {_q_ident(hdr_sess_fk)}=%s "
-            f"ORDER BY id DESC LIMIT 1",
-            (encounter_id, session_id),
+            """
+            INSERT INTO encounters (patient_id, created_by, created_at)
+            VALUES (%s, %s, NOW())
+            """,
+            (patient_id, nurse_user_id),
         )
-        r = cur.fetchone()
-        if r:
-            header_id = r["id"]
-        else:
-            cols = [hdr_enc_fk, hdr_sess_fk]
-            bind_vals = [encounter_id, session_id]
+        encounter_id = cur.lastrowid
 
-            if hdr_assessed_by and session.get("user_id"):
-                cols.append(hdr_assessed_by)
-                bind_vals.append(session.get("user_id"))
-            if hdr_assessed_at:
-                cols.append(hdr_assessed_at)
-            if hdr_created_at and hdr_created_at != hdr_assessed_at:
-                cols.append(hdr_created_at)
-
-            cols_sql = ", ".join(_q_ident(c) for c in cols)
-
-            values_parts = []
-            real_binds = []
-            bind_idx = 0
-            for c in cols:
-                if c in (hdr_assessed_at, hdr_created_at):
-                    values_parts.append("NOW()")
-                else:
-                    values_parts.append("%s")
-                    real_binds.append(bind_vals[bind_idx])
-                    bind_idx += 1
-            values_sql = ", ".join(values_parts)
-
-            cur.execute(
-                f"INSERT INTO {_q_ident(hdr_table)} ({cols_sql}) VALUES ({values_sql})",
-                tuple(real_binds),
-            )
-            header_id = cur.lastrowid
+        # =========================
+        # 3) สร้าง assessment header
+        # =========================
+        cur.execute(
+            """
+            INSERT INTO assessment_headers (patient_id, encounter_id, created_by, created_at, status)
+            VALUES (%s, %s, %s, NOW(), %s)
+            """,
+            (patient_id, encounter_id, nurse_user_id, "IN_PROGRESS"),
+        )
+        assess_id = cur.lastrowid
 
         conn.commit()
 
-        # ✅ ไปหน้ากรอกประเมินจริง
-        return redirect(url_for("nurse.assess_session", header_id=header_id))
+        flash("เริ่มการประเมินสำเร็จ", "success")
+        return redirect(url_for("nurse.assess_detail", assess_id=assess_id))
 
-    except Exception as e:
-        try:
+    except mysql.connector.Error as e:
+        if conn:
             conn.rollback()
-        except Exception:
-            pass
         flash(f"เกิดข้อผิดพลาด DB: {e}", "danger")
         return redirect(url_for("nurse.assess_new"))
 
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        flash(f"เกิดข้อผิดพลาดระบบ: {e}", "danger")
+        return redirect(url_for("nurse.assess_new"))
+
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 @nurse_bp.get("/assess/session/<int:header_id>", endpoint="assess_session")
@@ -630,38 +598,88 @@ def assess_session(header_id: int):
 
 @nurse_bp.get("/dashboard", endpoint="dashboard")
 def dashboard():
-    if session.get("role") != "nurse":
+    # ===== Auth / RBAC (องค์กรนิยมเช็ค user_id ด้วย) =====
+    if not session.get("user_id"):
+        flash("กรุณาเข้าสู่ระบบก่อน", "warning")
         return redirect(url_for("auth.login"))
 
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
+    if session.get("role") != "nurse":
+        flash("คุณไม่มีสิทธิ์เข้าถึงหน้านี้", "danger")
+        return redirect(url_for("auth.login"))
 
-    cur.execute("SELECT COUNT(*) AS c FROM assessment_sessions WHERE DATE(created_at)=CURDATE()")
-    today = cur.fetchone()["c"]
+    conn = None
+    cur = None
 
-    cur.execute("""
-        SELECT COUNT(*) AS c
-        FROM assessment_sessions
-        WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
-    """)
-    week = cur.fetchone()["c"]
+    # default KPI กันหน้าแตก
+    kpis = {"today": 0, "week": 0, "month": 0, "total": 0}
 
-    cur.execute("""
-        SELECT COUNT(*) AS c
-        FROM assessment_sessions
-        WHERE YEAR(created_at)=YEAR(CURDATE()) AND MONTH(created_at)=MONTH(CURDATE())
-    """)
-    month = cur.fetchone()["c"]
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            flash("ระบบฐานข้อมูลไม่พร้อมใช้งาน", "danger")
+            return render_template(
+                "nurse/dashboard.html",
+                kpis=kpis,
+                user=session.get("username") or session.get("user") or "-",
+                role="พยาบาล",
+            )
 
-    cur.execute("SELECT COUNT(*) AS c FROM assessment_sessions")
-    total = cur.fetchone()["c"]
+        cur = conn.cursor(dictionary=True)
 
-    cur.close()
-    conn.close()
+        # ===== KPI (มาตรฐาน: ใช้ช่วงเวลาแบบ explicit) =====
+        # today
+        cur.execute("""
+            SELECT COUNT(*) AS c
+            FROM assessment_sessions
+            WHERE created_at >= CURDATE()
+              AND created_at <  CURDATE() + INTERVAL 1 DAY
+        """)
+        kpis["today"] = int(cur.fetchone()["c"] or 0)
+
+        # week (ISO week: monday-first)
+        cur.execute("""
+            SELECT COUNT(*) AS c
+            FROM assessment_sessions
+            WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+        """)
+        kpis["week"] = int(cur.fetchone()["c"] or 0)
+
+        # month
+        cur.execute("""
+            SELECT COUNT(*) AS c
+            FROM assessment_sessions
+            WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+              AND created_at <  DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
+        """)
+        kpis["month"] = int(cur.fetchone()["c"] or 0)
+
+        # total
+        cur.execute("SELECT COUNT(*) AS c FROM assessment_sessions")
+        kpis["total"] = int(cur.fetchone()["c"] or 0)
+
+    except Error as e:
+        current_app.logger.exception("Nurse dashboard KPI query failed: %s", e)
+        flash("เกิดข้อผิดพลาดในการโหลดสถิติ Dashboard", "danger")
+
+    except Exception as e:
+        current_app.logger.exception("Nurse dashboard failed: %s", e)
+        flash("เกิดข้อผิดพลาดของระบบ", "danger")
+
+    finally:
+        try:
+            if cur:
+                cur.close()
+        except Exception:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
 
     return render_template(
         "nurse/dashboard.html",
-        kpis={"today": today, "week": week, "month": month, "total": total},
+        kpis=kpis,
         user=session.get("username") or session.get("user") or "-",
         role="พยาบาล",
     )
@@ -669,6 +687,198 @@ def dashboard():
 
 @nurse_bp.get("/patients", endpoint="patients")
 def patients():
-    if session.get("role") != "nurse":
+    # ===== Auth / RBAC =====
+    if not _require_nurse():
         return redirect(url_for("auth.login"))
-    return render_template("nurse/patient_list.html", patients=[])
+
+    # ===== Query params (search + pagination) =====
+    q = (request.args.get("q") or "").strip()
+    page_str = (request.args.get("page") or "1").strip()
+    size_str = (request.args.get("page_size") or "20").strip()
+
+    try:
+        page = max(int(page_str), 1)
+    except ValueError:
+        page = 1
+
+    try:
+        page_size = int(size_str)
+        if page_size not in (10, 20, 50, 100):
+            page_size = 20
+    except ValueError:
+        page_size = 20
+
+    offset = (page - 1) * page_size
+
+    # ===== DB fetch =====
+    conn = None
+    cur = None
+    rows = []
+    total = 0
+
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            current_app.logger.error("DB connection is None")
+            flash("ระบบฐานข้อมูลไม่พร้อมใช้งาน (DB connection failed)", "danger")
+            return render_template(
+                "nurse/patients.html",
+                patients=[],
+                q=q,
+                page=page,
+                page_size=page_size,
+                total=0,
+                total_pages=0,
+            )
+
+        cur = conn.cursor(dictionary=True)
+
+        # หมายเหตุ: ชื่อตาราง/คอลัมน์อาจต่างกันตาม schema ทีมคุณ
+        # ตัวอย่างนี้ใช้ตาราง `patients` และฟิลด์ทั่วไป: hn, first_name, last_name, phone, updated_at
+        where_sql = ""
+        params = {}
+
+        if q:
+            where_sql = """
+                WHERE
+                    p.hn LIKE %(kw)s OR
+                    p.first_name LIKE %(kw)s OR
+                    p.last_name LIKE %(kw)s OR
+                    CONCAT(p.first_name, ' ', p.last_name) LIKE %(kw)s
+            """
+            params["kw"] = f"%{q}%"
+
+        # นับจำนวนทั้งหมดเพื่อทำ pagination
+        cur.execute(
+            f"""
+            SELECT COUNT(*) AS cnt
+            FROM patients p
+            {where_sql}
+            """,
+            params,
+        )
+        total = int(cur.fetchone()["cnt"])
+
+        # ดึงรายการหน้า current page
+        params2 = dict(params)
+        params2.update({"limit": page_size, "offset": offset})
+
+        cur.execute(
+            f"""
+            SELECT
+                p.id,
+                p.hn,
+                p.first_name,
+                p.last_name,
+                p.gender,
+                p.birth_date,
+                p.phone,
+                p.updated_at
+            FROM patients p
+            {where_sql}
+            ORDER BY p.updated_at DESC, p.id DESC
+            LIMIT %(limit)s OFFSET %(offset)s
+            """,
+            params2,
+        )
+        rows = cur.fetchall() or []
+
+        total_pages = (total + page_size - 1) // page_size
+
+        return render_template(
+            "nurse/patients.html",
+            patients=rows,
+            q=q,
+            page=page,
+            page_size=page_size,
+            total=total,
+            total_pages=total_pages,
+        )
+
+    except Forbidden:
+        # แสดงหน้า 403 หรือ redirect ก็ได้ แต่ในองค์กรนิยมให้ชัดเจน
+        flash("คุณไม่มีสิทธิ์เข้าถึงหน้านี้", "danger")
+        return redirect(url_for("auth.login"))
+
+    except Exception as e:
+        current_app.logger.exception("patients() failed: %s", e)
+        flash("เกิดข้อผิดพลาดในการโหลดรายชื่อผู้ป่วย", "danger")
+        return render_template(
+            "nurse/patients.html",
+            patients=[],
+            q=q,
+            page=page,
+            page_size=page_size,
+            total=0,
+            total_pages=0,
+        )
+
+    finally:
+        try:
+            if cur:
+                cur.close()
+        except Exception:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
+
+@nurse_bp.route("/patients/new", methods=["GET", "POST"], endpoint="add_patient")
+def add_patient():
+    if not session.get("user_id") or session.get("role") != "nurse":
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        hn = (request.form.get("hn") or "").strip()
+        first_name = (request.form.get("first_name") or "").strip()
+        last_name = (request.form.get("last_name") or "").strip()
+        phone = (request.form.get("phone") or "").strip() or None
+
+        # validate แบบองค์กร (ขั้นต่ำ)
+        if not hn or not first_name or not last_name:
+            flash("กรุณากรอก HN, ชื่อ และนามสกุลให้ครบ", "warning")
+            return render_template("nurse/patient_form.html", form=request.form)
+
+        conn = None
+        cur = None
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                flash("ระบบฐานข้อมูลไม่พร้อมใช้งาน", "danger")
+                return render_template("nurse/patient_form.html", form=request.form)
+
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO patients (hn, first_name, last_name, phone, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, NOW(), NOW())
+                """,
+                (hn, first_name, last_name, phone),
+            )
+            conn.commit()
+            flash("เพิ่มผู้ป่วยสำเร็จ", "success")
+            return redirect(url_for("nurse.patients"))
+
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            current_app.logger.exception("add_patient failed: %s", e)
+            flash("เพิ่มผู้ป่วยไม่สำเร็จ", "danger")
+            return render_template("nurse/patient_form.html", form=request.form)
+
+        finally:
+            try:
+                if cur:
+                    cur.close()
+            except Exception:
+                pass
+            try:
+                if conn:
+                    conn.close()
+            except Exception:
+                pass
+
+    # GET
+    return render_template("nurse/patient_form.html", form={})
