@@ -2,7 +2,10 @@ Flask==2.3.3
 mysql-connector-python==8.2.0
 python-dotenv==1.0.0
 supabase
-h2o==3.40.0.4 # Assuming a recent stable version
-pandas==2.1.4 # Assuming a recent stable version
-customtkinter==5.2.1 # Assuming a recent stable version
-matplotlib==3.8.2 # Assuming a recent stable version
+h2o==3.40.0.4
+pandas==2.1.4
+customtkinter==5.2.1
+matplotlib==3.8.2
+werkzeug
+tkcalendar
+numpy

@@ -1,20 +1,15 @@
-from _future_ import annotations
-from datetime import date
+from __future__ import annotations
+from datetime import date, datetime # Added datetime import
 from typing import Dict, Optional, Tuple, List
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from mysql.connector import Error  # type: ignore
 from db.db import get_db_connection
 
-nurse_bp = Blueprint("nurse", _name_, url_prefix="/nurse")
+nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
-
-# -------------------------
-# Auth guard
-# -------------------------
-def _require_nurse() -> bool:
-    return session.get("role") == "nurse"
-
+def _guard_nurse() -> bool:
+    return session.get("role") == "nurse" and session.get("user_id")
 
 # -------------------------
 # DB introspection helpers
@@ -29,7 +24,7 @@ def _get_db_name(conn) -> str:
 
 def _q_ident(name: str) -> str:
     # quote identifier with backticks safely
-    return "" + name.replace("", "``") + "`"
+    return "`" + name.replace("`", "``") + "`"
 
 
 def _pick_first(cols: set, names: List[str]) -> Optional[str]:
@@ -367,7 +362,7 @@ def _find_headers_table(conn) -> Tuple[str, str, str, Optional[str], Optional[st
 # -------------------------
 @nurse_bp.route("/assess/new", methods=["GET", "POST"], endpoint="assess_new")
 def assess_new():
-    if not _require_nurse():
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
 
     # ---------- GET ----------
@@ -458,13 +453,13 @@ def assess_new():
 
 @nurse_bp.get("/assess/<int:assess_id>", endpoint="assess_detail")
 def assess_detail(assess_id: int):
-    if not _require_nurse():
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
     return render_template("nurse/assess_detail.html", assess_id=assess_id)
 
 @nurse_bp.post("/assess/create", endpoint="assess_create")
 def assess_create():
-    if not _require_nurse():
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
 
     hn = (request.form.get("hn") or "").strip()
@@ -534,10 +529,9 @@ def assess_create():
         if conn:
             conn.close()
 
-
 @nurse_bp.get("/assess/session/<int:header_id>", endpoint="assess_session")
 def assess_session(header_id: int):
-    if not _require_nurse():
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
 
     conn = get_db_connection()
@@ -587,7 +581,7 @@ def assess_session(header_id: int):
 
 @nurse_bp.get("/dashboard", endpoint="dashboard")
 def dashboard():
-    if session.get("role") != "nurse":
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
 
     conn = get_db_connection()
@@ -626,6 +620,11 @@ def dashboard():
 
 @nurse_bp.get("/patients", endpoint="patients")
 def patients():
-    if session.get("role") != "nurse":
+    if not _guard_nurse():
         return redirect(url_for("auth.login"))
     return render_template("nurse/patient_list.html", patients=[])
+
+@nurse_bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("auth.login"))

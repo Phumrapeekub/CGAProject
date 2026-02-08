@@ -1,5 +1,3 @@
-# CGAProject/db/db.py
-import os
 import os
 import mysql.connector
 
