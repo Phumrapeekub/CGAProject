@@ -1,0 +1,218 @@
+{% extends "nurse/base.html" %}
+{% block title %}รายงานสรุปภาพรวม CGA | Hospital Analytics{% endblock %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    
+    <!-- Top Action Bar (Back & Print) -->
+    <div class="flex items-center justify-between no-print">
+        <a href="{{ url_for('nurse.dashboard') }}" class="flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-3xl hover:bg-slate-50 hover:border-indigo-100 hover:text-indigo-600 transition-all shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="font-black text-sm uppercase tracking-tight">กลับหน้าหลัก</span>
+        </a>
+        <button onclick="window.print()" class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+            พิมพ์รายงาน
+        </button>
+    </div>
+
+    <!-- Header & Filter Card -->
+    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">CGA Summary Report</h1>
+            <p class="text-slate-500 font-medium">ภาพรวมสถิติการคัดกรองประชากรผู้สูงอายุ</p>
+        </div>
+        
+        <form method="GET" class="flex flex-wrap items-end gap-4 bg-slate-50 p-6 rounded-[32px] w-full lg:w-auto no-print">
+            <div class="flex-1 sm:flex-initial space-y-1">
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">เริ่มต้น</label>
+                <input type="date" name="start_date" value="{{ data.start_date }}" 
+                       class="block w-full sm:w-40 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="flex-1 sm:flex-initial space-y-1">
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">สิ้นสุด</label>
+                <input type="date" name="end_date" value="{{ data.end_date }}"
+                       class="block w-full sm:w-40 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <button type="submit" class="w-full sm:w-auto px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+                กรองข้อมูล
+            </button>
+        </form>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <!-- Total -->
+        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">คัดกรองสะสม</p>
+            <p class="text-5xl font-black text-slate-900 leading-none">{{ data.ov.total or 0 }}</p>
+            <p class="text-xs font-bold text-slate-400 mt-2">ราย</p>
+        </div>
+        <!-- MMSE -->
+        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-rose-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
+            <p class="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-3">เสี่ยงสมองเสื่อม</p>
+            <p class="text-5xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
+            <p class="text-xs font-bold text-rose-300 mt-2">
+                {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
+            </p>
+        </div>
+        <!-- TGDS -->
+        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-orange-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
+            <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3">เสี่ยงภาวะซึมเศร้า</p>
+            <p class="text-5xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
+            <p class="text-xs font-bold text-orange-300 mt-2">
+                {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
+            </p>
+        </div>
+        <!-- Suicide -->
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-900 p-8 rounded-[32px] shadow-xl text-center text-white flex flex-col justify-center min-h-[180px]">
+            <p class="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em] mb-3">Suicide Risk Registry</p>
+            {% set suicide_count = data.high_risk | selectattr('suicide', 'equalto', 'yes') | list | length %}
+            <p class="text-5xl font-black tracking-tighter leading-none">{{ suicide_count }}</p>
+            <div class="mt-4 flex justify-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                    </span>
+                    <span class="text-[10px] font-bold text-white uppercase">Critical Alert</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
+            <h3 class="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+                <span class="w-2 h-6 bg-indigo-500 rounded-full"></span>
+                สถิติโรคประจำตัว
+            </h3>
+            <canvas id="diseaseChart" height="220"></canvas>
+        </div>
+        <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
+            <h3 class="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+                <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                ดัชนีมวลกาย (BMI Analysis)
+            </h3>
+            <div class="h-[220px] flex justify-center">
+                <canvas id="bmiChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- High Risk List -->
+    <div class="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-10 py-6 bg-slate-900 text-white flex justify-between items-center">
+            <h3 class="text-xl font-black">High-Priority Cases</h3>
+            <span class="text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full uppercase">Top 15 Priority</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="px-10 py-4">Patient Information</th>
+                        <th class="px-6 py-4 text-center">MMSE</th>
+                        <th class="px-6 py-4 text-center">TGDS</th>
+                        <th class="px-6 py-4 text-center">Suicide</th>
+                        <th class="px-10 py-4 text-right">View</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for p in data.high_risk %}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-10 py-5">
+                            <p class="text-slate-900 font-black">{{ p.full_name }}</p>
+                            <p class="text-slate-400 font-bold text-[10px]">HN: {{ p.hn }} | {{ p.age_year }} ปี</p>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="px-3 py-1 rounded-lg font-black {{ 'bg-rose-50 text-rose-600' if p.mmse and p.mmse <= 15 else 'bg-slate-50 text-slate-400' }}">
+                                {{ p.mmse if p.mmse != None else '-' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="px-3 py-1 rounded-lg font-black {{ 'bg-orange-50 text-orange-600' if p.tgds and p.tgds >= 10 else 'bg-slate-50 text-slate-400' }}">
+                                {{ p.tgds if p.tgds != None else '-' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            {% if p.suicide == 'yes' %}
+                                <span class="px-3 py-1 bg-red-600 text-white rounded-full text-[10px] font-black uppercase animate-pulse">Critical</span>
+                            {% else %}
+                                <span class="text-slate-200 font-bold">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-10 py-5 text-right">
+                            <a href="{{ url_for('nurse.assess_summary', header_id=p.header_id) if p.header_id else '#' }}" class="text-indigo-600 font-black text-xs hover:underline">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Print Footer -->
+    <div class="hidden print:block text-center pt-10 border-t border-slate-200 text-slate-400 text-xs">
+        รายงานสรุปคัดกรอง CGA ณ วันที่ {{ date }} | ผู้พิมพ์: {{ session.get('full_name') }}
+    </div>
+</div>
+
+<script>
+    // Disease Chart
+    new Chart(document.getElementById('diseaseChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['เบาหวาน', 'ความดันฯ', 'โรคหัวใจ', 'โรคไต', 'มะเร็ง'],
+            datasets: [{
+                data: [
+                    {{ data.diseases.get('diabetes', 0) }},
+                    {{ data.diseases.get('hypertension', 0) }},
+                    {{ data.diseases.get('heart', 0) }},
+                    {{ data.diseases.get('kidney', 0) }},
+                    {{ data.diseases.get('cancer', 0) }}
+                ],
+                backgroundColor: '#6366f1',
+                borderRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // BMI Chart
+    new Chart(document.getElementById('bmiChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['ผอม', 'ปกติ', 'เกิน', 'อ้วน'],
+            datasets: [{
+                data: [
+                    {{ data.bmi.underweight }},
+                    {{ data.bmi.normal }},
+                    {{ data.bmi.overweight }},
+                    {{ data.bmi.obese }}
+                ],
+                backgroundColor: ['#94a3b8', '#10b981', '#f59e0b', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '75%',
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { weight: 'bold' } } } }
+        }
+    });
+</script>
+
+<style>
+@media print {
+    .no-print { display: none !important; }
+    body { background: white !important; }
+    .max-w-7xl { max-width: 100% !important; padding: 0 !important; }
+}
+</style>
+
+{% endblock %}

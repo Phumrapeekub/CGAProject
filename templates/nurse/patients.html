@@ -24,52 +24,32 @@
     </div>
   </div>
 
-  <!-- Advanced Search Filters (Separated Channels) -->
-  <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 space-y-8">
-    <div class="flex items-center gap-2 text-indigo-600 font-black uppercase tracking-widest text-xs border-b border-slate-50 pb-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3"/></svg>
-        ระบุข้อมูลที่ต้องการค้นหา
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        <!-- 1. ค้นหาด้วย HN -->
-        <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Number (HN)</label>
-            <input type="text" placeholder="ระบุเลข HN..." 
-                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+  <!-- Unified Search Filter -->
+  <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
+    <form method="GET" action="{{ url_for('nurse.patients') }}" class="flex flex-col md:flex-row items-end gap-6">
+        <div class="flex-1 w-full space-y-2">
+            <label class="block text-xs font-black text-indigo-600 uppercase tracking-widest ml-1">
+                ค้นหาผู้ป่วย (Search)
+            </label>
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3"/></svg>
+                </div>
+                <input type="text" name="search" value="{{ search_val }}" placeholder="ค้นหาด้วยชื่อ, นามสกุล, HN หรือ GCN..." 
+                       class="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-[24px] outline-none focus:border-indigo-500 focus:bg-white transition-all text-xl font-medium shadow-inner">
+            </div>
         </div>
-        
-        <!-- 2. ค้นหาด้วย GCN -->
-        <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Daily Queue (GCN)</label>
-            <input type="text" placeholder="ระบุเลข GCN..." 
-                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
+        <div class="flex gap-3 w-full md:w-auto">
+            <button type="submit" class="flex-1 md:flex-none px-10 py-4 bg-slate-900 text-white rounded-[24px] font-black text-lg hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                ค้นหา
+            </button>
+            {% if search_val %}
+            <a href="{{ url_for('nurse.patients') }}" class="flex items-center justify-center px-6 py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-[24px] font-bold hover:bg-slate-50 transition-all">
+                ล้าง
+            </a>
+            {% endif %}
         </div>
-
-        <!-- 3. ค้นหาด้วย ชื่อ-นามสกุล -->
-        <div class="space-y-2 lg:col-span-1">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ชื่อ-นามสกุล</label>
-            <input type="text" placeholder="ระบุชื่อผู้ป่วย..." 
-                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
-        </div>
-
-        <!-- 4. ค้นหาด้วย โรคประจำตัว -->
-        <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">โรคประจำตัว</label>
-            <input type="text" placeholder="ระบุชื่อโรค..." 
-                   class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner">
-        </div>
-
-        <!-- 5. ค้นหาด้วย ความเสี่ยง -->
-        <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ระดับความเสี่ยง</label>
-            <select class="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-2xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-lg font-medium shadow-inner appearance-none cursor-pointer">
-                <option value="">แสดงทั้งหมด</option>
-                <option value="high">เสี่ยงสูง (Risk Detected)</option>
-                <option value="normal">ปกติ (Normal)</option>
-            </select>
-        </div>
-    </div>
+    </form>
   </div>
 
   <!-- Patient Table -->
@@ -117,7 +97,12 @@
             <!-- เพศ / อายุ -->
             <td class="px-8 py-8 text-center">
               <div class="space-y-1">
-                <div class="text-2xl font-black text-slate-700 uppercase tracking-tighter">{{ patient.sex or patient.gender or '-' }}</div>
+                {% set sex_val = (patient.sex or patient.gender or '')|lower %}
+                <div class="text-2xl font-black text-slate-700 uppercase tracking-tighter">
+                    {% if sex_val in ['male', 'ชาย', '1'] %}ชาย
+                    {% elif sex_val in ['female', 'หญิง', '2'] %}หญิง
+                    {% else %}-{% endif %}
+                </div>
                 <div class="text-xl font-bold text-indigo-500 tracking-wide">{{ patient.age_year if patient.age_year else '-' }} <span class="text-xs font-medium text-slate-400 uppercase">Years</span></div>
               </div>
             </td>
@@ -125,13 +110,15 @@
             <!-- การดำเนินการ -->
             <td class="px-8 py-8">
               <div class="flex flex-col gap-3">
-                <button class="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 hover:shadow-lg transition-all shadow-md">
+                <a href="{{ url_for('nurse.patient_history', patient_id=patient.id) }}" 
+                   class="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm text-center hover:bg-indigo-700 hover:shadow-lg transition-all shadow-md">
                   ดูประวัติการประเมิน
-                </button>
+                </a>
                 <div class="flex gap-2">
-                    <button class="flex-1 px-4 py-3 bg-white border-2 border-slate-100 text-slate-500 rounded-xl text-xs font-black hover:bg-slate-50 hover:text-slate-800 transition-all">
+                    <a href="{{ url_for('nurse.patient_edit', patient_id=patient.id) }}" 
+                       class="flex-1 px-4 py-3 bg-white border-2 border-slate-100 text-slate-500 rounded-xl text-xs font-black text-center hover:bg-slate-50 hover:text-slate-800 transition-all">
                       แก้ไข
-                    </button>
+                    </a>
                     <form method="POST" action="{{ url_for('nurse.patient_delete', patient_id=patient.id) }}" onsubmit="return confirm('ยืนยันการลบ?');" class="flex-1">
                         <button type="submit" class="w-full px-4 py-3 bg-rose-50 text-rose-500 rounded-xl text-xs font-black hover:bg-rose-500 hover:text-white transition-all">
                           ลบ

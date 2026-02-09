@@ -60,7 +60,7 @@
         <div class="space-y-4">
             <label class="block text-slate-700 text-lg ml-1 font-medium">ระดับการศึกษาของผู้ป่วย</label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {% for v, l in [('1','ไม่ได้เรียน'), ('2','ประถมศึกษา'), ('3','สูงกว่าประถมศึกษา')] %}
+                {% for v, l in [('1','ไม่ได้เรียน (อ่านเขียนไม่ได้)'), ('2','ประถมศึกษา'), ('3','สูงกว่าประถมศึกษา')] %}
                 <label class="cursor-pointer">
                     <input type="radio" name="edu" value="{{ v }}" class="hidden peer">
                     <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all text-slate-500 bg-slate-50 border-transparent">{{ l }}</div>
@@ -107,16 +107,24 @@
         <div class="px-6 py-4 bg-teal-50 border-b border-teal-100 text-lg text-teal-800 font-medium">2. การรับรู้สถานที่ (Orientation for place)</div>
         <div class="p-8">
             {{ mmse_q('2.1', 'สถานที่ตรงนี้เรียกว่าอะไร') }}
-            {{ mmse_q('2.2', 'ชั้นที่เท่าไหร่') }}
-            {{ mmse_q('2.3', 'อำเภออะไร') }}
-            {{ mmse_q('2.4', 'จังหวัดอะไร') }}
-            {{ mmse_q('2.5', 'ภาคอะไร') }}
+            {{ mmse_q('2.2', 'ขณะนี้อยู่ชั้นที่เท่าไรของตัวอาคาร') }}
+            {{ mmse_q('2.3', 'ที่นี่อยู่ในอำเภออะไร') }}
+            {{ mmse_q('2.4', 'ที่นี่จังหวัดอะไร') }}
+            {{ mmse_q('2.5', 'ที่นี่ภาคอะไร') }}
         </div>
     </div>
 
     <!-- 3. การบันทึกความจำ (Registration) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-blue-50 border-b border-blue-100 text-lg text-blue-800 font-medium">3. การบันทึกความจำ (Registration)</div>
+        <div class="px-6 py-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+            <div class="text-lg text-blue-800 font-medium">3. การบันทึกความจำ (Registration)</div>
+            <button type="button" onclick="playAudio('3.Registration', this)" 
+                    class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-blue-100 rounded-2xl text-blue-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -174,7 +182,15 @@
 
     <!-- 5. การระลึกได้ (Recall) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-indigo-50 border-b border-indigo-100 text-lg text-indigo-800 font-medium">5. การระลึกได้ (Recall)</div>
+        <div class="px-6 py-4 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
+            <div class="text-lg text-indigo-800 font-medium">5. การระลึกได้ (Recall)</div>
+            <button type="button" onclick="playAudio('5.Recall', this)" 
+                    class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-indigo-100 rounded-2xl text-indigo-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -218,7 +234,15 @@
 
     <!-- 7. การพูดซ้ำ (Repetition) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-sky-50 border-b border-sky-100 text-lg text-sky-800 font-medium">7. การพูดซ้ำ (Repetition)</div>
+        <div class="px-6 py-4 bg-sky-50 border-b border-sky-100 flex items-center justify-between">
+            <div class="text-lg text-sky-800 font-medium">7. การพูดซ้ำ (Repetition)</div>
+            <button type="button" onclick="playAudio('7.Repetition', this)" 
+                    class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center hover:bg-sky-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-sky-100 rounded-2xl text-blue-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -357,6 +381,54 @@
 </div>
 
 <script>
+  let currentAudio = null;
+  let currentFilename = null;
+  let activeButton = null;
+
+  const playIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`;
+  const pauseIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+
+  function playAudio(filename, btn) {
+    if (currentFilename !== filename) {
+        // เล่นไฟล์ใหม่
+        if (currentAudio) {
+            currentAudio.pause();
+            if (activeButton) {
+                activeButton.innerHTML = playIcon;
+                activeButton.classList.replace('bg-blue-600', 'bg-blue-100');
+                activeButton.classList.replace('text-white', 'text-blue-600');
+            }
+        }
+        currentAudio = new Audio('/static/audio/' + filename + '.wav');
+        currentFilename = filename;
+        activeButton = btn;
+        
+        currentAudio.play();
+        btn.innerHTML = pauseIcon;
+        btn.classList.replace('bg-blue-100', 'bg-blue-600');
+        btn.classList.replace('text-blue-600', 'text-white');
+
+        currentAudio.onended = () => {
+            btn.innerHTML = playIcon;
+            btn.classList.replace('bg-blue-600', 'bg-blue-100');
+            btn.classList.replace('text-white', 'text-blue-600');
+            currentFilename = null;
+        };
+    } else {
+        // ไฟล์เดิม: Toggle Play/Pause
+        if (currentAudio.paused) {
+            currentAudio.play();
+            btn.innerHTML = pauseIcon;
+            btn.classList.replace('bg-blue-100', 'bg-blue-600');
+            btn.classList.replace('text-blue-600', 'text-white');
+        } else {
+            currentAudio.pause();
+            btn.innerHTML = playIcon;
+            btn.classList.replace('bg-blue-600', 'bg-blue-100');
+            btn.classList.replace('text-white', 'text-blue-600');
+        }
+    }
+  }
   function recalc() {
     let sum = 0;
     document.querySelectorAll('.q-radio:checked').forEach(r => { sum += parseInt(r.value); });

@@ -25,6 +25,19 @@
     </div>
   </nav>
   <main class="py-6">
+    <div class="max-w-7xl mx-auto px-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-6 space-y-2">
+            {% for category, message in messages %}
+              <div class="p-4 rounded-xl border {% if category == 'danger' or category == 'error' %}bg-red-50 border-red-200 text-red-700{% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-amber-50 border-amber-200 text-amber-700{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
     {% block content %}{% endblock %}
   </main>
   <!-- flatpickr: อินพุตที่มี data-buddhist-date="1" จะเป็น พ.ศ. -->
