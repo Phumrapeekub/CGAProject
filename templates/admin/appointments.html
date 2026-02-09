@@ -26,8 +26,8 @@
         {% for a in appointments %}
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="px-4 py-3 font-medium text-slate-900">{{ a.appt_datetime }}</td>
-          <td class="px-4 py-3 text-blue-600">{{ a.patients.hn }}</td>
-          <td class="px-4 py-3">{{ a.patients.full_name }}</td>
+          <td class="px-4 py-3 text-blue-600">{{ a.hn }}</td>
+          <td class="px-4 py-3">{{ a.full_name }}</td>
           <td class="px-4 py-3">
             <span class="px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold uppercase">{{ a.appt_type }}</span>
           </td>

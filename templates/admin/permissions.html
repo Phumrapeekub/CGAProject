@@ -1,0 +1,129 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}จัดการสิทธิ์ | CGA Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">จัดการสิทธิ์การเข้าถึง</h1>
+    <p class="text-slate-600 text-sm mt-1">ภาพรวมบัญชีผู้ใช้งานและสิทธิ์ในระบบ</p>
+</div>
+
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <!-- Card 1: Total Users -->
+    <div class="kpi-card kpi-blue p-5">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ใช้งานทั้งหมด</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.total_users }}</h3>
+            </div>
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Active/Online Users -->
+    <div class="kpi-card kpi-green p-5">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ออนไลน์ (สถานะปกติ)</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.active_users }}</h3>
+            </div>
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Doctors -->
+    <div class="kpi-card kpi-purple p-5">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">แพทย์</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.doctors }}</h3>
+            </div>
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86 1.412l-.318.254a4 4 0 11-5.696-5.696 4 4 0 015.696 5.696l.318-.254a6 6 0 003.86-1.412l2.387.477a2 2 0 001.022.547l2.387.477a2 2 0 001.022.547" /></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Nurses -->
+    <div class="kpi-card kpi-orange p-5">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">พยาบาล</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.nurses }}</h3>
+            </div>
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="soft-card rounded-2xl p-6">
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-slate-900">รายชื่อผู้ใช้งานในระบบ</h2>
+        <p class="text-slate-500 text-sm">จัดการสิทธิ์แพทย์และพยาบาล</p>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
+                <tr>
+                    <th class="px-4 py-3">ชื่อ-นามสกุล</th>
+                    <th class="px-4 py-3">บทบาท</th>
+                    <th class="px-4 py-3">Username</th>
+                    <th class="px-4 py-3">สถานะ</th>
+                    <th class="px-4 py-3 text-right">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for u in users %}
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-4 py-3 font-medium text-slate-900">{{ u.full_name }}</td>
+                    <td class="px-4 py-3">
+                        {% if u.role == 'doctor' %}
+                        <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider">แพทย์</span>
+                        {% elif u.role == 'nurse' %}
+                        <span class="px-2 py-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wider">พยาบาล</span>
+                        {% elif u.role == 'admin' %}
+                        <span class="px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold uppercase tracking-wider">ผู้ดูแลระบบ</span>
+                        {% else %}
+                        <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider">{{ u.role }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600">{{ u.username }}</td>
+                    <td class="px-4 py-3">
+                        {% if u.is_active %}
+                        <span class="flex items-center gap-1 text-green-600 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span> ปกติ
+                        </span>
+                        {% else %}
+                        <span class="flex items-center gap-1 text-red-600 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> ระงับ
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        {% if u.role == 'doctor' %}
+                        <a href="{{ url_for('admin.doctor_detail', user_id=u.id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50">จัดการสิทธิ์</a>
+                        {% elif u.role == 'nurse' %}
+                        <a href="{{ url_for('admin.nurse_detail', user_id=u.id) }}" class="text-orange-600 hover:text-orange-800 font-medium transition-colors text-xs border border-orange-200 px-3 py-1.5 rounded-lg hover:bg-orange-50">จัดการสิทธิ์</a>
+                        {% else %}
+                        <span class="text-slate-400 text-xs italic">สงวนสิทธิ์</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลแพทย์หรือพยาบาล</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

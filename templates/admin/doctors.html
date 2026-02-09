@@ -4,10 +4,24 @@
 
 {% block content %}
 <div class="soft-card rounded-2xl p-6">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+  <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
     <div>
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">จัดการแพทย์</h1>
-      <p class="text-slate-600 text-sm mt-1">รายชื่อแพทย์ทั้งหมดในระบบ</p>
+      <p class="text-slate-600 text-sm mt-1">รายชื่อแพทย์ในระบบ {{ doctors|length }}</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <form action="{{ url_for('admin.doctors_list') }}" method="get" class="relative">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="ค้นหาชื่อแพทย์..."
+               class="glass w-full md:w-64 pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+        <span class="absolute left-3 top-2.5 text-slate-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </span>
+      </form>
+      
+      <button onclick="openAddDoctorModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+        <span>+</span> เพิ่มแพทย์ใหม่
+      </button>
     </div>
   </div>
 
@@ -19,6 +33,7 @@
           <th class="px-4 py-3">ชื่อผู้ใช้</th>
           <th class="px-4 py-3">สถานะ</th>
           <th class="px-4 py-3">วันที่เข้าร่วม</th>
+          <th class="px-4 py-3 text-right">จัดการ</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
@@ -34,14 +49,60 @@
             {% endif %}
           </td>
           <td class="px-4 py-3 text-slate-500">{{ d.created_at }}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="{{ url_for('admin.doctor_detail', user_id=d.id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs">ดูข้อมูล</a>
+          </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="4" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลแพทย์</td>
+          <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลแพทย์</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- Add Doctor Modal -->
+<div id="addDoctorModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="glass w-full max-w-lg rounded-2xl p-6 shadow-2xl">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold text-slate-900">เพิ่มแพทย์ใหม่</h2>
+      <button onclick="closeAddDoctorModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+    </div>
+    
+    <form action="{{ url_for('admin.add_doctor') }}" method="post" class="space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อ-นามสกุล</label>
+        <input type="text" name="full_name" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+      </div>
+      
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อผู้ใช้ (Username)</label>
+        <input type="text" name="username" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">รหัสผ่าน (Password)</label>
+        <input type="password" name="password" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+      </div>
+      
+      <div class="pt-4 flex gap-3">
+        <button type="button" onclick="closeAddDoctorModal()" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">ยกเลิก</button>
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">บันทึกข้อมูล</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openAddDoctorModal() {
+    document.getElementById('addDoctorModal').classList.remove('hidden');
+    document.getElementById('addDoctorModal').classList.add('flex');
+  }
+  function closeAddDoctorModal() {
+    document.getElementById('addDoctorModal').classList.add('hidden');
+    document.getElementById('addDoctorModal').classList.remove('flex');
+  }
+</script>
 {% endblock %}

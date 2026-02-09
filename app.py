@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
 
 app.register_blueprint(auth_bp)
@@ -27,5 +27,5 @@ def supabase_status():
     result = check_supabase_connection()
     return jsonify(result)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app.run(debug=True)

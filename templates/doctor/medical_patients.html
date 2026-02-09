@@ -108,6 +108,7 @@
             <th class="px-6 py-3 text-left font-semibold">HN / GCN</th>
             <th class="px-6 py-3 text-left font-semibold">ชื่อ-นามสกุล</th>
             <th class="px-6 py-3 text-left font-semibold">อายุ</th>
+            <th class="px-6 py-3 text-left font-semibold">วันที่ลงทะเบียน</th>
             <th class="px-6 py-3 text-left font-semibold">โรคประจำตัว</th>
             <th class="px-6 py-3 text-left font-semibold">การประเมินล่าสุด</th>
             <th class="px-6 py-3 text-left font-semibold">ความเสี่ยง</th>
@@ -149,6 +150,11 @@
                   {% elif g == 'O' %}อื่นๆ
                   {% else %}{{ g or '-' }}{% endif %}
                 </div>
+              </td>
+
+              <!-- วันที่ลงทะเบียน -->
+              <td class="px-6 py-4 whitespace-nowrap text-gray-600">
+                {{ p.created_at[:10] if p.created_at else '-' }}
               </td>
 
               <!-- โรคประจำตัว -->

@@ -2,6 +2,7 @@ from __future__ import annotations
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash
 from db.db import get_db_connection
+from mysql.connector import Error as MySQLdbError # Import MySQL Error
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -15,18 +16,22 @@ def login():
             flash("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน", "error")
             return redirect(url_for("auth.login"))
 
-        supabase = get_db_connection()
-        if not supabase:
-            flash("เชื่อมต่อ Supabase API ไม่สำเร็จ", "error")
-            return redirect(url_for("auth.login"))
-
+        conn = None
+        cur = None
         try:
-            # Query user using Supabase SDK
-            response = supabase.table("users").select(
-                "id, username, password_hash, is_active, full_name, role"
-            ).eq("username", username).limit(1).execute()
+            conn = get_db_connection()
+            if not conn:
+                flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "error")
+                return redirect(url_for("auth.login"))
             
-            user = response.data[0] if response.data else None
+            cur = conn.cursor(dictionary=True)
+            
+            # Query user using MySQL
+            cur.execute(
+                "SELECT id, username, password_hash, is_active, full_name, role FROM users WHERE username = %s LIMIT 1",
+                (username,)
+            )
+            user = cur.fetchone()
 
             if not user:
                 flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
@@ -49,6 +54,18 @@ def login():
             session["full_name"] = user["full_name"]
             session["role"] = user["role"].lower() if user["role"] else ""
 
+            # Log login to audit_logs
+            try:
+                ip_addr = request.remote_addr
+                user_agent = request.headers.get("User-Agent")
+                cur.execute("""
+                    INSERT INTO audit_logs (actor_user_id, actor_role, action, entity_type, ip_address, user_agent)
+                    VALUES (%s, %s, 'login', 'auth', %s, %s)
+                """, (user["id"], user["role"], ip_addr, user_agent))
+                conn.commit()
+            except Exception as ex:
+                print(f"Audit Log Error: {ex}") # Don't block login if logging fails
+
             # Redirect based on role
             role = session["role"]
             if role == "admin":
@@ -58,16 +75,27 @@ def login():
             elif role == "nurse":
                 return redirect(url_for("nurse.dashboard"))
             else:
+                flash("บทบาทไม่ถูกต้องหรือไม่มีสิทธิ์เข้าถึง", "error")
                 return redirect(url_for("auth.login"))
 
+        except MySQLdbError as e:
+            print(f"Login DB Error: {e}")
+            flash(f"เกิดข้อผิดพลาดฐานข้อมูล: {e}", "error")
+            return redirect(url_for("auth.login"))
         except Exception as e:
             print(f"Login Error: {e}")
-            flash("เกิดข้อผิดพลาดในการเข้าสู่ระบบ", "error")
+            flash(f"เกิดข้อผิดพลาดในการเข้าสู่ระบบ: {e}", "error")
             return redirect(url_for("auth.login"))
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
 
-    return render_template("auth/login.html", post_url=url_for("auth.login"))
-
-@auth_bp.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("auth.login"))
+    return render_template(
+        "auth/login.html", 
+        post_url=url_for("auth.login"),
+        logo_path=url_for('static', filename='logo.png'),
+        page_title="CGA System Login",
+        page_desc="ระบบประเมินสุขภาพผู้สูงอายุ โรงพยาบาลพะเยา"
+    )

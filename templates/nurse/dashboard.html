@@ -127,20 +127,23 @@
 
     <!-- ประเมินผู้ป่วยใหม่ -->
 <a href="{{ url_for('nurse.assess_new') }}"
-   class="block text-center rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg">
-  ➕ ประเมินผู้ป่วยใหม่
+   class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 font-semibold shadow-lg">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+  ประเมินผู้ป่วยใหม่
 </a>
 
 <!-- จัดการข้อมูลผู้ป่วย -->
 <a href="{{ url_for('nurse.patients') }}"
-   class="block text-center rounded-2xl border-2 border-purple-300 text-purple-600 py-4 font-semibold hover:bg-purple-50">
-  👤 จัดการข้อมูลผู้ป่วย
+   class="flex items-center justify-center gap-2 rounded-2xl border-2 border-purple-300 text-purple-600 py-4 font-semibold hover:bg-purple-50">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+  จัดการข้อมูลผู้ป่วย
 </a>
 
 <!-- ดูรายงานสรุป -->
 <a href="{{ url_for('nurse.dashboard') }}"
-   class="block text-center rounded-2xl border-2 border-emerald-300 text-emerald-600 py-4 font-semibold hover:bg-emerald-50">
-  📊 ดูรายงานสรุป
+   class="flex items-center justify-center gap-2 rounded-2xl border-2 border-emerald-300 text-emerald-600 py-4 font-semibold hover:bg-emerald-50">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+  ดูรายงานสรุป
 </a>
 
 

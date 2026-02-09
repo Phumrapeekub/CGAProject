@@ -1,0 +1,277 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}รายละเอียดผู้ป่วย | CGA Admin{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin.patients_list') }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-semibold text-slate-900">รายละเอียดผู้ป่วย</h1>
+            <p class="text-slate-500 text-sm">ข้อมูลส่วนตัวและประวัติของ {{ patient.full_name }} ({{ patient.hn }})</p>
+        </div>
+    </div>
+    <button onclick="openEditModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+        แก้ไขข้อมูล
+    </button>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Personal Information -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="soft-card p-6">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                ข้อมูลส่วนตัว
+            </h2>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">HN</span>
+                    <span class="font-medium text-blue-600">{{ patient.hn }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">ชื่อ-นามสกุล</span>
+                    <span class="font-medium text-slate-900">{{ patient.full_name }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">เพศ</span>
+                    <span class="font-medium text-slate-900">
+                        {% if patient.gender == 'male' %}ชาย{% elif patient.gender == 'female' %}หญิง{% else %}{{ patient.gender or 'ไม่ระบุ' }}{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">วันเกิด</span>
+                    <span class="font-medium text-slate-900">{{ patient.birth_date or '-' }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">เบอร์โทรศัพท์</span>
+                    <span class="font-medium text-slate-900">{{ patient.phone or '-' }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-2">
+                    <span class="text-slate-500">วันที่ลงทะเบียน</span>
+                    <span class="font-medium text-slate-900">{{ patient.created_at[:10] if patient.created_at else '-' }}</span>
+                </div>
+                <div class="mt-2">
+                    <span class="text-slate-500 block mb-1">ที่อยู่</span>
+                    <p class="text-slate-900 bg-slate-50 p-2 rounded-lg">{{ patient.address or '-' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Additional Info -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Congenital Disease Card -->
+            {% if patient.chronic_disease and patient.chronic_disease != '-' %}
+            <div class="rounded-2xl p-5 h-full flex flex-col bg-red-50 border border-red-100 shadow-sm transition-all hover:shadow-md">
+                <h2 class="text-base font-bold text-red-800 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    มีโรคประจำตัว
+                </h2>
+                <div class="text-sm font-medium text-red-700 bg-white/60 p-3 rounded-xl border border-red-200/50 flex-grow">
+                    {{ patient.chronic_disease }}
+                </div>
+            </div>
+            {% else %}
+            <div class="rounded-2xl p-5 h-full flex flex-col bg-emerald-50 border border-emerald-100 shadow-sm transition-all hover:shadow-md">
+                <h2 class="text-base font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    สุขภาพแข็งแรง
+                </h2>
+                <div class="text-sm font-medium text-emerald-700 bg-white/60 p-3 rounded-xl border border-emerald-200/50 flex-grow">
+                    ไม่มีโรคประจำตัว
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Emergency Contact Card -->
+            <div class="soft-card p-5 h-full flex flex-col">
+                <h2 class="text-base font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    ผู้ติดต่อฉุกเฉิน
+                </h2>
+                <div class="space-y-3 text-sm flex-grow">
+                    <div>
+                        <span class="block text-slate-500 text-xs mb-0.5">ชื่อ-นามสกุล</span>
+                        <span class="font-medium text-slate-900 block truncate" title="{{ patient.emergency_contact_name }}">{{ patient.emergency_contact_name or '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-slate-500 text-xs mb-0.5">เบอร์โทรศัพท์</span>
+                        <span class="font-medium text-blue-600">{{ patient.emergency_contact_phone or '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment History Placeholder -->
+        <div class="soft-card p-6 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center min-h-[200px] text-center">
+            <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900">ประวัติการประเมิน CGA</h3>
+            <p class="text-slate-500 max-w-sm mt-2">ส่วนนี้จะแสดงประวัติการประเมิน CGA ย้อนหลัง (Coming Soon)</p>
+        </div>
+
+        <!-- Appointment History Card -->
+        <div class="soft-card p-6 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center min-h-[200px] text-center">
+            <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900">การนัดหมาย</h3>
+            <p class="text-slate-500 max-w-sm mt-2">ส่วนนี้จะแสดงรายการนัดหมายที่กำลังจะมาถึงและประวัติการนัดหมาย (Coming Soon)</p>
+        </div>
+
+        <!-- Treatment History Card -->
+        <div class="soft-card p-6 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center min-h-[200px] text-center">
+            <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900">ประวัติการรักษา</h3>
+            <p class="text-slate-500 max-w-sm mt-2">ส่วนนี้จะแสดงประวัติการรักษาและการสั่งยา (Coming Soon)</p>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="glass w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] flex flex-col">
+    <div class="flex justify-between items-center mb-6 flex-shrink-0">
+      <h2 class="text-xl font-semibold text-slate-900">แก้ไขข้อมูลผู้ป่วย</h2>
+      <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+    </div>
+    
+    <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+      <form id="editPatientForm" action="{{ url_for('admin.update_patient', id=patient.id) }}" method="post" class="space-y-4 pb-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">HN (ไม่สามารถแก้ไขได้)</label>
+          <input type="text" value="{{ patient.hn }}" readonly 
+                 class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 focus:ring-0 outline-none cursor-not-allowed">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อ-นามสกุล</label>
+          <input type="text" name="full_name" value="{{ patient.full_name }}" required 
+                 class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เพศ</label>
+            <select name="gender" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+              <option value="male" {% if patient.gender == 'male' %}selected{% endif %}>ชาย</option>
+              <option value="female" {% if patient.gender == 'female' %}selected{% endif %}>หญิง</option>
+              <option value="other" {% if patient.gender == 'other' %}selected{% endif %}>อื่นๆ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">วันเกิด</label>
+            <input type="date" name="birth_date" value="{{ patient.birth_date }}" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เบอร์โทรศัพท์</label>
+          <input type="text" name="phone" value="{{ patient.phone or '' }}" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ที่อยู่เดิม</label>
+          <p class="text-sm text-slate-700 bg-slate-50 p-2 rounded-lg mb-2">{{ patient.address or '-' }}</p>
+          
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">แก้ไขที่อยู่ (กรอกใหม่)</label>
+          <div class="grid grid-cols-2 gap-4 mb-2">
+            <input type="text" id="edit_addr_house" placeholder="บ้านเลขที่" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+            <input type="text" id="edit_addr_moo" placeholder="หมู่ที่" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-2">
+            <input type="text" id="edit_addr_subdistrict" placeholder="ตำบล/แขวง" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+            <input type="text" id="edit_addr_district" placeholder="อำเภอ/เขต" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="edit_addr_province" placeholder="จังหวัด" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+            <input type="text" id="edit_addr_zip" placeholder="รหัสไปรษณีย์" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm" oninput="combineEditAddress()">
+          </div>
+          <input type="hidden" name="address" id="edit_full_address" value="{{ patient.address or '' }}">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">โรคประจำตัว</label>
+          <textarea name="chronic_disease" rows="2" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">{{ patient.chronic_disease or '' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อผู้ติดต่อฉุกเฉิน</label>
+            <input type="text" name="emergency_contact_name" value="{{ patient.emergency_contact_name or '' }}" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เบอร์โทรฉุกเฉิน</label>
+            <input type="text" name="emergency_contact_phone" value="{{ patient.emergency_contact_phone or '' }}" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <div class="pt-4 flex gap-3 mt-2">
+      <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">ยกเลิก</button>
+      <button type="submit" form="editPatientForm" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openEditModal() {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+  }
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    document.getElementById('editModal').classList.remove('flex');
+  }
+
+  function combineEditAddress() {
+    const house = document.getElementById('edit_addr_house').value.trim();
+    const moo = document.getElementById('edit_addr_moo').value.trim();
+    const sub = document.getElementById('edit_addr_subdistrict').value.trim();
+    const dist = document.getElementById('edit_addr_district').value.trim();
+    const prov = document.getElementById('edit_addr_province').value.trim();
+    const zip = document.getElementById('edit_addr_zip').value.trim();
+    
+    // Only update if any field has content, otherwise keep original value (or clear it? logic choice)
+    // If user clears all fields, they might want to clear address.
+    // But if they just open modal and don't touch, we want original.
+    // The safest is: if ALL are empty, keep original value IF we assume they didn't touch it.
+    // But better: if they start typing, we overwrite.
+    
+    if (!house && !moo && !sub && !dist && !prov && !zip) {
+       // If all empty, maybe we shouldn't overwrite the hidden field with empty string immediately 
+       // unless we want to allow clearing. 
+       // Let's assume if they type nothing, they want to keep the old address (which is in the hidden value).
+       // BUT, what if they WANT to clear?
+       // Let's stick to the behavior: The hidden input starts with old value.
+       // If they type, it updates.
+       return; 
+    }
+
+    let full = house;
+    if (moo) full += " หมู่ " + moo;
+    if (sub) full += " ต." + sub;
+    if (dist) full += " อ." + dist;
+    if (prov) full += " จ." + prov;
+    if (zip) full += " " + zip;
+    
+    document.getElementById('edit_full_address').value = full;
+  }
+</script>
+{% endblock %}

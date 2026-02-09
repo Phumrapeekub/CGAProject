@@ -10,50 +10,90 @@
       <p class="text-slate-600 text-sm mt-1">ข้อมูล ณ วันที่ {{ today.strftime('%d/%m/%Y') }}</p>
     </div>
     <div class="flex items-center gap-2">
-      <select onchange="window.location.href='?range='+this.value" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-        <option value="month" {% if range_key=='month' %}selected{% endif %}>เดือนนี้</option>
-        <option value="week" {% if range_key=='week' %}selected{% endif %}>สัปดาห์นี้</option>
-        <option value="year" {% if range_key=='year' %}selected{% endif %}>ปีนี้</option>
-      </select>
+      <form id="filterForm" method="get" action="{{ url_for('admin.dashboard') }}" class="flex items-center gap-2">
+        <select name="month" onchange="document.getElementById('filterForm').submit()" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+          {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][m-1] }}</option>
+          {% endfor %}
+        </select>
+        <select name="year" onchange="document.getElementById('filterForm').submit()" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+          {% for y in range(today.year - 5, today.year + 1) %} {# Last 5 years + current year #}
+          <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+        {# Keeping range_key select for now, but its functionality is changed if month/year are present #}
+        {# <select onchange="window.location.href='?range='+this.value" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+          <option value="month" {% if range_key=='month' %}selected{% endif %}>เดือนนี้</option>
+          <option value="week" {% if range_key=='week' %}selected{% endif %}>สัปดาห์นี้</option>
+          <option value="year" {% if range_key=='year' %}selected{% endif %}>ปีนี้</option>
+        </select> #}
+      </form>
     </div>
   </div>
 
   <!-- KPI Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-    <div class="kpi-card kpi-blue p-5">
+    <a href="{{ url_for('admin.patients_list') }}" class="kpi-card kpi-blue p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยทั้งหมด</p>
           <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.patients }}</h3>
         </div>
-        <div class="kpi-icon">👤</div>
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+        </div>
       </div>
-    </div>
-    <div class="kpi-card kpi-green p-5">
+    </a>
+    <a href="{{ url_for('admin.patients_list', filter='today') }}" class="kpi-card kpi-green p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยใหม่วันนี้</p>
           <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.today_patients }}</h3>
         </div>
-        <div class="kpi-icon">✨</div>
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </div>
       </div>
-    </div>
+    </a>
     <div class="kpi-card kpi-purple p-5">
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">นัดหมายวันนี้</p>
           <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.appointments_today }}</h3>
         </div>
-        <div class="kpi-icon">📅</div>
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        </div>
       </div>
     </div>
-    <div class="kpi-card kpi-orange p-5">
+    <a href="{{ url_for('admin.assessments_list') }}" class="kpi-card kpi-orange p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
       <div class="flex justify-between items-start">
         <div>
-          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ใช้งานระบบ</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.users }}</h3>
+          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ประเมิน CGA ทั้งหมด</p>
+          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.total_assessments }}</h3>
         </div>
-        <div class="kpi-icon">🔐</div>
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        </div>
+      </div>
+    </a>
+  </div>
+
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+    <!-- New Patients per Day Chart for selected Month -->
+    <div class="soft-card rounded-2xl p-6">
+      <h2 class="text-lg font-semibold text-slate-900 mb-4">จำนวนผู้ป่วยใหม่รายวัน ({{ selected_month }}/{{ selected_year }})</h2>
+      <div class="relative h-80">
+        <canvas id="patientMonthChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Service Type Distribution Chart -->
+    <div class="soft-card rounded-2xl p-6">
+      <h2 class="text-lg font-semibold text-slate-900 mb-4">จำนวนงานแยกตามประเภทบริการ</h2>
+      <div class="relative h-80">
+        <canvas id="serviceTypeChart"></canvas>
       </div>
     </div>
   </div>
@@ -90,4 +130,106 @@
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Chart.defaults.font.family = "'Inter', 'Prompt', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        // 1. New Patients per Day Chart (Modern Bar)
+        const patientDayLabels = {{ patient_day_labels | tojson }};
+        const patientDayValues = {{ patient_day_values | tojson }};
+
+        const ctx2 = document.getElementById('patientMonthChart').getContext('2d');
+        
+        // Gradient for Bar Chart
+        let gradient = ctx2.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)'); // Blue 500
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)'); // Blue 500 fading
+
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: patientDayLabels,
+                datasets: [{
+                    label: 'ผู้ป่วยใหม่',
+                    data: patientDayValues,
+                    backgroundColor: gradient,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 'flex',
+                    maxBarThickness: 32
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 13 },
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            borderDash: [5, 5]
+                        },
+                        ticks: { precision: 0 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. Service Type Distribution Chart (Doughnut for better distribution view)
+        const serviceTypeLabels = {{ service_type_labels | tojson }};
+        const serviceTypeValues = {{ service_type_values | tojson }};
+
+        const ctx3 = document.getElementById('serviceTypeChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+                labels: serviceTypeLabels,
+                datasets: [{
+                    data: serviceTypeValues,
+                    backgroundColor: [
+                        '#8b5cf6', // Violet
+                        '#ec4899', // Pink
+                        '#3b82f6', // Blue
+                        '#10b981', // Emerald
+                        '#f59e0b'  // Amber
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

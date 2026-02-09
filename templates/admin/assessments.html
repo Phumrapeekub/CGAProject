@@ -20,14 +20,15 @@
           <th class="px-4 py-3">ชื่อผู้ป่วย</th>
           <th class="px-4 py-3">ระดับความเสี่ยง</th>
           <th class="px-4 py-3">สถานะ</th>
+          <th class="px-4 py-3 text-right">จัดการ</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
         {% for a in assessments %}
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="px-4 py-3 font-medium text-slate-900">{{ a.assessment_date }}</td>
-          <td class="px-4 py-3 text-blue-600">{{ a.encounters.patients.hn }}</td>
-          <td class="px-4 py-3">{{ a.encounters.patients.full_name }}</td>
+          <td class="px-4 py-3 text-blue-600">{{ a.hn }}</td>
+          <td class="px-4 py-3">{{ a.full_name }}</td>
           <td class="px-4 py-3">
             <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase
               {% if a.risk_level == 'high' %}bg-red-100 text-red-700
@@ -38,15 +39,18 @@
           </td>
           <td class="px-4 py-3">
             {% if a.is_completed %}
-            <span class="text-green-600 text-xs">✓ สมบูรณ์</span>
+            <span class="text-green-600 text-xs font-semibold">สมบูรณ์</span>
             {% else %}
             <span class="text-slate-400 text-xs">กำลังดำเนินการ</span>
             {% endif %}
           </td>
+          <td class="px-4 py-3 text-right">
+            <a href="{{ url_for('admin.assessment_detail', header_id=a.header_id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">ดูรายละเอียด</a>
+          </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการประเมิน</td>
+          <td colspan="6" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการประเมิน</td>
         </tr>
         {% endfor %}
       </tbody>
