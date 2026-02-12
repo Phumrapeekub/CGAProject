@@ -1,0 +1,2410 @@
+[
+  {
+    "timestamp": "2026-02-11T14:46:59.773388",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:47:02.109382",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:47:02.814076",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:05.567251",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:08.571481",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:09.955811",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN036",
+      "patient_name": "ณัฐกมล อินสอน",
+      "nurse_name": "nurse1",
+      "mmse_score": 14,
+      "tgds_score": 6,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 21,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:11.026012",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:23.074217",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:25.035664",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:25.622338",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:25.960942",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:27.240908",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:27.806820",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:28.186288",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:28.927108",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:29.172863",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:29.253644",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:29.476217",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:30.200591",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:30.301206",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:31.278629",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:31.313240",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:31.753396",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN036",
+      "gcn": "022",
+      "full_name": "ณัฐกมล อินสอน",
+      "phone": "None",
+      "address": "เลขที่ 269 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "2004-06-04"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:31.764840",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:32.420183",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:32.903408",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:34.215360",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 119,
+      "patient_id": 9,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T14:50:35.087881",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 119,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:07:07.468578",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN037",
+      "gcn": "023",
+      "full_name": "มานี มานะ",
+      "phone": "065875963",
+      "address": "เลขที่ 122/1 หมู่ 5 ต. แม่กา อ. เมือง จ. พะเยา 56000",
+      "sex": "หญิง",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0245785442",
+      "caregiver_name": "วิคเตอร์ เบนยาม่า",
+      "caregiver_relation": "เหลน"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:07:09.322937",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 120,
+      "patient_id": 18,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:07:10.076628",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 120,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:08:29.476669",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN037",
+      "gcn": "023",
+      "full_name": "มานี มานะ",
+      "phone": "065875963",
+      "address": "เลขที่ 122/1 หมู่ 5 ต. แม่กา อ. เมือง จ. พะเยา 56000",
+      "sex": "หญิง",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0245785442",
+      "caregiver_name": "วิคเตอร์ เบนยาม่า",
+      "caregiver_relation": "เหลน"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:08:32.903551",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 120,
+      "patient_id": 18,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:08:33.889686",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN037",
+      "patient_name": "มานี มานะ",
+      "nurse_name": "nurse1",
+      "mmse_score": 27,
+      "tgds_score": 6,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 84,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:08:35.018646",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 120,
+      "status": "sent_to_doctor",
+      "overall_risk": "low",
+      "risk_level": "low"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:09:03.222954",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN037",
+      "gcn": "023",
+      "full_name": "มานี มานะ",
+      "phone": "065875963",
+      "address": "เลขที่ 122/1 หมู่ 5 ต. แม่กา อ. เมือง จ. พะเยา 56000",
+      "sex": "หญิง",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0245785442",
+      "caregiver_name": "วิคเตอร์ เบนยาม่า",
+      "caregiver_relation": "เหลน"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:09:05.628555",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 120,
+      "patient_id": 18,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:09:06.685051",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 120,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:04.958884",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "จ. เชียงราย 57260",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:07.120427",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 122,
+      "patient_id": 21,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:08.183666",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 122,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:26.264358",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "จ. เชียงราย 57260",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:28.045165",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 122,
+      "patient_id": 21,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:29.111417",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN038",
+      "patient_name": "Phumrapee Kantiya",
+      "nurse_name": "nurse1",
+      "mmse_score": 0,
+      "tgds_score": 5,
+      "priority": "urgent",
+      "note_from_nurse": "อยากตายมาก",
+      "status": "pending",
+      "age": 19,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:daily",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:30.330442",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 122,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:36.961130",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "จ. เชียงราย 57260",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:39.169687",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 122,
+      "patient_id": 21,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:24:40.178596",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 122,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:27:44.654884",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "จ. เชียงราย 57260",
+      "sex": "หญิง",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:42:50.966584",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN039",
+      "gcn": "025",
+      "full_name": "test test",
+      "phone": "0999999999",
+      "address": "เลขที่ 12 หมู่ 1 ต. t อ. e จ. s 001",
+      "sex": "ชาย",
+      "birth_date": "2026-02-06"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:42:53.422453",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 124,
+      "patient_id": 25,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:42:54.623180",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 124,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:02.574637",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN039",
+      "gcn": "025",
+      "full_name": "test test",
+      "phone": "0999999999",
+      "address": "เลขที่ 12 หมู่ 1 ต. t อ. e จ. s 001",
+      "sex": "ชาย",
+      "birth_date": "2026-02-06"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:04.465972",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 124,
+      "patient_id": 25,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:05.614956",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN039",
+      "patient_name": "test test",
+      "nurse_name": "nurse1",
+      "mmse_score": 20,
+      "tgds_score": 9,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 0,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:daily",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:06.973620",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 124,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:10.686335",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN039",
+      "gcn": "025",
+      "full_name": "test test",
+      "phone": "0999999999",
+      "address": "เลขที่ 12 หมู่ 1 ต. t อ. e จ. s 001",
+      "sex": "ชาย",
+      "birth_date": "2026-02-06"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:13.124228",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 124,
+      "patient_id": 25,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:43:14.234275",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 124,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:36.150238",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN040",
+      "gcn": "026",
+      "full_name": "Test1 Test123",
+      "phone": "None",
+      "address": "เลขที่ 123 หมู่ 11 ต. te อ. st จ. test 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-10-03"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:37.827620",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 125,
+      "patient_id": 28,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:38.870052",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 125,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:44.500426",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN040",
+      "gcn": "026",
+      "full_name": "Test1 Test123",
+      "phone": "None",
+      "address": "เลขที่ 123 หมู่ 11 ต. te อ. st จ. test 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-10-03"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:45.914499",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 125,
+      "patient_id": 28,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:46.728187",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN040",
+      "patient_name": "Test1 Test123",
+      "nurse_name": "nurse1",
+      "mmse_score": 24,
+      "tgds_score": 7,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 18,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:yes, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:47.565112",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 125,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:51.160171",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN040",
+      "gcn": "026",
+      "full_name": "Test1 Test123",
+      "phone": "None",
+      "address": "เลขที่ 123 หมู่ 11 ต. te อ. st จ. test 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-10-03"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:52.744800",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 125,
+      "patient_id": 28,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T16:57:53.477770",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 125,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:22.630620",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN041",
+      "gcn": "027",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:24.627800",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 130,
+      "patient_id": 31,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:25.445875",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 130,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:30.813241",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN041",
+      "gcn": "027",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:32.096919",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 130,
+      "patient_id": 31,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:32.874248",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN041",
+      "patient_name": "test122 Qwert",
+      "nurse_name": "nurse1",
+      "mmse_score": 16,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 19,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:33.736556",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 130,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:34.482478",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 130,
+      "patient_id": 117,
+      "hn": "HN041",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-11 17:03:08",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "yes",
+      "alcohol": "social",
+      "mmse_score": 16,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:37.529384",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN041",
+      "gcn": "027",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:39.156639",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 130,
+      "patient_id": 31,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:39.946703",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 130,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:06:40.766197",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 130,
+      "patient_id": 117,
+      "hn": "HN041",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-11 17:03:08",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "yes",
+      "alcohol": "social",
+      "mmse_score": 16,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:29.633758",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:31.192665",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 131,
+      "patient_id": 34,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:31.994488",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:34.086283",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:35.399680",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 131,
+      "patient_id": 34,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:36.159511",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN042",
+      "patient_name": "test122 Qwert",
+      "nurse_name": "nurse1",
+      "mmse_score": 16,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 19,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:37.005543",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:37.780004",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "patient_id": 118,
+      "hn": "HN042",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-11 17:09:47",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "yes",
+      "alcohol": "social",
+      "mmse_score": 16,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:39.261871",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:40.928618",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 131,
+      "patient_id": 34,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:41.735143",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-11",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-11T17:10:42.505276",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "patient_id": 118,
+      "hn": "HN042",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-11 17:09:47",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "yes",
+      "alcohol": "social",
+      "mmse_score": 16,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:09:22.448098",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "เลขที่ 123 หมู่ 1 ต. ท่าอิฐ อ. เมือง จ. แม่ฮองสอน 53000",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:09:24.558500",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 131,
+      "patient_id": 34,
+      "encounter_date": "2026-02-11",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:09:25.319595",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:09:26.168234",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 131,
+      "patient_id": 118,
+      "hn": "HN042",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-11 17:09:47",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "yes",
+      "alcohol": "social",
+      "mmse_score": 16,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:36.969504",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:38.625765",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 133,
+      "patient_id": 34,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:39.422556",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 133,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:50.237710",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:51.554101",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 133,
+      "patient_id": 34,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:52.296683",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN042",
+      "patient_name": "test122 Qwert",
+      "nurse_name": "nurse1",
+      "mmse_score": 21,
+      "tgds_score": 7,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "",
+      "incontinence": "",
+      "sleep_problem": "",
+      "depression_2q": ""
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:53.252784",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 133,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:53.972027",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 133,
+      "patient_id": 118,
+      "hn": "HN042",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-12 09:27:50",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 21,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 7,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:57.141539",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN042",
+      "gcn": "028",
+      "full_name": "test122 Qwert",
+      "phone": "0999999999",
+      "address": "",
+      "sex": "ชาย",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:58.846714",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 133,
+      "patient_id": 34,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:47:59.649250",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 133,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:48:00.445449",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 133,
+      "patient_id": 118,
+      "hn": "HN042",
+      "full_name": "test122 Qwert",
+      "assessed_date": "2026-02-12 09:27:50",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 21,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 7,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:51:37.045453",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "เลขที่ 148/9 หมู่ 2 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:51:39.230544",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 134,
+      "patient_id": 21,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:51:39.907215",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:07.820875",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "เลขที่ 148/9 หมู่ 2 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:09.132100",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 134,
+      "patient_id": 21,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:09.887671",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN038",
+      "patient_name": "Phumrapee Kantiya",
+      "nurse_name": "nurse1",
+      "mmse_score": 22,
+      "tgds_score": 9,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "",
+      "incontinence": "",
+      "sleep_problem": "",
+      "depression_2q": ""
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:10.774683",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:11.495918",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "patient_id": 109,
+      "hn": "HN038",
+      "full_name": "Phumrapee Kantiya",
+      "assessed_date": "2026-02-12 09:48:29",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 22,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:14.053796",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "เลขที่ 148/9 หมู่ 2 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:15.581340",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 134,
+      "patient_id": 21,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:16.262224",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T09:52:17.022714",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "patient_id": 109,
+      "hn": "HN038",
+      "full_name": "Phumrapee Kantiya",
+      "assessed_date": "2026-02-12 09:48:29",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 22,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:01:48.164744",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN038",
+      "gcn": "024",
+      "full_name": "Phumrapee Kantiya",
+      "phone": "None",
+      "address": "เลขที่ 148/9 หมู่ 2 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "2007-02-01"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:01:49.773224",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 134,
+      "patient_id": 21,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:01:50.490344",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:01:51.242752",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 134,
+      "patient_id": 109,
+      "hn": "HN038",
+      "full_name": "Phumrapee Kantiya",
+      "assessed_date": "2026-02-12 09:48:29",
+      "age": 19,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 22,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:19:26.646402",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 135,
+      "patient_id": 119,
+      "hn": "TMP-1770865658",
+      "full_name": "",
+      "assessed_date": "2026-02-12 10:07:38",
+      "age": null,
+      "education": "3",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "no",
+      "alcohol": "no",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:23:45.063013",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "patient_id": 120,
+      "hn": "TMP-1770866447",
+      "full_name": "ภุผา ป่องแง่บ",
+      "assessed_date": "2026-02-12 10:20:47",
+      "age": 83,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน",
+      "emergency_phone": "0548459663",
+      "smoke": "none",
+      "alcohol": "social",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:25:56.274658",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN043",
+      "gcn": "004",
+      "full_name": "ภุผา ป่องแง่บ",
+      "phone": "0257485996",
+      "address": "เลขที่ 369 หมู่ 1 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-27",
+      "emergency_phone": "0548459663",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:25:58.516455",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 136,
+      "patient_id": 45,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:25:59.262521",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:09.167558",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN043",
+      "gcn": "004",
+      "full_name": "ภุผา ป่องแง่บ",
+      "phone": "0257485996",
+      "address": "เลขที่ 369 หมู่ 1 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-27",
+      "emergency_phone": "0548459663",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:10.887329",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 136,
+      "patient_id": 45,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:11.664324",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN043",
+      "patient_name": "ภุผา ป่องแง่บ",
+      "nurse_name": "nurse1",
+      "mmse_score": 27,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 83,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:12.507404",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:13.229268",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "patient_id": 120,
+      "hn": "HN043",
+      "full_name": "ภุผา ป่องแง่บ",
+      "assessed_date": "2026-02-12 10:20:47",
+      "age": 83,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน",
+      "emergency_phone": "0548459663",
+      "smoke": "none",
+      "alcohol": "social",
+      "mmse_score": 27,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:17.453163",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN043",
+      "gcn": "004",
+      "full_name": "ภุผา ป่องแง่บ",
+      "phone": "0257485996",
+      "address": "เลขที่ 369 หมู่ 1 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-27",
+      "emergency_phone": "0548459663",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:19.315522",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 136,
+      "patient_id": 45,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:20.041862",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T10:26:20.833251",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "patient_id": 120,
+      "hn": "HN043",
+      "full_name": "ภุผา ป่องแง่บ",
+      "assessed_date": "2026-02-12 10:20:47",
+      "age": 83,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน",
+      "emergency_phone": "0548459663",
+      "smoke": "none",
+      "alcohol": "social",
+      "mmse_score": 27,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "yes",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "normal",
+      "hearing_right": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:04:27.270328",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:04:29.016170",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:04:29.734816",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:11:11.780809",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:11:14.912453",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:11:15.645855",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:13:07.693242",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:13:11.242582",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:13:11.970144",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:30:41.380444",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:30:43.924486",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:30:44.694287",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:38:40.368578",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "patient_id": 48,
+      "hn": "HN044",
+      "full_name": "หมุเด้ง ไทยใหม่",
+      "assessed_date": "2026-02-12 13:55:21",
+      "age": null,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม",
+      "alcohol_amount": "",
+      "mmse_score": 2,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 1,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "ปกติ",
+      "hearing_right": "ปกติ"
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:03.654640",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "หมุเด้ง ไทยใหม่",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:05.307824",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:06.043678",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:22.202876",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN044",
+      "gcn": "005",
+      "full_name": "หมุเด้ง ไทยใหม่",
+      "phone": "None",
+      "address": "",
+      "sex": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:23.865888",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 139,
+      "patient_id": 48,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:24.579447",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-12T14:39:26.024284",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 139,
+      "patient_id": 48,
+      "hn": "HN044",
+      "full_name": "หมุเด้ง ไทยใหม่",
+      "assessed_date": "2026-02-12 13:55:21",
+      "age": null,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "",
+      "caregiver_relation": "",
+      "emergency_phone": "",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม",
+      "alcohol_amount": "",
+      "mmse_score": 2,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 1,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "ปกติ",
+      "hearing_right": "ปกติ"
+    }
+  }
+]

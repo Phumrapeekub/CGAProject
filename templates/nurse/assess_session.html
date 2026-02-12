@@ -227,9 +227,20 @@
           </div>
 
           <!-- การมองเห็น -->
-          <div class="space-y-3">
+          <div class="space-y-4">
             <label class="block text-slate-600 font-bold ml-1">การมองเห็น (Vision Test / Snellen chart)</label>
-            <textarea name="visionTest" rows="2" class="w-full rounded-[24px] border-2 border-slate-100 px-6 py-4 outline-none focus:border-indigo-400 text-xl shadow-sm bg-slate-50/50" placeholder="ระบุผลการทดสอบ...">{{ assess.get('visionTest', '') }}</textarea>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-slate-500 text-sm font-semibold ml-1">ตาซ้าย (Left Eye)</label>
+                    <input type="text" name="vision_left" value="{{ assess.get('vision_left', '') }}" placeholder="ระบุผล (เช่น 20/70)"
+                           class="w-full rounded-[20px] border-2 border-slate-100 px-5 py-3 outline-none focus:border-indigo-400 text-lg shadow-sm bg-slate-50/50">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-slate-500 text-sm font-semibold ml-1">ตาขวา (Right Eye)</label>
+                    <input type="text" name="vision_right" value="{{ assess.get('vision_right', '') }}" placeholder="ระบุผล (เช่น 20/20)"
+                           class="w-full rounded-[20px] border-2 border-slate-100 px-5 py-3 outline-none focus:border-indigo-400 text-lg shadow-sm bg-slate-50/50">
+                </div>
+            </div>
           </div>
       </div>
     </div>

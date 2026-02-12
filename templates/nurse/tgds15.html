@@ -48,15 +48,24 @@
         </div>
         <div class="p-8 space-y-6">
             <p class="text-slate-700 text-lg leading-relaxed font-normal">ผู้สูงอายุมีภาวะ ปัสสาวะเล็ด หรือ ปัสสาวะราด จนทำให้เกิดปัญหาในการใช้ชีวิตประจําวันหรือไม่?</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label class="cursor-pointer">
-                    <input type="radio" name="incontinence" value="normal" class="hidden peer">
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี</div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="incontinence" value="abnormal" class="hidden peer">
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
-                </label>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="incontinence" value="normal" class="hidden peer" checked>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี (ปกติ)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="incontinence" value="abnormal" class="hidden peer">
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
+                    </label>
+                </div>
+                <!-- รายละเอียดการกลั้นปัสสาวะ -->
+                <div id="incontinence_detail_container" class="hidden p-5 rounded-[24px] bg-rose-50 border-2 border-rose-100 space-y-2">
+                    <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุรายละเอียด / อาการที่พบ</label>
+                    <textarea name="incontinence_detail" rows="3" 
+                              class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-rose-300 text-lg shadow-inner bg-white" 
+                              placeholder="ระบุรายละเอียดเพิ่มเติม...">{{ answers.get('incontinence_detail', '') }}</textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -68,15 +77,24 @@
         </div>
         <div class="p-8 space-y-6">
             <p class="text-slate-700 text-lg leading-relaxed font-normal">ผู้สูงอายุมีปัญหาเกี่ยวกับการนอนหรือไม่? (เช่น นอนไม่หลับ หลับยาก หรือตื่นบ่อย)</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label class="cursor-pointer">
-                    <input type="radio" name="sleepProblems" value="normal" class="hidden peer">
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มีปัญหา</div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="sleepProblems" value="abnormal" class="hidden peer">
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มีปัญหา - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา ปัญหาการนอน</div>
-                </label>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="sleepProblems" value="normal" class="hidden peer" checked>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี (ปกติ)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="sleepProblems" value="abnormal" class="hidden peer">
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
+                    </label>
+                </div>
+                
+                <div id="sleep_detail_container" class="hidden space-y-2 p-5 rounded-[24px] bg-rose-50 border-2 border-rose-100">
+                    <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุรายละเอียด / สาเหตุ</label>
+                    <textarea name="sleep_problem_detail" rows="3" 
+                              class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-rose-300 text-lg shadow-inner bg-white" 
+                              placeholder="ระบุปัญหาการนอน...">{{ answers.get('sleep_problem_detail', '') }}</textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -180,46 +198,38 @@
 
             {% for q_text in q8_qs %}
             {% set q_idx = loop.index %}
-            <div class="py-6 border-b border-slate-50 last:border-0 space-y-4">
-                <div class="text-slate-700 font-medium leading-relaxed">{{ q_idx }}. {{ q_text }}</div>
+            
+            {# ถ้าไม่ใช่ Baseline (ครั้งแรก) ให้ข้ามข้อ 8 (ประวัติอดีต) #}
+            {% if not (not is_baseline and q_idx == 8) %}
+            
+            <div class="space-y-4 pb-8 border-b border-slate-50 last:border-0">
+                <div class="text-slate-700 font-medium text-lg leading-relaxed">{{ q_idx }}. {{ q_text }}</div>
                 
                 {% if q_idx == 3 %}
-                <div class="p-4 bg-blue-50 rounded-xl text-sm text-blue-800 border border-blue-100 italic">
-                    Note: ถ้าตอบว่าคิดเกี่ยวกับการฆ่าตัวตายให้ถามต่อ "ท่านสามารถควบคุมความอยากฆ่าตัวตายที่ท่านคิดอยู่นั้นได้หรือไม่ หรือบอกได้ไหมว่าคงจะไม่ทำตามความคิดนั้นในขณะนี้"
+                <div class="p-4 bg-indigo-50 rounded-xl text-sm text-indigo-700 border border-indigo-100 flex items-start gap-3">
+                    <svg class="w-5 h-5 text-indigo-500 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>ถ้าตอบว่า <b>มี</b> ให้ถามต่อ "ท่านสามารถควบคุมความอยากฆ่าตัวตายที่ท่านคิดอยู่นั้นได้หรือไม่ หรือบอกได้ไหมว่าคงจะไม่ทำตามความคิดนั้นในขณะนี้"</span>
                 </div>
                 {% endif %}
 
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer group">
                         <input type="radio" name="depression8Q_{{ q_idx }}" value="no" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี</div>
+                        <div class="py-4 border-2 border-slate-100 rounded-2xl text-center text-slate-400 font-bold bg-white transition-all peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 group-hover:border-emerald-200">
+                            ไม่มี
+                        </div>
                     </label>
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer group">
                         <input type="radio" name="depression8Q_{{ q_idx }}" value="yes" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี</div>
+                        <div class="py-4 border-2 border-slate-100 rounded-2xl text-center text-slate-400 font-bold bg-white transition-all peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 group-hover:border-rose-200">
+                            มี
+                        </div>
                     </label>
                 </div>
             </div>
+            
+            {% endif %}
             {% endfor %}
-        </div>
-    </div>
-
-    <!-- 6. สรุปความเสี่ยงฆ่าตัวตาย (Slate Dark Theme) -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-200 overflow-hidden">
-        <div class="px-6 py-4 bg-slate-800 text-lg text-white font-medium tracking-tight">
-            6. สรุปความเสี่ยงฆ่าตัวตาย (Suicide Risk Summary)
-        </div>
-        <div class="p-10 bg-slate-50/50">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <label class="cursor-pointer">
-                    <input type="radio" name="suicideRisk" value="none" class="hidden peer">
-                    <div class="py-6 border-2 rounded-[32px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 transition-all text-slate-400 font-bold bg-white shadow-sm">ไม่มีความเสี่ยง</div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="suicideRisk" value="yes" class="hidden peer">
-                    <div class="py-6 border-2 rounded-[32px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 transition-all text-slate-400 font-bold bg-white shadow-sm">มีความเสี่ยง</div>
-                </label>
-            </div>
         </div>
     </div>
 
@@ -256,6 +266,16 @@
     document.getElementById('mainForm').submit();
   }
 
+  function toggleIncontinenceDetails() {
+    const inc = document.querySelector('input[name="incontinence"]:checked');
+    document.getElementById('incontinence_detail_container')?.classList.toggle('hidden', !inc || inc.value !== 'abnormal');
+  }
+
+  function toggleSleepDetails() {
+    const sleep = document.querySelector('input[name="sleepProblems"]:checked');
+    document.getElementById('sleep_detail_container')?.classList.toggle('hidden', !sleep || sleep.value !== 'abnormal');
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const existing = {{ answers|tojson|safe if answers else '{}' }};
     Object.keys(existing).forEach(k => {
@@ -263,6 +283,18 @@
         const el = document.querySelector(`input[name="${k}"][value="${val}"]`);
         if(el) el.checked = true;
     });
+
+    // Event listeners
+    document.querySelectorAll('input[name="incontinence"]').forEach(el => {
+        el.addEventListener('change', toggleIncontinenceDetails);
+    });
+    document.querySelectorAll('input[name="sleepProblems"]').forEach(el => {
+        el.addEventListener('change', toggleSleepDetails);
+    });
+
+    toggleIncontinenceDetails();
+    toggleSleepDetails();
+    
     calcTGDS();
   });
 </script>

@@ -44,39 +44,39 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <!-- Total -->
-        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">คัดกรองสะสม</p>
-            <p class="text-5xl font-black text-slate-900 leading-none">{{ data.ov.total or 0 }}</p>
-            <p class="text-xs font-bold text-slate-400 mt-2">ราย</p>
+        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
+            <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">คัดกรองสะสม</p>
+            <p class="text-7xl font-black text-slate-900 leading-none">{{ data.ov.total or 0 }}</p>
+            <p class="text-base font-bold text-slate-400 mt-3">ราย</p>
         </div>
         <!-- MMSE -->
-        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-rose-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
-            <p class="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-3">เสี่ยงสมองเสื่อม</p>
-            <p class="text-5xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
-            <p class="text-xs font-bold text-rose-300 mt-2">
+        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-rose-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
+            <p class="text-sm font-black text-rose-400 uppercase tracking-widest mb-4">เสี่ยงสมองเสื่อม</p>
+            <p class="text-7xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
+            <p class="text-sm font-bold text-rose-300 mt-3">
                 {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
             </p>
         </div>
         <!-- TGDS -->
-        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-orange-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[180px]">
-            <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3">เสี่ยงภาวะซึมเศร้า</p>
-            <p class="text-5xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
-            <p class="text-xs font-bold text-orange-300 mt-2">
+        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-orange-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
+            <p class="text-sm font-black text-orange-400 uppercase tracking-widest mb-4">เสี่ยงภาวะซึมเศร้า</p>
+            <p class="text-7xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
+            <p class="text-sm font-bold text-orange-300 mt-3">
                 {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
             </p>
         </div>
         <!-- Suicide -->
-        <div class="bg-gradient-to-br from-blue-600 to-indigo-900 p-8 rounded-[32px] shadow-xl text-center text-white flex flex-col justify-center min-h-[180px]">
-            <p class="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em] mb-3">Suicide Risk Registry</p>
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-900 p-8 rounded-[32px] shadow-xl text-center text-white flex flex-col justify-center min-h-[200px]">
+            <p class="text-sm font-bold text-blue-200 uppercase tracking-[0.2em] mb-4">ผู้มีความเสี่ยงฆ่าตัวตาย</p>
             {% set suicide_count = data.high_risk | selectattr('suicide', 'equalto', 'yes') | list | length %}
-            <p class="text-5xl font-black tracking-tighter leading-none">{{ suicide_count }}</p>
-            <div class="mt-4 flex justify-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
-                    <span class="relative flex h-2 w-2">
+            <p class="text-7xl font-black tracking-tighter leading-none">{{ suicide_count }}</p>
+            <div class="mt-6 flex justify-center">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <span class="relative flex h-3 w-3">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
                     </span>
-                    <span class="text-[10px] font-bold text-white uppercase">Critical Alert</span>
+                    <span class="text-xs font-bold text-white uppercase tracking-wide">เฝ้าระวัง</span>
                 </div>
             </div>
         </div>
@@ -84,16 +84,16 @@
 
     <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-            <h3 class="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
-                <span class="w-2 h-6 bg-indigo-500 rounded-full"></span>
+        <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100">
+            <h3 class="text-2xl font-black text-slate-800 mb-10 flex items-center gap-3">
+                <span class="w-3 h-8 bg-indigo-500 rounded-full"></span>
                 สถิติโรคประจำตัว
             </h3>
             <canvas id="diseaseChart" height="220"></canvas>
         </div>
-        <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-            <h3 class="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
-                <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+        <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100">
+            <h3 class="text-2xl font-black text-slate-800 mb-10 flex items-center gap-3">
+                <span class="w-3 h-8 bg-emerald-500 rounded-full"></span>
                 ดัชนีมวลกาย (BMI Analysis)
             </h3>
             <div class="h-[220px] flex justify-center">
@@ -104,47 +104,54 @@
 
     <!-- High Risk List -->
     <div class="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden">
-        <div class="px-10 py-6 bg-slate-900 text-white flex justify-between items-center">
-            <h3 class="text-xl font-black">High-Priority Cases</h3>
-            <span class="text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full uppercase">Top 15 Priority</span>
+        <div class="px-10 py-8 bg-slate-900 text-white flex justify-between items-center">
+            <h3 class="text-2xl font-black">รายชื่อกลุ่มเสี่ยงเร่งด่วน (High-Priority Cases)</h3>
+            <span class="text-xs font-bold bg-white/10 px-4 py-2 rounded-full uppercase tracking-wider">15 รายการล่าสุด</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <th class="px-10 py-4">Patient Information</th>
-                        <th class="px-6 py-4 text-center">MMSE</th>
-                        <th class="px-6 py-4 text-center">TGDS</th>
-                        <th class="px-6 py-4 text-center">Suicide</th>
-                        <th class="px-10 py-4 text-right">View</th>
+                    <tr class="bg-slate-50 text-xs font-black text-slate-500 uppercase tracking-widest">
+                        <th class="px-10 py-6">ข้อมูลผู้ป่วย</th>
+                        <th class="px-6 py-6 text-center">MMSE</th>
+                        <th class="px-6 py-6 text-center">TGDS</th>
+                        <th class="px-6 py-6 text-center">เสี่ยงฆ่าตัวตาย</th>
+                        <th class="px-10 py-6 text-right">ตรวจสอบ</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     {% for p in data.high_risk %}
                     <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-10 py-5">
-                            <p class="text-slate-900 font-black">{{ p.full_name }}</p>
-                            <p class="text-slate-400 font-bold text-[10px]">HN: {{ p.hn }} | {{ p.age_year }} ปี</p>
+                        <td class="px-10 py-6">
+                            <p class="text-slate-900 font-black text-lg">{{ p.full_name }}</p>
+                            <p class="text-slate-500 font-bold text-sm mt-1">
+                                HN: {{ p.hn }} | 
+                                อายุ 
+                                <span class="inline-block">
+                                    <script>document.write(new Date().getFullYear() - new Date("{{ p.birth_date }}").getFullYear())</script>
+                                </span>
+                                ปี
+                            </p>
                         </td>
-                        <td class="px-6 py-5 text-center">
-                            <span class="px-3 py-1 rounded-lg font-black {{ 'bg-rose-50 text-rose-600' if p.mmse and p.mmse <= 15 else 'bg-slate-50 text-slate-400' }}">
+                        <td class="px-6 py-6 text-center">
+                            <span class="px-4 py-2 rounded-xl text-sm font-black {{ 'bg-rose-50 text-rose-600' if p.mmse and p.mmse <= 23 else 'bg-emerald-50 text-emerald-600' }}">
                                 {{ p.mmse if p.mmse != None else '-' }}
                             </span>
                         </td>
-                        <td class="px-6 py-5 text-center">
-                            <span class="px-3 py-1 rounded-lg font-black {{ 'bg-orange-50 text-orange-600' if p.tgds and p.tgds >= 10 else 'bg-slate-50 text-slate-400' }}">
+                        <td class="px-6 py-6 text-center">
+                            <span class="px-4 py-2 rounded-xl text-sm font-black {{ 'bg-orange-50 text-orange-600' if p.tgds and p.tgds >= 7 else 'bg-emerald-50 text-emerald-600' }}">
                                 {{ p.tgds if p.tgds != None else '-' }}
                             </span>
                         </td>
-                        <td class="px-6 py-5 text-center">
+                        <td class="px-6 py-6 text-center">
                             {% if p.suicide == 'yes' %}
-                                <span class="px-3 py-1 bg-red-600 text-white rounded-full text-[10px] font-black uppercase animate-pulse">Critical</span>
+                                <span class="px-4 py-2 bg-red-600 text-white rounded-full text-xs font-black uppercase animate-pulse shadow-lg shadow-red-200">เฝ้าระวัง</span>
                             {% else %}
                                 <span class="text-slate-200 font-bold">-</span>
                             {% endif %}
                         </td>
-                        <td class="px-10 py-5 text-right">
-                            <a href="{{ url_for('nurse.assess_summary', header_id=p.header_id) if p.header_id else '#' }}" class="text-indigo-600 font-black text-xs hover:underline">Details</a>
+                        <td class="px-10 py-6 text-right">
+                            <a href="{{ url_for('nurse.assess_summary', header_id=p.header_id) if p.header_id else '#' }}" class="text-indigo-600 font-black text-sm hover:underline hover:text-indigo-800">ดูรายละเอียด</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -201,8 +208,19 @@
         },
         options: {
             responsive: true,
-            cutout: '75%',
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { weight: 'bold' } } } }
+            maintainAspectRatio: false, /* ให้กราฟยืดหยุ่นตาม Container */
+            cutout: '60%', /* ลดความกว้างรูตรงกลาง ให้กราฟหนาขึ้น */
+            plugins: { 
+                legend: { 
+                    position: 'right', /* ย้าย Legend ไปด้านขวา */
+                    labels: { 
+                        usePointStyle: true, /* ใช้จุดกลม */
+                        padding: 20, 
+                        font: { size: 14, weight: 'bold', family: "'Sarabun', sans-serif" } 
+                    } 
+                } 
+            },
+            layout: { padding: 20 }
         }
     });
 </script>

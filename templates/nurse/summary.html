@@ -27,7 +27,7 @@
   <!-- Summary Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <!-- MMSE -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow">
+    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow relative group">
       <div class="flex items-start justify-between mb-4">
         <div>
           <h3 class="font-bold text-slate-800 text-lg">สมรรถภาพสมอง</h3>
@@ -38,17 +38,20 @@
       <div>
         <div class="flex items-baseline gap-2">
           <span class="text-5xl font-bold text-rose-500">{{ mmse_score }}</span>
-          <span class="text-slate-400 font-medium">/ 30</span>
+          <span class="text-slate-400 font-medium">/ {{ mmse_total }}</span>
         </div>
         <div class="mt-3 inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium
                     {{ 'bg-emerald-100 text-emerald-700' if mmse_risk=='normal' else 'bg-rose-100 text-rose-700' }}">
           {{ 'ปกติ' if mmse_risk=='normal' else 'เสี่ยงภาวะสมองเสื่อม' }}
         </div>
+        <div class="mt-2 text-xs text-slate-400">
+            (เกณฑ์ปกติ: > {{ mmse_threshold }} คะแนน)
+        </div>
       </div>
     </div>
 
     <!-- TGDS -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow">
+    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow relative group">
       <div class="flex items-start justify-between mb-4">
         <div>
           <h3 class="font-bold text-slate-800 text-lg">ภาวะซึมเศร้า</h3>
@@ -65,6 +68,35 @@
                     {{ 'bg-emerald-100 text-emerald-700' if tgds_risk=='normal' else 'bg-rose-100 text-rose-700' }}">
           {{ tgds_risk_label }}
         </div>
+        <div class="mt-2 text-xs text-slate-400">
+            (เกณฑ์ปกติ: < 7 คะแนน)
+        </div>
+      </div>
+    </div>
+
+    <!-- 8Q Score -->
+    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="font-bold text-slate-800 text-lg">ความเสี่ยงฆ่าตัวตาย</h3>
+          <p class="text-xs text-slate-500">8Q Questionnaire</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">8Q</div>
+      </div>
+      <div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-5xl font-bold {{ 'text-emerald-500' if q8_score == 0 else ('text-orange-500' if q8_score < 9 else 'text-red-600') }}">{{ q8_score }}</span>
+          <span class="text-slate-400 font-medium">คะแนน</span>
+        </div>
+        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium
+                    {{ 'bg-emerald-100 text-emerald-700' if q8_score == 0 else ('bg-orange-100 text-orange-700' if q8_score < 9 else 'bg-red-100 text-red-700') }}">
+          {% if q8_score == 0 %}ปกติ (ไม่มีความเสี่ยง)
+          {% elif q8_score < 9 %}เสี่ยงปานกลาง
+          {% else %}เสี่ยงรุนแรง{% endif %}
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+            (≥ 17 รุนแรงมาก / 9-16 รุนแรง / 1-8 ปานกลาง)
+        </div>
       </div>
     </div>
 
@@ -72,6 +104,18 @@
     <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col gap-4 hover:shadow-xl transition-shadow">
       <h3 class="font-bold text-slate-800 text-lg mb-2">ความเสี่ยงอื่นๆ</h3>
       
+      <!-- Depression 2Q -->
+      <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+        <span class="text-sm font-medium text-slate-600">คัดกรองซึมเศร้า 2Q</span>
+        <span class="text-sm font-bold text-slate-800 text-right">{{ dep_2q|default('-') }}</span>
+      </div>
+
+      <!-- Health Behavior -->
+      <div class="flex items-start justify-between p-3 rounded-2xl bg-slate-50">
+        <span class="text-sm font-medium text-slate-600 whitespace-nowrap">พฤติกรรมสุขภาพ</span>
+        <span class="text-sm font-bold text-slate-800 text-right break-words max-w-[60%]">{{ health_behavior }}</span>
+      </div>
+
       <!-- Suicide Risk -->
       <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
         <span class="text-sm font-medium text-slate-600">เสี่ยงฆ่าตัวตาย</span>
@@ -104,11 +148,244 @@
        class="px-6 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition">
        < แก้ไขข้อมูล
     </a>
-    <a href="{{ url_for('nurse.dashboard') }}" 
-       class="px-8 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition transform">
-       กลับหน้าหลัก (เสร็จสิ้น)
-    </a>
+    
+    {% if status == 'sent_to_doctor' %}
+    <button type="button" disabled
+       class="px-8 py-3 rounded-2xl bg-emerald-100 text-emerald-600 font-bold flex items-center gap-2 cursor-not-allowed">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+       ส่งข้อมูลให้แพทย์แล้ว
+    </button>
+    {% else %}
+    <button type="button" onclick="openSendModal()"
+       class="px-8 py-3 rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition transform flex items-center gap-2">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+       ส่งต่อข้อมูลให้แพทย์
+    </button>
+    {% endif %}
+    
+    <form action="{{ url_for('nurse.assess_finalize', header_id=header_id) }}" method="POST" class="inline">
+        <button type="submit" 
+           class="px-8 py-3 rounded-2xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:-translate-y-0.5 transition transform">
+           เสร็จสิ้น
+        </button>
+    </form>
   </div>
 
 </div>
+
+<!-- Send to Doctor Modal -->
+<div id="sendModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="px-8 py-6 bg-indigo-600 text-white">
+                <h3 class="text-2xl font-bold">ส่งต่อข้อมูลให้แพทย์</h3>
+                <p class="text-indigo-100 text-sm opacity-80">ระบุรายละเอียดการส่งตัวเพื่อเข้าสู่ระบบคิวแพทย์</p>
+            </div>
+            
+            <form action="{{ url_for('nurse.send_to_doctor', header_id=header_id) }}" method="POST" class="p-8 space-y-6">
+                <div class="space-y-3">
+                    <label class="block text-slate-700 font-bold ml-1">ความเร่งด่วน (Priority)</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="priority" value="normal" checked class="hidden peer">
+                            <div class="py-3 border-2 rounded-2xl text-center peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 border-slate-100 transition-all font-bold text-slate-400">ปกติ (Normal)</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="priority" value="urgent" class="hidden peer">
+                            <div class="py-3 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 border-slate-100 transition-all font-bold text-slate-400">เร่งด่วน (Urgent)</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-slate-700 font-bold ml-1">บันทึกถึงแพทย์ (Note)</label>
+                    <textarea name="nurse_note" rows="4" 
+                              class="w-full rounded-2xl border-2 border-slate-100 px-5 py-4 outline-none focus:border-indigo-500 bg-slate-50 transition-all text-lg" 
+                              placeholder="ระบุอาการสำคัญ หรือเหตุผลที่ส่งต่อ..."></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeSendModal()" 
+                            class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+                    <button type="submit" 
+                            class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition">ยืนยันการส่งต่อ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function openSendModal() {
+
+        document.getElementById('sendModal').classList.remove('hidden');
+
+    }
+
+    function closeSendModal() {
+
+        document.getElementById('sendModal').classList.add('hidden');
+
+    }
+
+
+
+    const mmse_data = {{ mmse_details|tojson|safe if mmse_details else '{}' }};
+
+    const tgds_data = {{ tgds_details|tojson|safe if tgds_details else '{}' }};
+
+
+
+    function openDetailModal(type) {
+
+        const modal = document.getElementById('detailModal');
+
+        const title = document.getElementById('detailTitle');
+
+        const content = document.getElementById('detailContent');
+
+        
+
+        modal.classList.remove('hidden');
+
+        content.innerHTML = '';
+
+
+
+        if(type === 'mmse') {
+
+            title.textContent = 'รายละเอียดคะแนน MMSE';
+
+            if(Object.keys(mmse_data).length === 0) {
+
+                content.innerHTML = '<p class="text-center text-slate-400">ไม่พบข้อมูล</p>';
+
+            } else {
+
+                let html = '<div class="grid grid-cols-1 gap-2 text-sm">';
+
+                // MMSE Items Dictionary (Simplified)
+
+                const mmse_labels = {
+
+                    '1': 'วันที่', '2': 'ฤดู', '3': 'เดือน', '4': 'พ.ศ.', '5': 'วัน',
+
+                    '6': 'ประเทศ', '7': 'จังหวัด', '8': 'อำเภอ', '9': 'หมู่บ้าน', '10': 'สถานที่',
+
+                    '11': 'จำคำ 1', '12': 'จำคำ 2', '13': 'จำคำ 3',
+
+                    '14': 'ลบเลข 1', '15': 'ลบเลข 2', '16': 'ลบเลข 3', '17': 'ลบเลข 4', '18': 'ลบเลข 5',
+
+                    '19': 'ทวนคำ 1', '20': 'ทวนคำ 2', '21': 'ทวนคำ 3',
+
+                    '22': 'เรียกชื่อของ', '23': 'เรียกชื่อของ', '24': 'พูดตาม', '25': 'ทำตามคำสั่ง', '26': 'อ่านทำตาม', '27': 'เขียนประโยค', '28': 'วาดภาพ'
+
+                };
+
+                Object.keys(mmse_data).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(k => {
+
+                    const score = mmse_data[k];
+
+                    const label = mmse_labels[k] || `ข้อที่ ${k}`;
+
+                    html += `<div class="flex justify-between p-2 rounded bg-slate-50 border border-slate-100">
+
+                                <span class="text-slate-600">${label}</span>
+
+                                <span class="font-bold ${score>0 ? 'text-emerald-600':'text-rose-600'}">${score}</span>
+
+                             </div>`;
+
+                });
+
+                html += '</div>';
+
+                content.innerHTML = html;
+
+            }
+
+        } else if(type === 'tgds') {
+
+            title.textContent = 'รายละเอียดคำตอบ TGDS-15';
+
+            if(Object.keys(tgds_data).length === 0) {
+
+                content.innerHTML = '<p class="text-center text-slate-400">ไม่พบข้อมูล</p>';
+
+            } else {
+
+                let html = '<div class="grid grid-cols-1 gap-2 text-sm">';
+
+                Object.keys(tgds_data).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(k => {
+
+                    const ans = tgds_data[k];
+
+                    html += `<div class="flex justify-between p-2 rounded bg-slate-50 border border-slate-100">
+
+                                <span class="text-slate-600">ข้อที่ ${k}</span>
+
+                                <span class="font-bold ${ans=='ใช่' ? 'text-indigo-600':'text-slate-600'}">${ans}</span>
+
+                             </div>`;
+
+                });
+
+                html += '</div>';
+
+                content.innerHTML = html;
+
+            }
+
+        }
+
+    }
+
+
+
+    function closeDetailModal() {
+
+        document.getElementById('detailModal').classList.add('hidden');
+
+    }
+
+</script>
+
+
+
+<!-- Details Modal -->
+
+<div id="detailModal" class="fixed inset-0 z-[60] hidden">
+
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDetailModal()"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+
+        <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all pointer-events-auto flex flex-col max-h-[80vh]">
+
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+
+                <h3 id="detailTitle" class="text-lg font-bold text-slate-800">รายละเอียด</h3>
+
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600">
+
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+                </button>
+
+            </div>
+
+            <div id="detailContent" class="p-6 overflow-y-auto">
+
+                <!-- Content injected via JS -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

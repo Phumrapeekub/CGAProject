@@ -35,11 +35,19 @@
                 <div>
                     <p class="text-xl font-black text-slate-800 leading-tight">{{ patient.full_name }}</p>
                     <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                        {% set sex_val = (patient.sex or patient.gender or '')|lower %}
+                        {% set sex_val = (patient.gender or patient.sex or '')|lower %}
                         {% if sex_val in ['male', 'ชาย', '1'] %}ชาย
                         {% elif sex_val in ['female', 'หญิง', '2'] %}หญิง
                         {% else %}ไม่ระบุเพศ{% endif %}
-                        • {{ patient.age_year or '-' }} ปี
+                        • 
+                        {% if patient.age_year %}
+                            {{ patient.age_year }}
+                        {% elif patient.birth_date %}
+                            <script>document.write(new Date().getFullYear() - new Date("{{ patient.birth_date }}").getFullYear())</script>
+                        {% else %}
+                            -
+                        {% endif %}
+                        ปี
                     </p>
                 </div>
             </div>
@@ -50,7 +58,7 @@
                 </div>
                 <div class="flex justify-between items-start text-sm gap-4">
                     <span class="text-slate-400 font-bold uppercase tracking-tighter shrink-0">ที่อยู่</span>
-                    <span class="text-slate-700 font-medium text-right">{{ patient.address_text or patient.address or '-' }}</span>
+                    <span class="text-slate-700 font-medium text-right">{{ patient.address or patient.address_text or '-' }}</span>
                 </div>
             </div>
         </div>

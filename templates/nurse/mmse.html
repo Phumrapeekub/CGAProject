@@ -49,7 +49,7 @@
           <div class="text-lg uppercase font-medium">MMSE-T Assessment</div>
         </div>
         <div class="text-sm bg-white px-4 py-1.5 rounded-full border border-rose-100 text-rose-700 shadow-sm font-medium">
-          คะแนนรวม: <span id="score">0</span> / 30
+          คะแนนรวม: <span id="score">0</span> / <span id="total_possible">30</span>
         </div>
       </div>
       <div class="p-8 space-y-6">
@@ -146,7 +146,7 @@
     </div>
 
     <!-- 4. สมาธิและการคำนวณ (Attention or Calculation) -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
+    <div id="section-4" class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
         <div class="px-6 py-4 bg-amber-50 border-b border-amber-100 text-lg text-amber-800 font-medium">4. สมาธิและการคำนวณ (Attention or Calculation)</div>
         <div class="p-8 space-y-10">
             <div class="space-y-4">
@@ -266,7 +266,15 @@
 
     <!-- 8. การเข้าใจความหมายและทำตามคำสั่ง (Verbal command) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-purple-50 border-b border-purple-100 text-lg text-purple-800 font-medium">8. การเข้าใจความหมายและทำตามคำสั่ง (Verbal command)</div>
+        <div class="px-6 py-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between">
+            <div class="text-lg text-purple-800 font-medium">8. การเข้าใจความหมายและทำตามคำสั่ง (Verbal command)</div>
+            <button type="button" onclick="playAudio('8.Verbal command', this)" 
+                    class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center hover:bg-purple-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-purple-100 rounded-2xl text-purple-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล (สั่งต่อเนื่องกัน):</p>
@@ -292,8 +300,16 @@
     </div>
 
     <!-- 9. การอ่านและการทำตามคำสั่ง (Written command) -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100 text-lg text-cyan-800 font-medium">9. การอ่านและการทำตามคำสั่ง (Written command)</div>
+    <div id="section-9" class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100 flex items-center justify-between">
+            <div class="text-lg text-cyan-800 font-medium">9. การอ่านและการทำตามคำสั่ง (Written command)</div>
+            <button type="button" onclick="playAudio('9.Written command', this)" 
+                    class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center hover:bg-cyan-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-cyan-100 rounded-2xl text-cyan-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -316,8 +332,16 @@
     </div>
 
     <!-- 10. การเขียนภาษาอย่างมีความหมาย (Writing) -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-violet-100 overflow-hidden">
-        <div class="px-6 py-4 bg-violet-50 border-b border-violet-100 text-lg text-violet-800 font-medium">10. การเขียนภาษาอย่างมีความหมาย (Writing)</div>
+    <div id="section-10" class="rounded-[26px] bg-white shadow-xl border border-violet-100 overflow-hidden">
+        <div class="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between">
+            <div class="text-lg text-violet-800 font-medium">10. การเขียนภาษาอย่างมีความหมาย (Writing)</div>
+            <button type="button" onclick="playAudio('10.Writing', this)" 
+                    class="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-6">
             <div class="p-5 bg-white border border-slate-200 rounded-2xl text-slate-700 text-lg leading-relaxed shadow-sm font-normal">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -340,7 +364,15 @@
 
     <!-- 11. การคัดลอกรูปภาพ (Visuoconstruction) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 bg-orange-50 border-b border-orange-100 text-lg text-orange-800 font-medium">11. การคัดลอกรูปภาพ (Visuoconstruction)</div>
+        <div class="px-6 py-4 bg-orange-50 border-b border-orange-100 flex items-center justify-between">
+            <div class="text-lg text-orange-800 font-medium">11. การคัดลอกรูปภาพ (Visuoconstruction)</div>
+            <button type="button" onclick="playAudio('11.Visuoconstruction', this)" 
+                    class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center hover:bg-orange-600 hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
         <div class="p-8 space-y-8">
             <div class="p-5 bg-white border border-orange-100 rounded-2xl text-orange-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-4 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
@@ -431,7 +463,36 @@
   }
   function recalc() {
     let sum = 0;
-    document.querySelectorAll('.q-radio:checked').forEach(r => { sum += parseInt(r.value); });
+    const edu = document.querySelector('input[name="edu"]:checked')?.value;
+    const isNoEdu = (edu === '1');
+
+    // จัดการการแสดงผลของข้อที่ต้องข้าม
+    const skipSections = ['section-4', 'section-9', 'section-10'];
+    skipSections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (isNoEdu) {
+                el.classList.add('hidden');
+                // ล้างค่าที่เคยเลือกไว้ในข้อที่ข้าม
+                el.querySelectorAll('input:checked').forEach(input => { input.checked = false; });
+            } else {
+                el.classList.remove('hidden');
+            }
+        }
+    });
+
+    // ปรับคะแนนเต็ม
+    document.getElementById('total_possible').textContent = isNoEdu ? '23' : '30';
+
+    // คำนวณคะแนนรวม
+    document.querySelectorAll('.q-radio:checked').forEach(r => { 
+        // เช็คว่าข้อนี้อยู่ใน Section ที่ถูกซ่อนหรือไม่
+        const parentSection = r.closest('#section-4, #section-9, #section-10');
+        if (!parentSection || !parentSection.classList.contains('hidden')) {
+            sum += parseInt(r.value); 
+        }
+    });
+    
     document.getElementById('score').textContent = sum;
     document.getElementById('total_score_input').value = sum;
   }
@@ -452,6 +513,7 @@
         if(eduRadio) eduRadio.checked = true;
     }
     document.querySelectorAll('.q-radio').forEach(r => r.addEventListener('change', recalc));
+    document.querySelectorAll('input[name="edu"]').forEach(r => r.addEventListener('change', recalc));
     recalc();
   });
 </script>
