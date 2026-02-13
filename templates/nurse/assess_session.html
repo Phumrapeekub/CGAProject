@@ -55,13 +55,13 @@
             {% set first_name = names[0] if names|length > 0 else "" %}
             <input type="text" name="name" placeholder="กรอกชื่อ"
                    value="{{ first_name if first_name != 'รอกรอกข้อมูล' else '' }}"
-                   class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-slate-50/50">
+                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium">
           </div>
           <div class="space-y-3">
             <label class="block text-slate-700 font-bold text-lg ml-1">นามสกุล</label>
             <input type="text" name="surname" placeholder="กรอกนามสกุล"
                    value="{{ names[1] if names|length > 1 else '' }}"
-                   class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-slate-50/50">
+                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium">
           </div>
         </div>
 
@@ -74,7 +74,7 @@
               {% set dob_val = "%02d/%02d/%d" % (bd.day, bd.month, bd.year + 543) %}
             {% endif %}
             <input id="dob" name="dob" type="text" data-buddhist-date="1"
-                   class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-slate-50/50"
+                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium"
                    value="{{ dob_val }}">
             <input type="hidden" id="dob_ad" name="birthdate" value="{{ assess.get('birth_date') or '' }}">
           </div>
@@ -85,11 +85,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
                     <input type="radio" name="gender" value="male" class="hidden peer" {% if g in ['male', '1', 'ชาย'] %}checked{% endif %}>
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-sky-500 peer-checked:text-white peer-checked:border-sky-500 border-slate-100 transition-all font-bold text-slate-500 text-lg shadow-sm">ชาย</div>
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-sky-500 peer-checked:text-white peer-checked:border-sky-500 border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-sky-400 text-lg shadow-sm">ชาย</div>
                 </label>
                 <label class="cursor-pointer">
                     <input type="radio" name="gender" value="female" class="hidden peer" {% if g in ['female', '2', 'หญิง'] %}checked{% endif %}>
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 border-slate-100 transition-all font-bold text-slate-500 text-lg shadow-sm">หญิง</div>
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-rose-400 text-lg shadow-sm">หญิง</div>
                 </label>
             </div>
           </div>
@@ -104,7 +104,7 @@
             <div class="space-y-3">
                 <label class="block text-slate-700 font-bold text-lg ml-1">หมายเลขโทรศัพท์</label>
                 <input type="text" name="phone" placeholder="0XXXXXXXXX"
-                       class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 text-xl shadow-sm bg-slate-50/50" value="{{ assess.get('phone', '') }}">
+                       class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl shadow-sm bg-white font-medium" value="{{ assess.get('phone') or '' }}">
             </div>
         </div>
       </div>
@@ -118,32 +118,32 @@
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">บ้านเลขที่</label>
               <input type="text" name="house_no" value="{{ assess.get('house_no', '') }}" placeholder="เช่น 123/45"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-3 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">หมู่ที่</label>
               <input type="text" name="moo" value="{{ assess.get('moo', '') }}" placeholder="เช่น 5"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-3 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">ตำบล/แขวง</label>
               <input type="text" name="subdistrict" value="{{ assess.get('subdistrict', '') }}" placeholder="ระบุตำบล"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">อำเภอ/เขต</label>
               <input type="text" name="district" value="{{ assess.get('district', '') }}" placeholder="ระบุอำเภอ"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">จังหวัด</label>
               <input type="text" name="province" value="{{ assess.get('province', '') }}" placeholder="ระบุจังหวัด"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">รหัสไปรษณีย์</label>
               <input type="text" name="postal_code" value="{{ assess.get('postal_code', '') }}" placeholder="ระบุรหัสไปรษณีย์"
-                     class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 outline-none focus:border-sky-400 bg-slate-50/50 shadow-sm text-xl">
+                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
             </div>
           </div>
 
@@ -154,7 +154,7 @@
               {% for val, lab in [('alone','อยู่คนเดียว'), ('caregiver','มีผู้ดูแล')] %}
               <label class="cursor-pointer">
                 <input type="radio" name="live" value="{{ val }}" class="hidden peer">
-                <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-indigo-500 peer-checked:text-white border-slate-100 transition-all font-bold text-slate-500 bg-white shadow-sm text-lg">{{ lab }}</div>
+                <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-indigo-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-indigo-400 shadow-sm text-lg">{{ lab }}</div>
               </label>
               {% endfor %}
             </div>
@@ -191,11 +191,11 @@
               <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
                   <input type="radio" name="hearing_left" value="normal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all font-bold text-slate-400 bg-white">ปกติ</div>
+                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-emerald-400">ปกติ</div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" name="hearing_left" value="abnormal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all font-bold text-slate-400 bg-white">ผิดปกติ</div>
+                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-rose-400">ผิดปกติ</div>
                 </label>
               </div>
               <!-- รายละเอียดหูซ้าย -->
@@ -211,11 +211,11 @@
               <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
                   <input type="radio" name="hearing_right" value="normal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all font-bold text-slate-400 bg-white">ปกติ</div>
+                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-emerald-400">ปกติ</div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" name="hearing_right" value="abnormal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all font-bold text-slate-400 bg-white">ผิดปกติ</div>
+                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-rose-400">ผิดปกติ</div>
                 </label>
               </div>
               <!-- รายละเอียดหูขวา -->
@@ -253,17 +253,17 @@
                 <div class="space-y-2">
                     <label class="block text-slate-700 font-bold">ส่วนสูง (ซม.)</label>
                     <input type="number" name="height" placeholder="160" value="{{ assess.get('height', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-slate-50/50 shadow-sm">
+                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
                 </div>
                 <div class="space-y-2">
                     <label class="block text-slate-700 font-bold">น้ำหนัก (กก.)</label>
                     <input type="number" name="weight" placeholder="60" value="{{ assess.get('weight', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-slate-50/50 shadow-sm">
+                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
                 </div>
                 <div class="space-y-2">
                     <label class="block text-slate-700 font-bold">รอบเอว (ซม.)</label>
                     <input type="number" name="waist" placeholder="85" value="{{ assess.get('waist', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-100 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-slate-50/50 shadow-sm">
+                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
                 </div>
             </div>
 
@@ -274,7 +274,7 @@
                         {% for val, lab in [('none','ไม่สูบ'), ('yes','สูบ'), ('quit','เลิกแล้ว')] %}
                         <label class="cursor-pointer">
                             <input type="radio" name="smoke" value="{{ val }}" class="hidden peer">
-                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 transition-all font-bold text-slate-500 bg-white shadow-sm">{{ lab }}</div>
+                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ lab }}</div>
                         </label>
                         {% endfor %}
                     </div>
@@ -288,7 +288,7 @@
                         {% for val, lab in [('none','ไม่ดื่ม'), ('social','บางครั้ง'), ('daily','ทุกวัน')] %}
                         <label class="cursor-pointer">
                             <input type="radio" name="alcohol" value="{{ val }}" class="hidden peer">
-                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 transition-all font-bold text-slate-500 bg-white shadow-sm">{{ lab }}</div>
+                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ lab }}</div>
                         </label>
                         {% endfor %}
                     </div>
@@ -310,13 +310,13 @@
                     {% for disease in [('diabetes','เบาหวาน'), ('kidney','ไต'), ('hypertension','ความดันสูง'), ('heart','หัวใจ'), ('cancer','มะเร็ง')] %}
                     <label class="cursor-pointer">
                         <input type="checkbox" name="chronicDiseases" value="{{ disease[0] }}" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-100 peer-checked:border-emerald-500 peer-checked:text-emerald-700 border-slate-100 transition-all font-bold text-slate-500 bg-white shadow-sm">{{ disease[1] }}</div>
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-100 peer-checked:border-emerald-500 peer-checked:text-emerald-700 border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ disease[1] }}</div>
                     </label>
                     {% endfor %}
                 </div>
                 <div class="pt-2">
                     <input type="text" name="otherDisease" placeholder="โรคอื่นๆ (ถ้ามี)..." value="{{ assess.get('otherDisease', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-100 px-6 py-3 outline-none focus:border-emerald-300 transition-all shadow-inner bg-slate-50/50 text-xl">
+                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-emerald-300 transition-all shadow-inner bg-white text-xl font-medium">
                 </div>
             </div>
         </div>

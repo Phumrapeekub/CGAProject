@@ -7,8 +7,8 @@
     
     <!-- Header -->
     <div class="mb-10">
-      <h1 class="text-4xl font-extrabold bg-gradient-to-r from-[#4A90E2] to-[#50E3C2] bg-clip-text text-transparent mb-2">
-        Dashboard พยาบาล
+      <h1 class="text-4xl font-extrabold bg-gradient-to-r from-[#4A90E2] to-[#50E3C2] bg-clip-text text-transparent mb-2 leading-tight pb-2">
+        Dashboard คุณ{{ user }}
       </h1>
       <p class="text-gray-500 font-medium text-lg">ภาพรวมการประเมินสุขภาพผู้สูงอายุ</p>
     </div>
@@ -127,16 +127,16 @@
             </div>
             <div class="flex items-center gap-6">
               <div class="text-right hidden sm:block border-r pr-6 border-gray-100">
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Assessment</p>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">ผลการประเมิน</p>
                 <p class="text-gray-700 font-black">MMSE: <span class="text-blue-600">{{ p.mmse_score if p.mmse_score != None else '-' }}</span> | TGDS: <span class="text-emerald-600">{{ p.tgds_score if p.tgds_score != None else '-' }}</span></p>
               </div>
-              {% set risk_label = 'Normal' %}
+              {% set risk_label = 'เสี่ยงต่ำ' %}
               {% set risk_badge = 'bg-green-50 text-green-600 border-green-100' %}
               {% if p.overall_risk == 'high' %}
-                {% set risk_label = 'High Risk' %}
+                {% set risk_label = 'เสี่ยงสูง' %}
                 {% set risk_badge = 'bg-red-50 text-red-600 border-red-100' %}
               {% elif p.overall_risk == 'medium' %}
-                {% set risk_label = 'Medium Risk' %}
+                {% set risk_label = 'เสี่ยงปานกลาง' %}
                 {% set risk_badge = 'bg-orange-50 text-orange-600 border-orange-100' %}
               {% endif %}
               <span class="px-5 py-2 rounded-full font-black text-sm uppercase tracking-widest border {{ risk_badge }}">

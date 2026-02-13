@@ -2406,5 +2406,935 @@
       "hearing_left": "ปกติ",
       "hearing_right": "ปกติ"
     }
+  },
+  {
+    "timestamp": "2026-02-13T00:09:20.390464",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN043",
+      "gcn": "004",
+      "full_name": "ภุผา ป่องแง่บ",
+      "phone": "0257485996",
+      "address": "เลขที่ 369 หมู่ 1 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-27",
+      "emergency_phone": "0548459663",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:09:22.485272",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 136,
+      "patient_id": 45,
+      "encounter_date": "2026-02-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:09:23.156799",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:09:24.549481",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 136,
+      "patient_id": 45,
+      "hn": "HN043",
+      "full_name": "ภุผา ป่องแง่บ",
+      "assessed_date": "2026-02-12 10:20:47",
+      "age": 83,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "ชัชพล คนเที่ยง",
+      "caregiver_relation": "หลาน",
+      "emergency_phone": "0548459663",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 27,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "normal",
+      "vision_right": "normal",
+      "hearing_left": "ปกติ",
+      "hearing_right": "ปกติ"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:17:46.057869",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN045",
+      "gcn": "002",
+      "full_name": "ทีปกร มีสุข",
+      "phone": "0654852334",
+      "address": "เลขที่ 143 หมู่ 1 ต. ป่างิ้ว อ. เมือง จ. เชียงราย 57260",
+      "sex": "ชาย",
+      "birth_date": "1940-02-17",
+      "emergency_phone": "0698754223",
+      "caregiver_name": "ทศพล ทรงเอ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:17:48.114516",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 143,
+      "patient_id": 55,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:17:48.911552",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 143,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:18:19.888992",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN045",
+      "gcn": "002",
+      "full_name": "ทีปกร มีสุข",
+      "phone": "0654852334",
+      "address": "เลขที่ 143 หมู่ 1 ต. ป่างิ้ว อ. เมือง จ. เชียงราย 57260",
+      "sex": "ชาย",
+      "birth_date": "1940-02-17",
+      "emergency_phone": "0698754223",
+      "caregiver_name": "ทศพล ทรงเอ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:18:21.593286",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 143,
+      "patient_id": 55,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:18:22.324481",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN045",
+      "patient_name": "ทีปกร มีสุข",
+      "nurse_name": "nurse1",
+      "mmse_score": 12,
+      "tgds_score": 9,
+      "priority": "urgent",
+      "note_from_nurse": "เข้าขั้นรุนแรง",
+      "status": "pending",
+      "age": 85,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:daily",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:18:23.183543",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 143,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T00:18:24.685251",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 143,
+      "patient_id": 55,
+      "hn": "HN045",
+      "full_name": "ทีปกร มีสุข",
+      "assessed_date": "2026-02-13 00:10:09",
+      "age": 85,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "ทศพล ทรงเอ",
+      "caregiver_relation": "หลาน",
+      "emergency_phone": "0698754223",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มทุกวัน",
+      "alcohol_amount": "",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "สั้น50",
+      "vision_right": "สั้น75",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ผิดปกติ (ไม่ระบุ)"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:32:19.683135",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:32:21.859960",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:32:22.704568",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:45:29.629965",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:45:53.121541",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:45:55.271153",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T13:45:56.106406",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:02:50.066326",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "สูงกว่าประถมศึกษา",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:22:52.755071",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:22:56.826042",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:22:57.661259",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:23:23.685897",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:23:25.770047",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:23:26.579848",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:27:46.060889",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:27:48.715163",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:27:49.586882",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:27:51.210958",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:30:23.384588",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:30:25.701400",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:30:26.464270",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:30:27.966359",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:36:46.253567",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:36:48.998523",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:36:49.750087",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:36:51.481613",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:02.573719",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:04.358773",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:05.131753",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN046",
+      "patient_name": "มาย โมราลส",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 8,
+      "tgds_score": 10,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 92,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:06.095555",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:07.738482",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:17.318114",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:19.258492",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:20.015719",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:37:21.472438",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:39:26.697020",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "full_name": "มาย โมราเลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:43:08.912190",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "full_name": "มาย โมราเลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:50:04.997081",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN046",
+      "gcn": "003",
+      "full_name": "มาย โมราเลส",
+      "phone": "0658478553",
+      "address": "เลขที่ 97 หมู่ 42 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1933-02-15",
+      "emergency_phone": "0658975332",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน"
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:50:07.958388",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 145,
+      "patient_id": 57,
+      "encounter_date": "2026-02-13",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:50:08.759705",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-13",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-13T14:50:10.438001",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 145,
+      "patient_id": 57,
+      "hn": "HN046",
+      "full_name": "มาย โมราเลส",
+      "assessed_date": "2026-02-13 13:16:57",
+      "age": 92,
+      "gender": "male",
+      "education": "ไม่ได้เรียน/อ่านเขียนไม่ได้",
+      "caregiver_name": "เจสัน สเตแฮม",
+      "caregiver_relation": "เพื่อนบ้าน",
+      "emergency_phone": "0658975332",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "alcohol_amount": "",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "มี",
+      "incontinence": "มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)",
+      "sleep_problem": "มีปัญหาการนอน (ไม่ระบุ)",
+      "vision_left": "เอียง25",
+      "vision_right": "สั้น50",
+      "hearing_left": "ผิดปกติ (ไม่ระบุ)",
+      "hearing_right": "ปกติ",
+      "q8_score": 14
+    }
   }
 ]

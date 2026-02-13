@@ -44,37 +44,52 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <!-- Total -->
-        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
-            <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">คัดกรองสะสม</p>
-            <p class="text-7xl font-black text-slate-900 leading-none">{{ data.ov.total or 0 }}</p>
-            <p class="text-base font-bold text-slate-400 mt-3">ราย</p>
+        <div class="bg-gradient-to-br from-white to-slate-50 p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-2">คัดกรองสะสม</p>
+            <p class="text-6xl font-black text-slate-800 leading-none group-hover:text-blue-600 transition-colors">{{ data.ov.total or 0 }}</p>
+            <p class="text-sm font-bold text-slate-400 mt-2">ราย</p>
         </div>
+        
         <!-- MMSE -->
-        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-rose-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
-            <p class="text-sm font-black text-rose-400 uppercase tracking-widest mb-4">เสี่ยงสมองเสื่อม</p>
-            <p class="text-7xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
-            <p class="text-sm font-bold text-rose-300 mt-3">
-                {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
+        <div class="bg-gradient-to-br from-rose-50 to-white p-8 rounded-[32px] border border-rose-100 shadow-sm hover:shadow-xl hover:shadow-rose-100 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-sm font-black text-rose-400 uppercase tracking-widest mb-2">เสี่ยงสมองเสื่อม</p>
+            <p class="text-6xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
+            <p class="text-sm font-bold text-rose-400 mt-2 bg-white/60 inline-block px-3 py-1 rounded-full mx-auto backdrop-blur-sm">
+                {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
             </p>
         </div>
+        
         <!-- TGDS -->
-        <div class="bg-white p-8 rounded-[32px] border-b-8 border-b-orange-500 border border-slate-100 shadow-sm text-center flex flex-col justify-center min-h-[200px]">
-            <p class="text-sm font-black text-orange-400 uppercase tracking-widest mb-4">เสี่ยงภาวะซึมเศร้า</p>
-            <p class="text-7xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
-            <p class="text-sm font-bold text-orange-300 mt-3">
-                {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}% Prevalence
+        <div class="bg-gradient-to-br from-orange-50 to-white p-8 rounded-[32px] border border-orange-100 shadow-sm hover:shadow-xl hover:shadow-orange-100 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-sm font-black text-orange-400 uppercase tracking-widest mb-2">เสี่ยงภาวะซึมเศร้า</p>
+            <p class="text-6xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
+            <p class="text-sm font-bold text-orange-400 mt-2 bg-white/60 inline-block px-3 py-1 rounded-full mx-auto backdrop-blur-sm">
+                {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
             </p>
         </div>
+        
         <!-- Suicide -->
-        <div class="bg-gradient-to-br from-blue-600 to-indigo-900 p-8 rounded-[32px] shadow-xl text-center text-white flex flex-col justify-center min-h-[200px]">
-            <p class="text-sm font-bold text-blue-200 uppercase tracking-[0.2em] mb-4">ผู้มีความเสี่ยงฆ่าตัวตาย</p>
+        <div class="bg-gradient-to-br from-red-600 to-rose-700 text-white p-8 rounded-[32px] shadow-xl hover:shadow-2xl hover:shadow-red-200 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-white/20 transition-all"></div>
+            
+            <p class="text-sm font-bold text-red-100 uppercase tracking-[0.2em] mb-2 relative z-10">ผู้มีความเสี่ยงฆ่าตัวตาย</p>
             {% set suicide_count = data.high_risk | selectattr('suicide', 'equalto', 'yes') | list | length %}
-            <p class="text-7xl font-black tracking-tighter leading-none">{{ suicide_count }}</p>
-            <div class="mt-6 flex justify-center">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
-                    <span class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+            <p class="text-7xl font-black tracking-tighter leading-none relative z-10">{{ suicide_count }}</p>
+            
+            <div class="mt-4 flex justify-center relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 border border-white/30 backdrop-blur-md group-hover:bg-white/30 transition-all">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-400"></span>
                     </span>
                     <span class="text-xs font-bold text-white uppercase tracking-wide">เฝ้าระวัง</span>
                 </div>

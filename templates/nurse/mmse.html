@@ -80,11 +80,11 @@
         <div class="grid grid-cols-2 gap-4">
             <label class="cursor-pointer">
                 <input type="radio" name="q{{ q_no }}" value="{{ max_score }}" class="hidden peer q-radio">
-                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400">ถูกต้อง</div>
+                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ถูกต้อง</div>
             </label>
             <label class="cursor-pointer">
                 <input type="radio" name="q{{ q_no }}" value="0" class="hidden peer q-radio">
-                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400">ผิด / ไม่ตอบ</div>
+                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ผิด / ไม่ตอบ</div>
             </label>
         </div>
     </div>
@@ -106,7 +106,7 @@
     <div class="rounded-[26px] bg-white shadow-xl border border-teal-100 overflow-hidden">
         <div class="px-6 py-4 bg-teal-50 border-b border-teal-100 text-lg text-teal-800 font-medium">2. การรับรู้สถานที่ (Orientation for place)</div>
         <div class="p-8">
-            {{ mmse_q('2.1', 'สถานที่ตรงนี้เรียกว่าอะไร') }}
+            {{ mmse_q('2.1', 'สถานที่ตรงนี้เรียกว่าอะไร ชื่ออะไร') }}
             {{ mmse_q('2.2', 'ขณะนี้อยู่ชั้นที่เท่าไรของตัวอาคาร') }}
             {{ mmse_q('2.3', 'ที่นี่อยู่ในอำเภออะไร') }}
             {{ mmse_q('2.4', 'ที่นี่จังหวัดอะไร') }}
@@ -129,7 +129,17 @@
             <div class="p-5 bg-white border border-blue-100 rounded-2xl text-blue-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
                 "ฟังให้ดีนะคะ จะบอกเพียงครั้งเดียว เมื่อพูดจบให้คุณ (ตา,ยาย) พูดทวนตามที่ได้ยินทั้ง 3 ชื่อ แล้วจำไว้ให้ดีนะคะ เดี๋ยวจะถามซ้ำ: <br>
-                <span class="text-2xl text-blue-600 font-bold">ดอกไม้ - แม่น้ำ - รถไฟ</span>"
+                
+                <div class="mt-3 flex flex-col gap-3">
+                    <div class="p-3 rounded-xl {% if not is_repeat_2m %}bg-blue-600 text-white shadow-md{% else %}bg-slate-50 text-slate-400 border border-slate-100{% endif %}">
+                        <p class="text-xs {% if not is_repeat_2m %}text-blue-100{% else %}text-slate-400{% endif %} font-bold uppercase mb-1">ชุดปกติ (ครั้งแรก หรือ เกิน 2 เดือน):</p>
+                        <span class="text-2xl font-bold">ดอกไม้ - แม่น้ำ - รถไฟ</span>
+                    </div>
+                    <div class="p-3 rounded-xl {% if is_repeat_2m %}bg-blue-600 text-white shadow-md{% else %}bg-slate-50 text-slate-400 border border-slate-100{% endif %}">
+                        <p class="text-xs {% if is_repeat_2m %}text-blue-100{% else %}text-slate-400{% endif %} font-bold uppercase mb-1">ชุดประเมินซ้ำ (ภายใน 2 เดือน):</p>
+                        <span class="text-2xl font-bold">ต้นไม้ - ทะเล - รถยนต์</span>
+                    </div>
+                </div>
             </div>
             <div>
                 <p class="text-slate-600 mb-3 ml-1 font-medium">จำนวนชื่อที่ผู้ป่วยตอบถูก (คะแนน):</p>
@@ -137,7 +147,7 @@
                     {% for s in [0, 1, 2, 3] %}
                     <label class="cursor-pointer">
                         <input type="radio" name="q3" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 text-xl shadow-sm">{{ s }}</div>
+                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm text-xl shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
@@ -151,28 +161,44 @@
         <div class="p-8 space-y-10">
             <div class="space-y-4">
                 <div class="flex justify-between items-start gap-4">
-                    <div class="text-slate-700 text-lg leading-snug">4.1 คิดเลขในใจ: เอา 100 ตั้ง ลบออกทีละ 7 ในใจอยู่ 5 ครั้ง (93, 86, 79, 72, 65)</div>
+                    <div class="text-slate-700 text-lg leading-snug">
+                        <span class="font-bold">4.1 คิดเลขในใจ:</span> เอา 100 ตั้ง ลบออกทีละ 7 ไปเรื่อยๆ 5 ครั้ง
+                        <p class="text-sm text-slate-500 mt-1 italic">หากลบได้บ้างแล้วตอบไม่ได้ ให้คิดคะแนนเท่าที่ทำได้ ไม่ต้องเปลี่ยนไปทำข้อ 4.2</p>
+                    </div>
                     <div class="shrink-0 bg-sky-100 text-sky-700 text-[10px] px-2 py-1 rounded uppercase tracking-tighter font-medium">5 คะแนน</div>
                 </div>
                 <div class="grid grid-cols-6 gap-3">
                     {% for s in [0, 1, 2, 3, 4, 5] %}
                     <label class="cursor-pointer">
-                        <input type="radio" name="q4.1" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400">{{ s }}</div>
+                        <input type="radio" name="q4.1" value="{{ s }}" class="hidden peer q-radio section4-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-4 pt-6 border-t border-dashed border-slate-100">
                 <div class="flex justify-between items-start gap-4">
-                    <div class="text-slate-700 text-lg leading-snug">4.2 สะกดคำย้อนหลัง: ให้ท่านสะกดคำว่า "มะนาว" ย้อนหลังเป็น "ว า น ะ ม"</div>
-                    <div class="shrink-0 bg-sky-100 text-sky-700 text-[10px] px-2 py-1 rounded uppercase tracking-tighter font-medium">5 คะแนน</div>
+                    <div class="text-slate-700 text-lg leading-snug">
+                        <span class="font-bold">4.2 สะกดคำย้อนหลัง:</span> คำว่า "มะนาว" (ว-า-น-ะ-ม)
+                        <div class="mt-3 p-4 bg-slate-50 rounded-xl text-sm border border-slate-100">
+                            "เดี๋ยวผม/ดิฉัน จะสะกดคำว่า <span class="font-bold text-blue-600">มะนาว</span> ให้คุณตา/ยาย ฟัง แล้วให้คุณตา/ยาย สะกดถอยหลังจากพยัญชนะตัวหลังไปตัวแรก คำว่า มะนาว สะกดว่า มอม้า-สระอะ-นอหนู-สระอา-วอแหวน คุณตา/ยาย สะกดถอยหลังให้ฟังสิครับ/ค่ะ"
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-2 shrink-0">
+                        <div class="bg-sky-100 text-sky-700 text-[10px] px-2 py-1 rounded uppercase tracking-tighter font-medium">5 คะแนน</div>
+                        <button type="button" onclick="playAudio('4.2Attention or Calculation', this)" 
+                                class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-all shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-6 gap-3">
                     {% for s in [0, 1, 2, 3, 4, 5] %}
                     <label class="cursor-pointer">
-                        <input type="radio" name="q4.2" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400">{{ s }}</div>
+                        <input type="radio" name="q4.2" value="{{ s }}" class="hidden peer q-radio section4-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
@@ -195,6 +221,9 @@
             <div class="p-5 bg-white border border-indigo-100 rounded-2xl text-indigo-900 text-lg leading-relaxed shadow-sm">
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
                 "เมื่อกี้ที่หนูให้คุณ (ตา,ยาย) จำของ 3 อย่างได้ไหมคะ มีอะไรบ้าง? (บอกทีละอย่าง)"
+                <p class="mt-3 text-sm text-slate-500 font-medium">
+                    (เฉลย: <span class="text-indigo-600 font-bold">{% if is_repeat_2m %}ต้นไม้ - ทะเล - รถยนต์{% else %}ดอกไม้ - แม่น้ำ - รถไฟ{% endif %}</span>)
+                </p>
             </div>
             <div>
                 <p class="text-slate-600 mb-3 ml-1 font-medium">จำนวนชื่อที่ผู้ป่วยนึกออก (คะแนน):</p>
@@ -202,7 +231,7 @@
                     {% for s in [0, 1, 2, 3] %}
                     <label class="cursor-pointer">
                         <input type="radio" name="q5" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-indigo-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 text-xl shadow-sm">{{ s }}</div>
+                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-indigo-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm text-xl shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
@@ -224,7 +253,7 @@
                     {% for s in [0, 1, 2] %}
                     <label class="cursor-pointer">
                         <input type="radio" name="q6" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 text-xl shadow-sm">{{ s }}</div>
+                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm text-xl shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
@@ -253,11 +282,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="q7" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">ถูกต้อง (1 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ถูกต้อง (1 คะแนน)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q7" value="0" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">ไม่ถูกต้อง (0 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ไม่ถูกต้อง (0 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -291,7 +320,7 @@
                     {% for s in [0, 1, 2, 3] %}
                     <label class="cursor-pointer">
                         <input type="radio" name="q8" value="{{ s }}" class="hidden peer q-radio">
-                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 text-xl shadow-sm">{{ s }}</div>
+                        <div class="py-5 border-2 rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm text-xl shadow-sm">{{ s }}</div>
                     </label>
                     {% endfor %}
                 </div>
@@ -320,11 +349,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="q9" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">ทำได้ (1 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ทำได้ (1 คะแนน)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q9" value="0" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">ทำไม่ได้ (0 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ทำไม่ได้ (0 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -351,11 +380,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="q10" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">เขียนได้ (1 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">เขียนได้ (1 คะแนน)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q10" value="0" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">เขียนไม่ได้ (0 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">เขียนไม่ได้ (0 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -389,11 +418,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="q11" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">วาดภาพได้ (1 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">วาดภาพได้ (1 คะแนน)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q11" value="0" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-100 bg-slate-50 transition-all font-normal text-slate-400 shadow-sm">วาดภาพไม่ได้ (0 คะแนน)</div>
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">วาดภาพไม่ได้ (0 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -488,10 +517,26 @@
     document.querySelectorAll('.q-radio:checked').forEach(r => { 
         // เช็คว่าข้อนี้อยู่ใน Section ที่ถูกซ่อนหรือไม่
         const parentSection = r.closest('#section-4, #section-9, #section-10');
+        
         if (!parentSection || !parentSection.classList.contains('hidden')) {
+            // กรณี Section 4 ให้เลือกคะแนนเดียว (4.1 หรือ 4.2)
+            if (parentSection && parentSection.id === 'section-4') {
+                return; // จะคำนวณแยกด้านล่าง
+            }
             sum += parseInt(r.value); 
         }
     });
+
+    // คำนวณเฉพาะ Section 4 (เลือกอย่างใดอย่างหนึ่ง)
+    const q41 = document.querySelector('input[name="q4.1"]:checked');
+    const q42 = document.querySelector('input[name="q4.2"]:checked');
+    if (!isNoEdu) {
+        if (q41) {
+            sum += parseInt(q41.value);
+        } else if (q42) {
+            sum += parseInt(q42.value);
+        }
+    }
     
     document.getElementById('score').textContent = sum;
     document.getElementById('total_score_input').value = sum;
@@ -512,8 +557,15 @@
         const eduRadio = document.querySelector(`input[name="edu"][value="${eduVal}"]`);
         if(eduRadio) eduRadio.checked = true;
     }
-    document.querySelectorAll('.q-radio').forEach(r => r.addEventListener('change', recalc));
-    document.querySelectorAll('input[name="edu"]').forEach(r => r.addEventListener('change', recalc));
+    
+    // ติดตั้ง Event Listener ให้กับทุก Radio Button ที่เกี่ยวข้องกับคะแนน
+    document.querySelectorAll('.q-radio, input[name="edu"]').forEach(r => {
+        r.addEventListener('change', () => {
+            recalc();
+            console.log("Score Updated:", document.getElementById('score').textContent);
+        });
+    });
+
     recalc();
   });
 </script>

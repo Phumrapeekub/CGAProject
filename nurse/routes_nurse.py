@@ -11,6 +11,11 @@ from utils.debug_logger import log_supabase_payload # Import Debug Logger
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
+# Inject user into all templates
+@nurse_bp.context_processor
+def inject_user():
+    return dict(user=session.get("full_name") or session.get("username"))
+
 # -------------------------
 # Auth guard
 # -------------------------
@@ -161,6 +166,7 @@ def _get_assess_data(conn, header_id):
             "address": p_row.get(addr_col) if addr_col else None,
             "phone": p_row.get("phone"),
             "age_year": p_row.get(age_col) if age_col else None,
+            "gender": p_row.get("gender"),
             "patient_id": p_id,
             "session_id": sess_id
         }
@@ -260,7 +266,7 @@ def dashboard():
     finally:
         cur.close()
         conn.close()
-    return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, user=session.get("username"), role="พยาบาล")
+    return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, user=session.get("full_name") or session.get("username"), role="พยาบาล")
 
 @nurse_bp.get("/api/kpis", endpoint="api_kpis")
 def api_kpis():
@@ -594,10 +600,31 @@ def assess_mmse(header_id: int):
     if not _require_nurse():
         return redirect(url_for('auth.login'))
     conn = get_db_connection()
+    cur = conn.cursor(dictionary=True, buffered=True)
     data = _get_assess_data(conn, header_id)
     answers = _get_answers(conn, header_id, 'mmse')
+    
+    # เช็คประวัติการประเมินล่าสุดเพื่อดูว่าเป็นเคสประเมินซ้ำภายใน 2 เดือนหรือไม่
+    is_repeat_2m = False
+    try:
+        cur.execute("""
+            SELECT h.created_at 
+            FROM cga_headers h
+            JOIN encounters e ON h.encounter_id = e.id
+            WHERE e.patient_id = %s AND h.id < %s AND h.status = 'completed'
+            ORDER BY h.created_at DESC LIMIT 1
+        """, (data.get('patient_id'), header_id))
+        last_h = cur.fetchone()
+        if last_h:
+            delta = datetime.now() - last_h['created_at']
+            if delta.days <= 60:
+                is_repeat_2m = True
+    except Exception as e:
+        print("Check repeat MMSE error:", e)
+
+    cur.close()
     conn.close()
-    return render_template('nurse/mmse.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=answers)
+    return render_template('nurse/mmse.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=answers, is_repeat_2m=is_repeat_2m)
 
 @nurse_bp.post('/assess/mmse/save/<int:header_id>', endpoint='assess_mmse_save')
 def assess_mmse_save(header_id: int):
@@ -607,25 +634,58 @@ def assess_mmse_save(header_id: int):
     cur = conn.cursor(dictionary=True, buffered=True)
     f = request.form
     try:
+        # ดึงระดับการศึกษาเพื่อใช้ในการข้ามข้อ
+        edu = f.get('edu', '3')
+        is_no_edu = (edu == '1')
+
         cur.execute("INSERT INTO assessment_mmse (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (header_id,))
         cur.execute("SELECT id FROM assessment_mmse WHERE cga_id = %s", (header_id,))
         mm_id = cur.fetchone()['id']
         cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id = %s", (mm_id,))
-        for k, v in f.items():
-            if k.startswith('q') and k != 'q':
-                try:
-                    cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, k[1:], int(v)))
-                except:
-                    continue
+        
+        total_score = 0
+        
+        # รายการข้อปกติ
+        normal_qs = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.1', '2.2', '2.3', '2.4', '2.5', '3', '5', '6', '7', '8', '11']
+        # รายการข้อที่ต้องข้ามถ้าอ่านเขียนไม่ได้ (1, 2, 3 คือโค้ดการศึกษา)
+        skip_if_no_edu = ['4.1', '4.2', '9', '10']
+
+        for q_no in normal_qs:
+            val = f.get(f'q{q_no}', '0')
+            score = int(val) if val.isdigit() else 0
+            cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, q_no, score))
+            total_score += score
+
+        if not is_no_edu:
+            # คำนวณ Section 4 (4.1 หรือ 4.2)
+            q41_val = f.get('q4.1')
+            q42_val = f.get('q4.2')
+            s4_score = 0
+            if q41_val is not None:
+                s4_score = int(q41_val)
+                cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, '4.1', s4_score))
+            elif q42_val is not None:
+                s4_score = int(q42_val)
+                cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, '4.2', s4_score))
+            total_score += s4_score
+
+            # ข้อ 9 และ 10
+            for q_no in ['9', '10']:
+                val = f.get(f'q{q_no}', '0')
+                score = int(val) if val.isdigit() else 0
+                cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, q_no, score))
+                total_score += score
         
         # บันทึกคะแนนรวม
-        ts = f.get('total_score', 0)
-        cur.execute("UPDATE assessment_mmse SET total_score=%s WHERE id=%s", (ts, mm_id))
+        cur.execute("UPDATE assessment_mmse SET total_score=%s WHERE id=%s", (total_score, mm_id))
         
         sess_id = _get_assess_data(conn, header_id).get('session_id')
         if sess_id and f.get('edu'):
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='mmse_edu'", (sess_id,))
             cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'mmse_edu', 0, %s)", (sess_id, f.get('edu')))
+            # เก็บเข้า basic ด้วยเพื่อให้ summary ดึงง่าย
+            cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='basic' AND answer_text LIKE 'education:%%'", (sess_id,))
+            cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'basic', 0, %s)", (sess_id, f"education:{f.get('edu')}"))
         
         conn.commit()
         if f.get('next_url'):
@@ -872,6 +932,9 @@ def assess_tgds_save(header_id: int):
             print("Sync Error:", e)
             flash(f"บันทึก Local สำเร็จ แต่เกิดข้อผิดพลาดในการ Sync: {e}", "warning")
             
+        # Ensure cga_records is updated before moving to summary
+        _sync_to_cga_records(header_id, conn, cur)
+            
         return redirect(url_for('nurse.assess_summary', header_id=header_id))
     except Exception as e:
         conn.rollback()
@@ -902,9 +965,28 @@ def assess_summary(header_id: int):
     try:
         cur.execute("SELECT q8_score FROM cga_records WHERE encounter_id=%s", (data.get('encounter_id'),))
         q8_row = cur.fetchone()
-        if q8_row: q8_val = q8_row['q8_score']
-    except:
-        pass
+        if q8_row and q8_row['q8_score'] > 0:
+            q8_val = q8_row['q8_score']
+        else:
+            # Fallback: คำนวณสดจาก assessment_answers
+            cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s AND (instrument='depression8Q' OR instrument='depression8Q_sub')", (data.get('session_id'),))
+            ans8q = cur.fetchall()
+            q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
+            q3_v = 'no'; q3_s = 'no'
+            for r in ans8q:
+                if r['instrument'] == 'depression8Q':
+                    try:
+                        q_idx = int(r['question_no'])
+                        if r['answer_text'] == 'yes':
+                            q8_val += q8_weights.get(q_idx, 0)
+                            if q_idx == 3: q3_v = 'yes'
+                    except: pass
+                elif r['instrument'] == 'depression8Q_sub':
+                    q3_s = r['answer_text']
+            if q3_v == 'yes' and q3_s == 'yes':
+                q8_val += 10
+    except Exception as e:
+        print("Summary 8Q Error:", e)
     
     cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='suicideRisk'", (data.get('session_id'),))
     sr_res = cur.fetchone()
@@ -922,8 +1004,32 @@ def assess_summary(header_id: int):
     cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (data.get('session_id'),))
     all_ans = cur.fetchall()
     
+    # ดึงข้อมูลทั้งหมด (Full Info) เพื่อแสดงในหน้าสรุปแบบละเอียด
+    full_info = {}
+    
+    # แปลง key จาก assessment_answers ให้เป็น Dictionary ที่เข้าถึงง่าย
+    for r in all_ans:
+        inst = r['instrument']
+        val = r['answer_text']
+        
+        if inst == 'basic' and ':' in val:
+            k, v = val.split(':', 1)
+            full_info[k] = v
+        elif inst == 'incontinence':
+            full_info['incontinence'] = val
+        elif inst == 'incontinence_detail':
+            full_info['incontinence_detail'] = val
+        elif inst == 'sleepProblems':
+            full_info['sleep_problem'] = val
+        elif inst == 'sleep_problem_detail':
+            full_info['sleep_problem_detail'] = val
+        elif inst == 'suicideRisk':
+            full_info['suicide_risk'] = val
+
+    # เพิ่มเพศเข้าไปใน full_info
+    full_info['gender'] = data.get('gender')
+
     dep_2q_txt = []
-    hb_txt = []
     
     for r in all_ans:
         inst = r['instrument']
@@ -932,15 +1038,27 @@ def assess_summary(header_id: int):
             # แปลง yes/no เป็น มี/ไม่มี
             disp_val = 'มี' if val == 'yes' else 'ไม่มี'
             dep_2q_txt.append(f"Q{r['question_no']}: {disp_val}")
-        elif inst == 'basic' and ':' in val:
-            k, v = val.split(':', 1)
-            if k in ['smoke', 'alcohol'] and v != 'no':
-                label = "สูบบุหรี่" if k == 'smoke' else "ดื่มสุรา"
-                hb_txt.append(f"{label} ({v})")
 
     dep_2q_display = ", ".join(dep_2q_txt) if dep_2q_txt else "-"
-    hb_display = ", ".join(hb_txt) if hb_txt else "ไม่มีพฤติกรรมเสี่ยง"
     
+    # คำนวณ BMI และแปลผล
+    try:
+        w = float(full_info.get('weight', 0))
+        h_cm = float(full_info.get('height', 0))
+        if w > 0 and h_cm > 0:
+            bmi = w / ((h_cm/100)**2)
+            full_info['bmi'] = f"{bmi:.1f}"
+            if bmi < 18.5: full_info['bmi_eval'] = 'ผอม'
+            elif bmi < 23.0: full_info['bmi_eval'] = 'ปกติ'
+            elif bmi < 25.0: full_info['bmi_eval'] = 'ท้วม'
+            else: full_info['bmi_eval'] = 'อ้วน'
+        else:
+            full_info['bmi'] = '-'
+            full_info['bmi_eval'] = '-'
+    except:
+        full_info['bmi'] = '-'
+        full_info['bmi_eval'] = '-'
+
     # ดึงรายละเอียดคำตอบรายข้อ (สำหรับ Modal ดูรายละเอียด)
     mmse_details = {}
     tgds_details = {}
@@ -952,7 +1070,8 @@ def assess_summary(header_id: int):
         WHERE mmse_id = (SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1)
     """, (header_id,))
     for r in cur.fetchall():
-        mmse_details[r['question_no']] = r['score']
+        # เก็บ question_no เป็น string เพื่อให้ matches กับ keys ใน template (เช่น '1.1', '4.1')
+        mmse_details[str(r['question_no'])] = r['score']
         
     # TGDS Items
     cur.execute("""
@@ -966,20 +1085,19 @@ def assess_summary(header_id: int):
     cur.execute("SELECT status FROM cga_headers WHERE id=%s", (header_id,))
     h_status = cur.fetchone()['status']
     
-    # ดึงระดับการศึกษา
-    cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (data.get('session_id'),))
-    b_ans = cur.fetchall()
-    edu = '3'
-    for r in b_ans:
-        if r['answer_text'].startswith('education:'):
-            edu = r['answer_text'].split(':')[1]
-            break
+    # ระดับการศึกษา
+    # ดึงค่าการศึกษาจาก assessment_answers (instrument='basic', key='education')
+    edu = '3' # default
+    cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic' AND answer_text LIKE 'education:%%'", (data.get('session_id'),))
+    edu_row = cur.fetchone()
+    if edu_row:
+        edu = edu_row['answer_text'].split(':')[1]
 
     mmse_total = 30
     mmse_threshold = 22 # default (สูงกว่าประถม cutoff ที่ 22 -> <=22 เสี่ยง)
     
     if edu == '1': # ไม่ได้เรียน/อ่านเขียนไม่ได้
-        mmse_total = 23 # คะแนนเต็มเปลี่ยนด้วยไหม? ตามโจทย์บอกแค่ cutoff แต่ปกติแบบทดสอบสำหรับคนอ่านเขียนไม่ได้คะแนนเต็มจะลดลง
+        mmse_total = 23
         mmse_threshold = 14
     elif edu == '2': # ประถม
         mmse_total = 30
@@ -995,7 +1113,7 @@ def assess_summary(header_id: int):
     
     cur.close()
     conn.close()
-    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), user={'name': session.get('full_name')}, mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, health_behavior=hb_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val)
+    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), user={'name': session.get('full_name')}, mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info)
 
 # Helper function to sync data to cga_records (Flat Table)
 def _sync_to_cga_records(header_id, conn, cur):
@@ -1033,12 +1151,18 @@ def _sync_to_cga_records(header_id, conn, cur):
         cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (sess_id,))
         answers = cur.fetchall()
         
+        # 8Q Score Calculation logic
+        q8_score_val = 0
+        q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
+        q3_val = 'no'
+        q3_sub_val = 'no'
+
         # Parse Answers
         data_map = {
             "education": "3", "caregiver_name": "", "caregiver_relation": "", "emergency_phone": "",
             "smoke": "no", "alcohol": "no", "incontinence": "normal", "sleep_problem": "normal",
             "suicide_risk": "none", "vision_left": "normal", "vision_right": "normal", 
-            "hearing_left": "normal", "hearing_right": "normal"
+            "hearing_left": "normal", "hearing_right": "normal", "gender": "male"
         }
         
         for r in answers:
@@ -1048,10 +1172,21 @@ def _sync_to_cga_records(header_id, conn, cur):
             if inst == 'basic' and ':' in txt:
                 k, v = txt.split(':', 1)
                 if k in data_map: data_map[k] = v
-                elif k == 'education': data_map['education'] = v
             elif inst == 'incontinence': data_map['incontinence'] = txt
             elif inst == 'sleepProblems': data_map['sleep_problem'] = txt
             elif inst == 'suicideRisk': data_map['suicide_risk'] = txt
+            elif inst == 'depression8Q':
+                try:
+                    q_idx = int(r['question_no'])
+                    if txt == 'yes':
+                        q8_score_val += q8_weights.get(q_idx, 0)
+                        if q_idx == 3: q3_val = 'yes'
+                except: pass
+            elif inst == 'depression8Q_sub':
+                q3_sub_val = txt
+
+        if q3_val == 'yes' and q3_sub_val == 'yes':
+            q8_score_val += 10
             # Vision Test (Left/Right) is now handled in 'basic' loop above
             # Hearing Test (Left/Right) also handled in 'basic' loop (hearing_left, hearing_right, hearing_left_detail, hearing_right_detail)
 
@@ -1145,6 +1280,7 @@ def _sync_to_cga_records(header_id, conn, cur):
             "full_name": base_info['full_name'],
             "assessed_date": str(base_info['assessment_date']),
             "age": base_info['age_year'],
+            "gender": data_map.get('gender', 'male'),
             "education": edu_text, # เก็บเป็นข้อความแทนรหัส
             "caregiver_name": data_map['caregiver_name'],
             "caregiver_relation": data_map['caregiver_relation'],
@@ -1162,7 +1298,8 @@ def _sync_to_cga_records(header_id, conn, cur):
             "vision_left": data_map['vision_left'], # ข้อความจาก Vision Test ตาซ้าย
             "vision_right": data_map['vision_right'], # ข้อความจาก Vision Test ตาขวา
             "hearing_left": final_hl, # ใช้ค่าที่คำนวณแล้ว (ปกติ / รายละเอียดผิดปกติ)
-            "hearing_right": final_hr # ใช้ค่าที่คำนวณแล้ว
+            "hearing_right": final_hr, # ใช้ค่าที่คำนวณแล้ว
+            "q8_score": q8_score_val
         }
 
         # 2. Local Insert/Update (Check if exists first)
@@ -1536,13 +1673,23 @@ def patients():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     search = request.args.get("search", "").strip()
+    
+    # 🟢 ปรับปรุง: ดึงจาก Local MySQL เป็นหลักเพื่อให้เห็นข้อมูลล่าสุดที่แก้ไขในเครื่อง
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+    rows = []
     try:
-        supabase = get_supabase_client()
-        query = supabase.table("patients").select("*")
+        query = "SELECT * FROM patients"
+        params = []
         if search:
-            query = query.or_(f"hn.ilike.%{search}%,gcn.ilike.%{search}%,full_name.ilike.%{search}%")
-        response = query.order("id", desc=True).execute()
-        rows = response.data
+            query += " WHERE hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s"
+            search_param = f"%{search}%"
+            params = [search_param, search_param, search_param]
+        
+        query += " ORDER BY id DESC"
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        
         for p in rows:
             if p.get('hn'):
                 clean_hn = str(p['hn']).upper().replace("HN", "").strip()
@@ -1551,8 +1698,11 @@ def patients():
             if p.get('gcn'):
                 p['gcn'] = str(p['gcn']).zfill(3)
     except Exception as e:
-        flash(f"Supabase Error: {e}", "danger")
-        rows = []
+        flash(f"Database Error: {e}", "danger")
+    finally:
+        cur.close()
+        conn.close()
+        
     return render_template("nurse/patients.html", patients=rows, search_val=search)
 
 @nurse_bp.get("/patient/history/<string:hn>", endpoint="patient_history")
@@ -1569,12 +1719,15 @@ def patient_history(hn: str):
             return redirect(url_for("nurse.patients"))
         
         query = """
-            SELECT h.id AS header_id, h.created_at, h.status, m.total_score AS mmse_score, t.total_score AS tgds_score 
+            SELECT h.id AS header_id, h.created_at, h.status, 
+                   MAX(m.total_score) AS mmse_score, 
+                   MAX(t.total_score) AS tgds_score 
             FROM cga_headers h 
             JOIN encounters e ON e.id = h.encounter_id 
             LEFT JOIN assessment_mmse m ON m.cga_id = h.id 
             LEFT JOIN assessment_tgds t ON t.cga_id = h.id 
             WHERE e.patient_id = %s 
+            GROUP BY h.id, h.created_at, h.status
             ORDER BY h.created_at DESC
         """
         cur.execute(query, (patient['id'],))
@@ -1612,6 +1765,12 @@ def patient_update(hn: str):
         sex_val = 'male' if f.get('gender')=='male' else ('female' if f.get('gender')=='female' else None)
         cur.execute("UPDATE patients SET full_name=%s, phone=%s, address=%s, gender=%s, birth_date=%s WHERE hn=%s",
                     (f.get('full_name'), f.get('phone'), f.get('address'), sex_val, f.get('birthdate') or None, hn))
+        
+        # 🟢 อัปเดตชื่อใน cga_records ด้วยเพื่อให้ในหน้ารายงานเปลี่ยนตาม
+        try:
+            cur.execute("UPDATE cga_records SET full_name=%s WHERE hn=%s", (f.get('full_name'), hn))
+        except: pass
+
         conn.commit()
         try:
             supabase = get_supabase_client()

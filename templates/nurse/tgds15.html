@@ -52,11 +52,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="incontinence" value="normal" class="hidden peer" checked>
-                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี (ปกติ)</div>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50 border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ไม่มี (ปกติ)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="incontinence" value="abnormal" class="hidden peer">
-                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
                     </label>
                 </div>
                 <!-- รายละเอียดการกลั้นปัสสาวะ -->
@@ -81,11 +81,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="sleepProblems" value="normal" class="hidden peer" checked>
-                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">ไม่มี (ปกติ)</div>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ไม่มี (ปกติ)</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="sleepProblems" value="abnormal" class="hidden peer">
-                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all text-slate-400 bg-slate-50 border-transparent font-medium">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
+                        <div class="py-4 border-2 rounded-2xl text-center peer-checked:border-rose-500 peer-checked:bg-rose-50 border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">มี - ส่งต่อแพทย์เพื่อตรวจประเมิน วินิจฉัย รักษา</div>
                     </label>
                 </div>
                 
@@ -106,19 +106,19 @@
         </div>
         <div class="p-8 space-y-6">
             {% for q in [
-                "1. ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่?",
-                "2. ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกเบื่อ ทำอะไรก็ไม่เพลิดเพลินหรือไม่?"
+                "ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่?",
+                "ใน 2 สัปดาห์ที่ผ่านมา ท่านรู้สึกเบื่อ ทำอะไรก็ไม่เพลิดเพลินหรือไม่?"
             ] %}
             <div class="space-y-3">
                 <div class="text-slate-700 leading-relaxed font-medium">{{ loop.index }}. {{ q }}</div>
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="depression2Q_q{{ loop.index }}" value="no" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 font-medium bg-slate-50 border-transparent">ไม่มี</div>
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ไม่มี</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="depression2Q_q{{ loop.index }}" value="yes" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all text-slate-400 font-medium bg-slate-50 border-transparent">มี</div>
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">มี</div>
                     </label>
                 </div>
             </div>
@@ -163,11 +163,11 @@
             <div class="grid grid-cols-2 gap-3 shrink-0">
               <label class="cursor-pointer">
                 <input type="radio" name="tgds15Answers_{{ loop.index }}" value="yes" class="hidden peer q-radio" onchange="calcTGDS()">
-                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent">ใช่</div>
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all border-slate-200 bg-white hover:border-blue-400 font-bold text-slate-700 shadow-sm">ใช่</div>
               </label>
               <label class="cursor-pointer">
                 <input type="radio" name="tgds15Answers_{{ loop.index }}" value="no" class="hidden peer q-radio" onchange="calcTGDS()">
-                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all text-slate-400 bg-slate-50 border-transparent">ไม่ใช่</div>
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all border-slate-200 bg-white hover:border-blue-400 font-bold text-slate-700 shadow-sm">ไม่ใช่</div>
               </label>
             </div>
         </div>
@@ -215,13 +215,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer group">
                         <input type="radio" name="depression8Q_{{ q_idx }}" value="no" class="hidden peer">
-                        <div class="py-4 border-2 border-slate-100 rounded-2xl text-center text-slate-400 font-bold bg-white transition-all peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 group-hover:border-emerald-200">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 hover:border-emerald-400 shadow-sm">
                             ไม่มี
                         </div>
                     </label>
                     <label class="cursor-pointer group">
                         <input type="radio" name="depression8Q_{{ q_idx }}" value="yes" class="hidden peer">
-                        <div class="py-4 border-2 border-slate-100 rounded-2xl text-center text-slate-400 font-bold bg-white transition-all peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 group-hover:border-rose-200">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 hover:border-rose-400 shadow-sm">
                             มี
                         </div>
                     </label>

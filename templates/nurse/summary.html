@@ -2,178 +2,304 @@
 {% block title %}สรุปผลการประเมิน CGA{% endblock %}
 {% block content %}
 
-<div class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-8">
 
-  <!-- Header -->
-  <div class="rounded-3xl overflow-hidden bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-400 text-white py-6 px-8 shadow-xl">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div class="space-y-1">
-        <div class="text-sm opacity-90 font-light">ผู้สูงอายุ</div>
-        <div class="text-3xl font-bold">{{ patient.get('full_name', '-') }}</div>
-        <div class="flex items-center gap-4 mt-3 text-sm font-bold bg-black/10 backdrop-blur-md px-4 py-2 rounded-2xl w-fit border border-white/10">
-          <span class="text-white">{{ hn }}</span>
-          <span class="w-px h-4 bg-white/20"></span>
-          <span class="text-white/80 uppercase tracking-widest text-[10px]">GCN {{ gcn }}</span>
+  <!-- Header: ข้อมูลผู้ป่วย -->
+  <div class="rounded-[32px] bg-gradient-to-r from-slate-800 to-slate-900 text-white p-8 shadow-2xl relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <div class="flex items-center gap-3">
+            <span class="px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10">HN: {{ hn }}</span>
+            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs font-bold uppercase tracking-widest border border-emerald-500/30">GCN: {{ gcn }}</span>
         </div>
+        <h1 class="text-4xl font-black tracking-tight">{{ patient.get('full_name', '-') }}</h1>
+        <p class="text-slate-400 font-medium">อายุ {{ full_info.get('age', '-') }} ปี | วันที่ประเมิน: {{ date }}</p>
       </div>
-      <div class="text-right space-y-2">
-        <div class="text-sm opacity-90">วันที่ประเมิน</div>
-        <div class="text-xl font-semibold">{{ date }}</div>
-        <div class="text-sm opacity-80">ประเมินโดย: {{ user.get('name', '-') }}</div>
+      <div class="text-right">
+        <div class="text-sm text-slate-400 mb-1">ผู้ประเมิน</div>
+        <div class="font-bold text-lg">{{ user.get('name', '-') }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- MMSE -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow relative group">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <h3 class="font-bold text-slate-800 text-lg">สมรรถภาพสมอง</h3>
-          <p class="text-xs text-slate-500">MMSE-Thai 2002</p>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold">M</div>
-      </div>
-      <div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-5xl font-bold text-rose-500">{{ mmse_score }}</span>
-          <span class="text-slate-400 font-medium">/ {{ mmse_total }}</span>
-        </div>
-        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium
-                    {{ 'bg-emerald-100 text-emerald-700' if mmse_risk=='normal' else 'bg-rose-100 text-rose-700' }}">
-          {{ 'ปกติ' if mmse_risk=='normal' else 'เสี่ยงภาวะสมองเสื่อม' }}
-        </div>
-        <div class="mt-2 text-xs text-slate-400">
-            (เกณฑ์ปกติ: > {{ mmse_threshold }} คะแนน)
-        </div>
-      </div>
-    </div>
-
-    <!-- TGDS -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow relative group">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <h3 class="font-bold text-slate-800 text-lg">ภาวะซึมเศร้า</h3>
-          <p class="text-xs text-slate-500">TGDS-15</p>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">T</div>
-      </div>
-      <div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-5xl font-bold text-emerald-500">{{ tgds_score }}</span>
-          <span class="text-slate-400 font-medium">/ 15</span>
-        </div>
-        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium
-                    {{ 'bg-emerald-100 text-emerald-700' if tgds_risk=='normal' else 'bg-rose-100 text-rose-700' }}">
-          {{ tgds_risk_label }}
-        </div>
-        <div class="mt-2 text-xs text-slate-400">
-            (เกณฑ์ปกติ: < 7 คะแนน)
-        </div>
-      </div>
-    </div>
-
-    <!-- 8Q Score -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col justify-between hover:shadow-xl transition-shadow">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <h3 class="font-bold text-slate-800 text-lg">ความเสี่ยงฆ่าตัวตาย</h3>
-          <p class="text-xs text-slate-500">8Q Questionnaire</p>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">8Q</div>
-      </div>
-      <div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-5xl font-bold {{ 'text-emerald-500' if q8_score == 0 else ('text-orange-500' if q8_score < 9 else 'text-red-600') }}">{{ q8_score }}</span>
-          <span class="text-slate-400 font-medium">คะแนน</span>
-        </div>
-        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium
-                    {{ 'bg-emerald-100 text-emerald-700' if q8_score == 0 else ('bg-orange-100 text-orange-700' if q8_score < 9 else 'bg-red-100 text-red-700') }}">
-          {% if q8_score == 0 %}ปกติ (ไม่มีความเสี่ยง)
-          {% elif q8_score < 9 %}เสี่ยงปานกลาง
-          {% else %}เสี่ยงรุนแรง{% endif %}
-        </div>
-        <div class="mt-2 text-xs text-slate-400">
-            (≥ 17 รุนแรงมาก / 9-16 รุนแรง / 1-8 ปานกลาง)
-        </div>
-      </div>
-    </div>
-
-    <!-- Other Risks -->
-    <div class="rounded-3xl bg-white shadow-lg border border-slate-100 p-6 flex flex-col gap-4 hover:shadow-xl transition-shadow">
-      <h3 class="font-bold text-slate-800 text-lg mb-2">ความเสี่ยงอื่นๆ</h3>
-      
-      <!-- Depression 2Q -->
-      <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-        <span class="text-sm font-medium text-slate-600">คัดกรองซึมเศร้า 2Q</span>
-        <span class="text-sm font-bold text-slate-800 text-right">{{ dep_2q|default('-') }}</span>
-      </div>
-
-      <!-- Health Behavior -->
-      <div class="flex items-start justify-between p-3 rounded-2xl bg-slate-50">
-        <span class="text-sm font-medium text-slate-600 whitespace-nowrap">พฤติกรรมสุขภาพ</span>
-        <span class="text-sm font-bold text-slate-800 text-right break-words max-w-[60%]">{{ health_behavior }}</span>
-      </div>
-
-      <!-- Suicide Risk -->
-      <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-        <span class="text-sm font-medium text-slate-600">เสี่ยงฆ่าตัวตาย</span>
-        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if suicide_risk=='none' else 'bg-red-100 text-red-700' }}">
-          {{ 'ไม่มี' if suicide_risk=='none' else 'มี' }}
-        </span>
-      </div>
-
-      <!-- Incontinence -->
-      <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-        <span class="text-sm font-medium text-slate-600">กลั้นปัสสาวะ</span>
-        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if incontinence=='normal' else 'bg-amber-100 text-amber-700' }}">
-          {{ 'ปกติ' if incontinence=='normal' else 'ผิดปกติ' }}
-        </span>
-      </div>
-
-      <!-- Sleep -->
-      <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-        <span class="text-sm font-medium text-slate-600">การนอนหลับ</span>
-        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if sleep=='normal' else 'bg-amber-100 text-amber-700' }}">
-          {{ 'ปกติ' if sleep=='normal' else 'ผิดปกติ' }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-slate-100">
-    <a href="{{ url_for('nurse.assess_tgds', header_id=header_id) }}" 
-       class="px-6 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition">
-       < แก้ไขข้อมูล
-    </a>
+  <!-- Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     
-    {% if status == 'sent_to_doctor' %}
-    <button type="button" disabled
-       class="px-8 py-3 rounded-2xl bg-emerald-100 text-emerald-600 font-bold flex items-center gap-2 cursor-not-allowed">
-       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-       ส่งข้อมูลให้แพทย์แล้ว
-    </button>
-    {% else %}
-    <button type="button" onclick="openSendModal()"
-       class="px-8 py-3 rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition transform flex items-center gap-2">
-       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-       ส่งต่อข้อมูลให้แพทย์
-    </button>
-    {% endif %}
-    
-    <form action="{{ url_for('nurse.assess_finalize', header_id=header_id) }}" method="POST" class="inline">
-        <button type="submit" 
-           class="px-8 py-3 rounded-2xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:-translate-y-0.5 transition transform">
-           เสร็จสิ้น
-        </button>
-    </form>
-  </div>
+    <!-- Left Column: ข้อมูลพื้นฐาน & สุขภาพ (2/3 width on large) -->
+    <div class="lg:col-span-2 space-y-8">
+        
+        <!-- 1. ข้อมูลทั่วไป -->
+        <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                ข้อมูลทั่วไป
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                    <p class="text-xs text-slate-400 font-bold uppercase">ที่อยู่ปัจจุบัน</p>
+                    <p class="text-slate-700 font-medium">
+                        {{ full_info.get('house_no', '-') }} หมู่ {{ full_info.get('moo', '-') }} 
+                        ต.{{ full_info.get('subdistrict', '-') }} อ.{{ full_info.get('district', '-') }} 
+                        จ.{{ full_info.get('province', '-') }} {{ full_info.get('postal_code', '') }}
+                    </p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-xs text-slate-400 font-bold uppercase">เพศ / การอยู่อาศัย</p>
+                    <p class="text-slate-700 font-medium">
+                        {{ {'male':'ชาย','female':'หญิง'}.get(full_info.get('gender'), '-') }} / 
+                        {{ {'alone':'อยู่คนเดียว','caregiver':'มีผู้ดูแล'}.get(full_info.get('live'), '-') }}
+                    </p>
+                </div>
+                <div class="space-y-1 md:col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-2">ผู้ดูแล (Caregiver)</p>
+                    <div class="flex flex-wrap gap-6">
+                        <div><span class="text-slate-500 text-sm">ชื่อ:</span> <span class="font-bold text-slate-800">{{ full_info.get('caregiver_name', '-') }}</span></div>
+                        <div><span class="text-slate-500 text-sm">ความสัมพันธ์:</span> <span class="font-bold text-slate-800">{{ full_info.get('caregiver_relation', '-') }}</span></div>
+                        <div><span class="text-slate-500 text-sm">เบอร์ฉุกเฉิน:</span> <span class="font-bold text-slate-800">{{ full_info.get('emergency_phone', '-') }}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- 2. สุขภาพและพฤติกรรม -->
+        <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                สุขภาพและพฤติกรรม
+            </h3>
+            <div class="space-y-6">
+                <!-- Body Metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 text-center">
+                        <p class="text-xs text-slate-400 uppercase">น้ำหนัก</p>
+                        <p class="text-xl font-black text-slate-800">{{ full_info.get('weight', '-') }} <span class="text-xs font-normal text-slate-400">กก.</span></p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 text-center">
+                        <p class="text-xs text-slate-400 uppercase">ส่วนสูง</p>
+                        <p class="text-xl font-black text-slate-800">{{ full_info.get('height', '-') }} <span class="text-xs font-normal text-slate-400">ซม.</span></p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 text-center">
+                        <p class="text-xs text-slate-400 uppercase">รอบเอว</p>
+                        <p class="text-xl font-black text-slate-800">{{ full_info.get('waist', '-') }} <span class="text-xs font-normal text-slate-400">ซม.</span></p>
+                    </div>
+                    <div class="p-4 rounded-2xl {{ 'bg-emerald-50 text-emerald-700' if full_info.get('bmi_eval')=='ปกติ' else ('bg-orange-50 text-orange-700' if full_info.get('bmi_eval') in ['ท้วม','อ้วน'] else 'bg-slate-50 text-slate-800') }} text-center">
+                        <p class="text-xs opacity-60 uppercase">BMI</p>
+                        <p class="text-xl font-black">{{ full_info.get('bmi', '-') }}</p>
+                        <p class="text-[10px] font-bold opacity-80">{{ full_info.get('bmi_eval', '-') }}</p>
+                    </div>
+                </div>
+
+                <!-- Habits & Disease -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                    <div class="space-y-3">
+                        <p class="text-xs text-slate-400 font-bold uppercase">พฤติกรรมเสี่ยง</p>
+                        <ul class="space-y-2 text-sm text-slate-700">
+                            <li class="flex justify-between border-b border-slate-50 pb-1">
+                                <span>บุหรี่:</span> 
+                                <span class="font-bold">{{ {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(full_info.get('smoke'), '-') }}</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-50 pb-1">
+                                <span>แอลกอฮอล์:</span> 
+                                <span class="font-bold">{{ {'none':'ไม่ดื่ม','social':'บางครั้ง','daily':'ทุกวัน'}.get(full_info.get('alcohol'), '-') }} 
+                                {{ ('(' + full_info.get('alcohol_daily_amount') + ' แก้ว/วัน)') if full_info.get('alcohol')=='daily' else '' }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-3">
+                        <p class="text-xs text-slate-400 font-bold uppercase">โรคประจำตัว</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% if full_info.get('chronicDiseases') %}
+                                {% for d in full_info.get('chronicDiseases').split(',') %}
+                                    <span class="px-3 py-1 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold border border-rose-100">
+                                        {{ {'diabetes':'เบาหวาน','kidney':'โรคไต','hypertension':'ความดันสูง','heart':'โรคหัวใจ','cancer':'มะเร็ง'}.get(d, d) }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-slate-400 text-sm">- ไม่มี -</span>
+                            {% endif %}
+                            {% if full_info.get('otherDisease') %}
+                                <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200">{{ full_info.get('otherDisease') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. การรับรู้และ ADL -->
+        <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                การรับรู้และการขับถ่าย
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Vision -->
+                <div class="space-y-2">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">การมองเห็น</p>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-sm text-slate-500">ตาซ้าย:</span>
+                        <span class="font-bold text-slate-800">{{ full_info.get('vision_left') or '-' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-sm text-slate-500">ตาขวา:</span>
+                        <span class="font-bold text-slate-800">{{ full_info.get('vision_right') or '-' }}</span>
+                    </div>
+                </div>
+                <!-- Hearing -->
+                <div class="space-y-2">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">การได้ยิน</p>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-sm text-slate-500">หูซ้าย:</span>
+                        <span class="font-bold {{ 'text-rose-600' if full_info.get('hearing_left')=='abnormal' else 'text-emerald-600' }}">
+                            {{ full_info.get('hearing_left_detail') if full_info.get('hearing_left')=='abnormal' else 'ปกติ' }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-sm text-slate-500">หูขวา:</span>
+                        <span class="font-bold {{ 'text-rose-600' if full_info.get('hearing_right')=='abnormal' else 'text-emerald-600' }}">
+                            {{ full_info.get('hearing_right_detail') if full_info.get('hearing_right')=='abnormal' else 'ปกติ' }}
+                        </span>
+                    </div>
+                </div>
+                <!-- Incontinence & Sleep -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                    <div class="p-4 rounded-2xl border {{ 'bg-rose-50 border-rose-100' if incontinence=='abnormal' else 'bg-emerald-50 border-emerald-100' }}">
+                        <p class="text-xs font-bold uppercase mb-1 {{ 'text-rose-700' if incontinence=='abnormal' else 'text-emerald-700' }}">การกลั้นปัสสาวะ</p>
+                        <p class="font-bold text-slate-800">
+                            {{ full_info.get('incontinence_detail') if incontinence=='abnormal' else 'ปกติ' }}
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-2xl border {{ 'bg-amber-50 border-amber-100' if sleep=='abnormal' else 'bg-emerald-50 border-emerald-100' }}">
+                        <p class="text-xs font-bold uppercase mb-1 {{ 'text-amber-700' if sleep=='abnormal' else 'text-emerald-700' }}">การนอนหลับ</p>
+                        <p class="font-bold text-slate-800">
+                            {{ full_info.get('sleep_problem_detail') if sleep=='abnormal' else 'ปกติ' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column: ผลการประเมิน (Sticky) -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="lg:sticky lg:top-24 space-y-6">
+            <h3 class="text-lg font-black text-slate-400 uppercase tracking-widest px-1">ผลการประเมิน</h3>
+            
+            <!-- MMSE Card -->
+            <div class="bg-white rounded-[24px] p-6 shadow-md border border-slate-100 relative overflow-hidden group hover:shadow-xl transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <p class="text-xs text-slate-400 uppercase font-bold mb-2">สมรรถภาพสมอง (MMSE)</p>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black text-indigo-600">{{ mmse_score }}</span>
+                        <span class="text-sm text-slate-400 font-bold mb-2">/ {{ mmse_total }}</span>
+                    </div>
+                    
+                    <!-- Score Breakdown Hint -->
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-3 flex flex-col gap-1">
+                        <div class="flex justify-between border-b border-slate-50 pb-1">
+                            <span>1. เวลา:</span> <span class="text-slate-600">{{ (mmse_details.get('1.1',0) + mmse_details.get('1.2',0) + mmse_details.get('1.3',0) + mmse_details.get('1.4',0) + mmse_details.get('1.5',0)) }} / 5</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1">
+                            <span>2. สถานที่:</span> <span class="text-slate-600">{{ (mmse_details.get('2.1',0) + mmse_details.get('2.2',0) + mmse_details.get('2.3',0) + mmse_details.get('2.4',0) + mmse_details.get('2.5',0)) }} / 5</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1">
+                            <span>3. บันทึก:</span> <span class="text-slate-600">{{ mmse_details.get('3',0) }} / 3</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1">
+                            <span>4. สมาธิ:</span> <span class="text-slate-600">{{ mmse_details.get('4.1') if mmse_details.get('4.1') is not none else mmse_details.get('4.2', 0) }} / 5</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1">
+                            <span>5. ระลึก:</span> <span class="text-slate-600">{{ mmse_details.get('5',0) }} / 3</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>6-11. อื่นๆ:</span> <span class="text-slate-600">{{ (mmse_details.get('6',0) + mmse_details.get('7',0) + mmse_details.get('8',0) + mmse_details.get('9',0) + mmse_details.get('10',0) + mmse_details.get('11',0)) }} / 9</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if mmse_risk=='normal' else 'bg-rose-100 text-rose-700' }}">
+                            {{ 'ปกติ' if mmse_risk=='normal' else 'เสี่ยงสมองเสื่อม' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TGDS Card -->
+            <div class="bg-white rounded-[24px] p-6 shadow-md border border-slate-100 relative overflow-hidden group hover:shadow-xl transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <p class="text-xs text-slate-400 uppercase font-bold mb-2">ภาวะซึมเศร้า (TGDS-15)</p>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black text-emerald-600">{{ tgds_score }}</span>
+                        <span class="text-sm text-slate-400 font-bold mb-2">/ 15</span>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if tgds_score < 7 else 'bg-rose-100 text-rose-700' }}">
+                            {{ 'ปกติ' if tgds_score < 7 else 'มีภาวะซึมเศร้า' }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-500 pt-2 border-t border-slate-50">
+                        <span class="font-bold">2Q Result:</span> {{ dep_2q|default('-') }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8Q Card -->
+            <div class="bg-white rounded-[24px] p-6 shadow-md border border-slate-100 relative overflow-hidden group hover:shadow-xl transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <p class="text-xs text-slate-400 uppercase font-bold mb-2">ความเสี่ยงฆ่าตัวตาย (8Q)</p>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black text-rose-600">{{ q8_score }}</span>
+                        <span class="text-sm text-slate-400 font-bold mb-2">คะแนน</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1 rounded-lg text-sm font-bold {{ 'bg-emerald-100 text-emerald-700' if q8_score == 0 else ('bg-orange-100 text-orange-700' if q8_score < 9 else 'bg-red-100 text-red-700') }}">
+                            {% if q8_score == 0 %}ปกติ (ไม่เสี่ยง){% elif q8_score < 9 %}เสี่ยงปานกลาง{% else %}เสี่ยงรุนแรง{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-6 border-t border-slate-200 space-y-3">
+                <a href="{{ url_for('nurse.assess_tgds', header_id=header_id) }}" 
+                   class="block w-full py-3 bg-white border-2 border-slate-200 text-slate-600 font-bold rounded-2xl text-center hover:bg-slate-50 transition">
+                   < แก้ไขข้อมูล
+                </a>
+                
+                {% if status == 'sent_to_doctor' %}
+                <button disabled class="block w-full py-4 bg-emerald-100 text-emerald-700 font-bold rounded-2xl text-center opacity-70 cursor-not-allowed">
+                   ส่งข้อมูลแล้ว
+                </button>
+                {% else %}
+                <button type="button" onclick="openSendModal()"
+                   class="block w-full py-4 bg-indigo-600 text-white font-black rounded-2xl text-center shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition transform">
+                   ส่งต่อข้อมูลให้แพทย์
+                </button>
+                <form action="{{ url_for('nurse.assess_finalize', header_id=header_id) }}" method="POST">
+                    <button type="submit" class="block w-full py-3 bg-slate-800 text-white font-bold rounded-2xl text-center hover:bg-slate-900 transition">
+                       บันทึกและเสร็จสิ้น
+                    </button>
+                </form>
+                {% endif %}
+                
+                <!-- Back Button -->
+                <a href="{{ url_for('nurse.dashboard') }}" 
+                   class="block w-full py-3 mt-2 text-slate-400 font-bold rounded-2xl text-center hover:text-slate-600 hover:bg-slate-50 transition">
+                   กลับหน้าหลัก
+                </a>
+            </div>
+        </div>
+    </div>
+
+  </div>
 </div>
 
-<!-- Send to Doctor Modal -->
+<!-- Send Modal -->
 <div id="sendModal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
@@ -217,175 +343,7 @@
 </div>
 
 <script>
-
-    function openSendModal() {
-
-        document.getElementById('sendModal').classList.remove('hidden');
-
-    }
-
-    function closeSendModal() {
-
-        document.getElementById('sendModal').classList.add('hidden');
-
-    }
-
-
-
-    const mmse_data = {{ mmse_details|tojson|safe if mmse_details else '{}' }};
-
-    const tgds_data = {{ tgds_details|tojson|safe if tgds_details else '{}' }};
-
-
-
-    function openDetailModal(type) {
-
-        const modal = document.getElementById('detailModal');
-
-        const title = document.getElementById('detailTitle');
-
-        const content = document.getElementById('detailContent');
-
-        
-
-        modal.classList.remove('hidden');
-
-        content.innerHTML = '';
-
-
-
-        if(type === 'mmse') {
-
-            title.textContent = 'รายละเอียดคะแนน MMSE';
-
-            if(Object.keys(mmse_data).length === 0) {
-
-                content.innerHTML = '<p class="text-center text-slate-400">ไม่พบข้อมูล</p>';
-
-            } else {
-
-                let html = '<div class="grid grid-cols-1 gap-2 text-sm">';
-
-                // MMSE Items Dictionary (Simplified)
-
-                const mmse_labels = {
-
-                    '1': 'วันที่', '2': 'ฤดู', '3': 'เดือน', '4': 'พ.ศ.', '5': 'วัน',
-
-                    '6': 'ประเทศ', '7': 'จังหวัด', '8': 'อำเภอ', '9': 'หมู่บ้าน', '10': 'สถานที่',
-
-                    '11': 'จำคำ 1', '12': 'จำคำ 2', '13': 'จำคำ 3',
-
-                    '14': 'ลบเลข 1', '15': 'ลบเลข 2', '16': 'ลบเลข 3', '17': 'ลบเลข 4', '18': 'ลบเลข 5',
-
-                    '19': 'ทวนคำ 1', '20': 'ทวนคำ 2', '21': 'ทวนคำ 3',
-
-                    '22': 'เรียกชื่อของ', '23': 'เรียกชื่อของ', '24': 'พูดตาม', '25': 'ทำตามคำสั่ง', '26': 'อ่านทำตาม', '27': 'เขียนประโยค', '28': 'วาดภาพ'
-
-                };
-
-                Object.keys(mmse_data).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(k => {
-
-                    const score = mmse_data[k];
-
-                    const label = mmse_labels[k] || `ข้อที่ ${k}`;
-
-                    html += `<div class="flex justify-between p-2 rounded bg-slate-50 border border-slate-100">
-
-                                <span class="text-slate-600">${label}</span>
-
-                                <span class="font-bold ${score>0 ? 'text-emerald-600':'text-rose-600'}">${score}</span>
-
-                             </div>`;
-
-                });
-
-                html += '</div>';
-
-                content.innerHTML = html;
-
-            }
-
-        } else if(type === 'tgds') {
-
-            title.textContent = 'รายละเอียดคำตอบ TGDS-15';
-
-            if(Object.keys(tgds_data).length === 0) {
-
-                content.innerHTML = '<p class="text-center text-slate-400">ไม่พบข้อมูล</p>';
-
-            } else {
-
-                let html = '<div class="grid grid-cols-1 gap-2 text-sm">';
-
-                Object.keys(tgds_data).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(k => {
-
-                    const ans = tgds_data[k];
-
-                    html += `<div class="flex justify-between p-2 rounded bg-slate-50 border border-slate-100">
-
-                                <span class="text-slate-600">ข้อที่ ${k}</span>
-
-                                <span class="font-bold ${ans=='ใช่' ? 'text-indigo-600':'text-slate-600'}">${ans}</span>
-
-                             </div>`;
-
-                });
-
-                html += '</div>';
-
-                content.innerHTML = html;
-
-            }
-
-        }
-
-    }
-
-
-
-    function closeDetailModal() {
-
-        document.getElementById('detailModal').classList.add('hidden');
-
-    }
-
+    function openSendModal() { document.getElementById('sendModal').classList.remove('hidden'); }
+    function closeSendModal() { document.getElementById('sendModal').classList.add('hidden'); }
 </script>
-
-
-
-<!-- Details Modal -->
-
-<div id="detailModal" class="fixed inset-0 z-[60] hidden">
-
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDetailModal()"></div>
-
-    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-
-        <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all pointer-events-auto flex flex-col max-h-[80vh]">
-
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-
-                <h3 id="detailTitle" class="text-lg font-bold text-slate-800">รายละเอียด</h3>
-
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600">
-
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-
-                </button>
-
-            </div>
-
-            <div id="detailContent" class="p-6 overflow-y-auto">
-
-                <!-- Content injected via JS -->
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
 {% endblock %}
