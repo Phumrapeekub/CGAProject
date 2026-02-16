@@ -1,89 +1,151 @@
+"""
+================================================================================
+HMM PREDICTOR (SMART VERSION) - Supporting 3 or 9 features
+================================================================================
+"""
+
 import os
 import numpy as np
 import joblib
-import sklearn # Ensure sklearn is available
+import json
+import traceback
+from typing import Optional, Dict, List, Any
+
 
 class HmmPredictor:
-    def __init__(self):
+    def __init__(self, supabase_client=None):
+        self.supabase = supabase_client
         self.base_path = os.path.dirname(os.path.abspath(__file__))
-        self.model_path = os.path.normpath(os.path.join(self.base_path, 'models', 'hmm_best_model.joblib'))
-        self.scaler_path = os.path.normpath(os.path.join(self.base_path, 'models', 'hmm_scaler.joblib'))
+        self.model_path = os.path.join(self.base_path, 'models', 'hmm_best_model.joblib')
+        self.scaler_path = os.path.join(self.base_path, 'models', 'hmm_scaler.joblib')
         
         self.model = None
         self.scaler = None
-        print(f"DEBUG: AI Path initialized. Model: {self.model_path}")
+        self.n_features_expected = 3
+        self._load_model()
 
-    def _load_model(self):
+    def set_supabase(self, supabase_client):
+        self.supabase = supabase_client
+
+    def _load_model(self) -> bool:
         if self.model is not None:
             return True
         try:
             if os.path.exists(self.model_path) and os.path.exists(self.scaler_path):
                 self.model = joblib.load(self.model_path)
                 self.scaler = joblib.load(self.scaler_path)
-                print(f"✅ HMM Model and Scaler loaded successfully from {self.base_path}")
+                # Detect expected features from scaler
+                self.n_features_expected = getattr(self.scaler, 'n_features_in_', 3)
+                print(f"✅ HMM Model loaded (Expected features: {self.n_features_expected})")
                 return True
-            else:
-                msg = f"❌ HMM Model or Scaler file not found. Checked: {self.model_path}"
-                print(msg)
-                return False
+            return False
         except Exception as e:
-            print(f"❌ Error loading HMM model: {e}")
+            print(f"❌ Error loading model: {e}")
             return False
 
-    def predict(self, patient_data):
-        if not self._load_model():
+    def _compute_features_v9(self, mmse_scores: List[int]) -> List[float]:
+        """Calculates 9 features from MMSE sequence for the V9 model."""
+        scores = np.array(mmse_scores, dtype=float)
+        n = len(scores)
+        slope = 0.0
+        if n > 1:
+            try:
+                slope = float(np.polyfit(np.arange(n), scores, 1)[0])
+            except: pass
+        
+        return [
+            float(np.mean(scores)), 
+            float(np.std(scores)) if n > 1 else 0.0,
+            float(np.min(scores)), float(np.max(scores)),
+            slope, float(scores[0]), float(scores[-1]),
+            float(scores[-1] - scores[0]), float(n)
+        ]
+
+    def get_patient_mmse_history(self, patient_id: int = None, hn: str = None) -> Dict[str, Any]:
+        if not self.supabase:
+            return {"error": "Supabase not connected", "mmse_scores": [], "n_visits": 0}
+        try:
+            query = self.supabase.table('cga_records').select('patient_id, hn, mmse_score, tgds_score, assessed_date, age')
+            if patient_id: query = query.eq('patient_id', patient_id)
+            elif hn: query = query.eq('hn', hn)
+            else: return {"error": "Missing ID", "mmse_scores": [], "n_visits": 0}
+            
+            response = query.order('assessed_date', desc=False).execute()
+            valid_records = [r for r in (response.data or []) if r.get('mmse_score') is not None]
+            
+            if not valid_records:
+                return {"error": "No MMSE data", "mmse_scores": [], "n_visits": 0}
+            
+            return {
+                'patient_id': valid_records[0].get('patient_id'),
+                'hn': valid_records[0].get('hn'),
+                'mmse_scores': [r['mmse_score'] for r in valid_records],
+                'tgds_scores': [r.get('tgds_score') for r in valid_records],
+                'n_visits': len(valid_records),
+                'age': valid_records[-1].get('age'),
+                'last_tgds': valid_records[-1].get('tgds_score')
+            }
+        except Exception as e:
+            print(f"❌ DB Error: {e}")
+            return {"error": str(e), "mmse_scores": [], "n_visits": 0}
+
+    def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        if not self.model and not self._load_model():
             return {"error": "Model not loaded"}
 
         try:
-            # Preparing 9 features (Example mapping, should match training order)
-            # 1. Age
-            # 2. MMSE Score
-            # 3. TGDS Score
-            # 4. Incontinence (Binary)
-            # 5. Sleep Problem (Binary)
-            # 6. Hearing Problem (Binary)
-            # 7. Vision Problem (Binary)
-            # 8. Suicide Risk (Binary)
-            # 9. BMI or Chronic Count (Using 0 as placeholder if missing)
+            mmse_scores = []
+            history = {}
             
-            def to_bin(val):
-                v = str(val or "").lower()
-                if v in ['yes', 'มี', 'true', '1', 'abnormal', 'ผิดปกติ']: return 1
-                return 0
+            # 1. Get History if ID is provided
+            if 'patient_id' in patient_data or 'hn' in patient_data:
+                history = self.get_patient_mmse_history(patient_id=patient_data.get('patient_id'), hn=patient_data.get('hn'))
+                mmse_scores = history.get('mmse_scores', [])
+            
+            # 2. Fallback to direct scores
+            if not mmse_scores:
+                mmse_scores = patient_data.get('mmse_scores', [])
+                if isinstance(mmse_scores, str): mmse_scores = json.loads(mmse_scores)
+                if not mmse_scores and 'mmse_score' in patient_data:
+                    mmse_scores = [patient_data['mmse_score']]
 
-            features = [
-                float(patient_data.get('age') or 60),
-                float(patient_data.get('mmse_score') or 0),
-                float(patient_data.get('tgds_score') or 0),
-                to_bin(patient_data.get('incontinence')),
-                to_bin(patient_data.get('sleep_problem')),
-                to_bin(patient_data.get('hearing_left')),
-                to_bin(patient_data.get('vision_left')),
-                to_bin(patient_data.get('suicide_risk')),
-                float(patient_data.get('chronic_count') or 0)
-            ]
+            if not mmse_scores:
+                return {"error": "ข้อมูลไม่ครบถ้วน", "label": "รอการวิเคราะห์", "risk_score": 0}
 
-            # Scale and Predict
-            features_scaled = self.scaler.transform([features])
-            prediction = self.model.predict(features_scaled)
+            # 3. Prepare Feature Matrix X based on Model Type
+            if self.n_features_expected == 9:
+                # Sequence statistics model
+                features = self._compute_features_v9(mmse_scores)
+                X = [features]
+            else:
+                # Point-in-time model [age, mmse, chronic]
+                age = float(patient_data.get('age') or history.get('age') or 60)
+                chronic = float(patient_data.get('chronic_count') or 0)
+                X = [[age, float(s), chronic] for s in mmse_scores]
+
+            # 4. Predict
+            X_scaled = self.scaler.transform(X)
+            probs_seq = self.model.predict_proba(X_scaled)
+            probs = probs_seq[-1] # Take latest state probability
             
-            # Probability (If model supports it)
-            prob = 0
-            if hasattr(self.model, "predict_proba"):
-                prob = self.model.predict_proba(features_scaled)[0][prediction[0]]
-            
-            classes = ['Non-Dementia', 'Dementia']
-            result = classes[prediction[0]]
+            prob_dementia = probs[1]
+            prediction = 1 if prob_dementia >= 0.5 else 0
             
             return {
-                "result": result,
-                "label": "ปกติ" if result == 'Non-Dementia' else "เสี่ยงสมองเสื่อม",
-                "risk_score": float(prob * 100) if prob > 0 else (90.0 if result == 'Dementia' else 10.0),
-                "confidence": round(float(prob * 100), 2) if prob > 0 else None
+                "result": "Dementia" if prediction == 1 else "Non-Dementia",
+                "label": "เสี่ยงสมองเสื่อม" if prediction == 1 else "ปกติ",
+                "risk_score": round(prob_dementia * 10, 1),
+                "confidence": round(float(probs[prediction] * 100), 2),
+                "mmse_scores": mmse_scores,
+                "n_visits": len(mmse_scores),
+                "tgds_score": patient_data.get('tgds_score') or history.get('last_tgds'),
+                "warning": "⚠️ ทำนายจากการตรวจครั้งเดียว" if len(mmse_scores) == 1 else None
             }
         except Exception as e:
-            print(f"❌ Prediction error: {e}")
+            traceback.print_exc()
             return {"error": str(e)}
 
-# Singleton instance
+    def predict_from_cga_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        return self.predict(record)
+
 predictor = HmmPredictor()
