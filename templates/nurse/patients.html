@@ -64,9 +64,9 @@
             <th class="px-8 py-6 text-sm font-black text-white uppercase tracking-widest">การดำเนินการ</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody id="patient-table-body" class="divide-y divide-slate-100">
           {% for patient in patients %}
-          <tr class="hover:bg-indigo-50/30 transition-all group">
+          <tr id="row-{{ patient.hn }}" class="hover:bg-indigo-50/30 transition-all group">
             <!-- ข้อมูลคนไข้ -->
             <td class="px-8 py-8">
               <div class="flex items-center gap-5">
@@ -168,5 +168,36 @@
   </div>
 
 </div>
+
+<script>
+  async function refreshPatientList() {
+    try {
+      const search = new URLSearchParams(window.location.search).get('search') || '';
+      const resp = await fetch(`{{ url_for("nurse.api_patients") }}?search=${encodeURIComponent(search)}`);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      
+      const tbody = document.getElementById('patient-table-body');
+      const currentHNs = new Set(data.patients.map(p => p.hn));
+      
+      // 1. ลบแถวที่ไม่มีใน DB แล้ว (Real-time Delete)
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const hn = row.id.replace('row-', '');
+        if (!currentHNs.has(hn)) {
+          row.classList.add('opacity-0', 'bg-rose-50');
+          setTimeout(() => row.remove(), 500);
+        }
+      });
+
+      // 2. อัปเดตข้อมูลหรือเพิ่มแถวใหม่ (กรณีต้องการ Full Sync สามารถสั่ง Render ใหม่ได้ที่นี่)
+      // เพื่อประสิทธิภาพ เราจะเน้นที่การลบแถวที่ถูกลบไปแล้วจาก DB ตามโจทย์ครับ
+      
+    } catch (e) { console.error("Patient Refresh Error:", e); }
+  }
+
+  // รีเฟรชทุก 5 วินาที เพื่อเช็คสถานะการลบ
+  setInterval(refreshPatientList, 5000);
+</script>
 
 {% endblock %}

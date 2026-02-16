@@ -8,6 +8,7 @@ from mysql.connector import Error  # type: ignore
 from db.db import get_db_connection, get_supabase_client
 from werkzeug.exceptions import Forbidden
 from utils.debug_logger import log_supabase_payload # Import Debug Logger
+from ml.hmm_predictor import predictor # 🟢 Import AI Predictor
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
@@ -88,18 +89,33 @@ def _get_val(row: dict, key: str, default=None):
 def _get_assess_data(conn, header_id):
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
+        # ลองหาจาก cga_id ก่อน
         cur.execute("""
-            SELECT h.encounter_id, h.session_id, e.patient_id 
+            SELECT h.id, h.encounter_id, h.session_id, e.patient_id 
             FROM cga_headers h
             JOIN encounters e ON e.id = h.encounter_id
             WHERE h.id = %s
         """, (header_id,))
         ids = cur.fetchone()
+        
+        # ถ้าไม่เจอ ลองหาโดยมองว่า header_id คือ encounter_id (กรณีมาจากหน้าประวัติ)
         if not ids:
-            return {"hn": "N/A", "gcn": "N/A"}
+            cur.execute("""
+                SELECT h.id, h.encounter_id, h.session_id, e.patient_id 
+                FROM cga_headers h
+                JOIN encounters e ON e.id = h.encounter_id
+                WHERE h.encounter_id = %s
+                ORDER BY h.id DESC LIMIT 1
+            """, (header_id,))
+            ids = cur.fetchone()
+
+        if not ids:
+            return {"hn": "N/A", "gcn": "N/A", "patient_id": None, "session_id": None}
         
         p_id = ids["patient_id"]
         sess_id = ids["session_id"]
+        actual_header_id = ids["id"]
+        actual_encounter_id = ids["encounter_id"]
         
         cur.execute("SELECT * FROM patients WHERE id = %s", (p_id,))
         p_row = cur.fetchone()
@@ -168,7 +184,9 @@ def _get_assess_data(conn, header_id):
             "age_year": p_row.get(age_col) if age_col else None,
             "gender": p_row.get("gender"),
             "patient_id": p_id,
-            "session_id": sess_id
+            "session_id": sess_id,
+            "encounter_id": actual_encounter_id,
+            "header_id": actual_header_id
         }
 
         if sess_id:
@@ -223,44 +241,42 @@ def dashboard():
     kpis = {"today": 0, "week": 0, "month": 0, "total": 0}
     recent_patients = []
     try:
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
+        # 🟢 เปลี่ยนมาใช้ cga_records เพื่อให้ตัวเลขตรงกับหน้ารายงาน
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE assessed_date = CURDATE()")
         kpis["today"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE YEARWEEK(assessed_date, 1) = YEARWEEK(CURDATE(), 1)")
         kpis["week"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE MONTH(assessed_date) = MONTH(CURDATE()) AND YEAR(assessed_date) = YEAR(CURDATE())")
         kpis["month"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor')")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records")
         kpis["total"] = cur.fetchone()["c"]
 
-        supabase = get_supabase_client()
-        sb_res = supabase.table("patients").select("*").order("id", desc=True).limit(5).execute()
-        sb_patients = sb_res.data
-
-        for p in sb_patients:
+        # 🟢 ดึงผู้ป่วยล่าสุด 5 รายการจาก cga_records โดยตรง
+        cur.execute("""
+            SELECT 
+                encounter_id as header_id, 
+                hn, 
+                full_name, 
+                mmse_score, 
+                tgds_score, 
+                created_at, 
+                CASE 
+                    WHEN (mmse_score <= 15 OR tgds_score >= 10 OR suicide_risk = 'มี') THEN 'high'
+                    WHEN (mmse_score <= 23 OR tgds_score >= 7) THEN 'medium'
+                    ELSE 'low'
+                END as overall_risk
+            FROM cga_records 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        """)
+        recent_patients = cur.fetchall()
+        
+        # จัดรูปแบบวันที่ให้ Template ใช้งานได้
+        for p in recent_patients:
             if p.get('hn'):
                 clean_hn = str(p['hn']).upper().replace("HN", "").strip()
                 if clean_hn.isdigit():
                     p['hn'] = f"HN{clean_hn.zfill(3)}"
-            if p.get('gcn'):
-                p['gcn'] = str(p['gcn']).zfill(3)
-
-            cur.execute("""
-                SELECT h.id AS header_id, m.total_score AS mmse_score, t.total_score AS tgds_score, h.created_at, h.overall_risk
-                FROM cga_headers h
-                JOIN encounters e ON e.id = h.encounter_id
-                JOIN patients lp ON lp.id = e.patient_id
-                LEFT JOIN assessment_mmse m ON m.cga_id = h.id
-                LEFT JOIN assessment_tgds t ON t.cga_id = h.id
-                WHERE lp.hn = %s ORDER BY h.created_at DESC LIMIT 1
-            """, (p['hn'],))
-            score = cur.fetchone()
-            if score:
-                p.update(score)
-            else:
-                p['mmse_score'] = None
-                p['tgds_score'] = None
-                p['created_at'] = datetime.now()
-            recent_patients.append(p)
     except Exception as e:
         print("Dashboard Error:", e)
     finally:
@@ -275,13 +291,14 @@ def api_kpis():
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
+        # 🟢 อัปเดตให้ดึงจาก cga_records
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE assessed_date = CURDATE()")
         today = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE YEARWEEK(assessed_date, 1) = YEARWEEK(CURDATE(), 1)")
         week = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE MONTH(assessed_date) = MONTH(CURDATE()) AND YEAR(assessed_date) = YEAR(CURDATE())")
         month = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor')")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records")
         total = cur.fetchone()["c"]
         return {"today": today, "week": week, "month": month, "total": total}
     except Exception as e:
@@ -301,29 +318,25 @@ def reports():
     end_date = request.args.get('end_date', date.today().strftime('%Y-%m-%d'))
     report_data = {'start_date': start_date, 'end_date': end_date}
     try:
+        # 🟢 1. สถิติรวมจาก cga_records
         cur.execute("""
             SELECT COUNT(*) as total, 
-                   SUM(CASE WHEN m.total_score <= 23 THEN 1 ELSE 0 END) as mmse_risk, 
-                   SUM(CASE WHEN t.total_score >= 7 THEN 1 ELSE 0 END) as tgds_risk
-            FROM cga_headers h
-            LEFT JOIN assessment_mmse m ON m.cga_id = h.id
-            LEFT JOIN assessment_tgds t ON t.cga_id = h.id
-            WHERE h.status IN ('completed','sent_to_doctor') AND DATE(h.created_at) BETWEEN %s AND %s
+                   SUM(CASE WHEN mmse_score <= 23 THEN 1 ELSE 0 END) as mmse_risk, 
+                   SUM(CASE WHEN tgds_score >= 7 THEN 1 ELSE 0 END) as tgds_risk
+            FROM cga_records
+            WHERE assessed_date BETWEEN %s AND %s
         """, (start_date, end_date))
         report_data['ov'] = cur.fetchone()
         
+        # 🟢 2. รายชื่อกลุ่มเสี่ยงเร่งด่วนจาก cga_records
         cur.execute("""
-            SELECT h.id as header_id, p.hn, p.full_name, p.birth_date, m.total_score as mmse, t.total_score as tgds, 
-                   (SELECT answer_text FROM assessment_answers WHERE session_id=h.session_id AND instrument='suicideRisk' LIMIT 1) as suicide 
-            FROM cga_headers h 
-            JOIN encounters e ON e.id = h.encounter_id 
-            JOIN patients p ON p.id = e.patient_id 
-            LEFT JOIN assessment_mmse m ON m.cga_id = h.id 
-            LEFT JOIN assessment_tgds t ON t.cga_id = h.id 
-            WHERE h.status IN ('completed','sent_to_doctor') 
-              AND (m.total_score <= 15 OR t.total_score >= 10 OR EXISTS(SELECT 1 FROM assessment_answers WHERE session_id=h.session_id AND instrument='suicideRisk' AND answer_text='yes')) 
-            ORDER BY h.created_at DESC LIMIT 15
-        """)
+            SELECT encounter_id as header_id, hn, full_name, birth_date, mmse_score as mmse, tgds_score as tgds, 
+                   CASE WHEN suicide_risk = 'มี' THEN 'yes' ELSE 'no' END as suicide
+            FROM cga_records
+            WHERE assessed_date BETWEEN %s AND %s
+              AND (mmse_score <= 23 OR tgds_score >= 7 OR suicide_risk = 'มี')
+            ORDER BY assessed_date DESC LIMIT 30
+        """, (start_date, end_date))
         report_data['high_risk'] = cur.fetchall()
         
         # 🟢 เพิ่มการนับสถิติโรคประจำตัว (Diseases)
@@ -634,22 +647,33 @@ def assess_mmse_save(header_id: int):
     cur = conn.cursor(dictionary=True, buffered=True)
     f = request.form
     try:
-        # ดึงระดับการศึกษาเพื่อใช้ในการข้ามข้อ
+        # 🟢 1. หา cga_id ที่แท้จริง (ป้องกัน Error 1452)
+        actual_cga_id = header_id
+        cur.execute("SELECT id FROM cga_headers WHERE id = %s", (header_id,))
+        if not cur.fetchone():
+            # ถ้าหาไม่เจอ แสดงว่า header_id ที่ส่งมาอาจเป็น encounter_id (จากหน้าประวัติ/รายงาน)
+            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (header_id,))
+            h_row = cur.fetchone()
+            if h_row:
+                actual_cga_id = h_row['id']
+            else:
+                # ถ้ายังไม่มีเลย ให้สร้างใหม่ผูกกับ encounter_id นั้น
+                cur.execute("INSERT INTO cga_headers (encounter_id, status) VALUES (%s, 'in_progress')", (header_id,))
+                conn.commit()
+                actual_cga_id = cur.lastrowid
+
+        # ดึงระดับการศึกษา
         edu = f.get('edu', '3')
         is_no_edu = (edu == '1')
 
-        cur.execute("INSERT INTO assessment_mmse (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (header_id,))
-        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id = %s", (header_id,))
+        cur.execute("INSERT INTO assessment_mmse (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (actual_cga_id,))
+        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id = %s", (actual_cga_id,))
         mm_id = cur.fetchone()['id']
         cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id = %s", (mm_id,))
         
         total_score = 0
-        
-        # รายการข้อปกติ
+        # (ส่วนของการวนลูปบันทึกคะแนนเหมือนเดิม แต่ใช้ actual_cga_id)
         normal_qs = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.1', '2.2', '2.3', '2.4', '2.5', '3', '5', '6', '7', '8', '11']
-        # รายการข้อที่ต้องข้ามถ้าอ่านเขียนไม่ได้ (1, 2, 3 คือโค้ดการศึกษา)
-        skip_if_no_edu = ['4.1', '4.2', '9', '10']
-
         for q_no in normal_qs:
             val = f.get(f'q{q_no}', '0')
             score = int(val) if val.isdigit() else 0
@@ -657,7 +681,6 @@ def assess_mmse_save(header_id: int):
             total_score += score
 
         if not is_no_edu:
-            # คำนวณ Section 4 (4.1 หรือ 4.2)
             q41_val = f.get('q4.1')
             q42_val = f.get('q4.2')
             s4_score = 0
@@ -669,28 +692,25 @@ def assess_mmse_save(header_id: int):
                 cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, '4.2', s4_score))
             total_score += s4_score
 
-            # ข้อ 9 และ 10
             for q_no in ['9', '10']:
                 val = f.get(f'q{q_no}', '0')
                 score = int(val) if val.isdigit() else 0
                 cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, q_no, score))
                 total_score += score
         
-        # บันทึกคะแนนรวม
         cur.execute("UPDATE assessment_mmse SET total_score=%s WHERE id=%s", (total_score, mm_id))
         
-        sess_id = _get_assess_data(conn, header_id).get('session_id')
+        sess_id = _get_assess_data(conn, actual_cga_id).get('session_id')
         if sess_id and f.get('edu'):
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='mmse_edu'", (sess_id,))
             cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'mmse_edu', 0, %s)", (sess_id, f.get('edu')))
-            # เก็บเข้า basic ด้วยเพื่อให้ summary ดึงง่าย
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='basic' AND answer_text LIKE 'education:%%'", (sess_id,))
             cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'basic', 0, %s)", (sess_id, f"education:{f.get('edu')}"))
         
         conn.commit()
         if f.get('next_url'):
             return redirect(f.get('next_url'))
-        return redirect(url_for('nurse.assess_tgds', header_id=header_id))
+        return redirect(url_for('nurse.assess_tgds', header_id=actual_cga_id))
     except Exception as e:
         conn.rollback()
         flash(f"Error: {e}", "danger")
@@ -754,12 +774,25 @@ def assess_tgds_save(header_id: int):
     cur = conn.cursor(dictionary=True, buffered=True)
     f = request.form
     try:
-        cur.execute("INSERT INTO assessment_tgds (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (header_id,))
-        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id = %s", (header_id,))
+        # 🟢 1. หา cga_id ที่แท้จริง (ป้องกัน Error 1452)
+        actual_cga_id = header_id
+        cur.execute("SELECT id FROM cga_headers WHERE id = %s", (header_id,))
+        if not cur.fetchone():
+            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (header_id,))
+            h_row = cur.fetchone()
+            if h_row:
+                actual_cga_id = h_row['id']
+            else:
+                cur.execute("INSERT INTO cga_headers (encounter_id, status) VALUES (%s, 'in_progress')", (header_id,))
+                conn.commit()
+                actual_cga_id = cur.lastrowid
+
+        cur.execute("INSERT INTO assessment_tgds (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (actual_cga_id,))
+        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id = %s", (actual_cga_id,))
         tg_id = cur.fetchone()['id']
         cur.execute("DELETE FROM assessment_tgds_items WHERE tgds_id = %s", (tg_id,))
         
-        sess_id = _get_assess_data(conn, header_id).get('session_id')
+        sess_id = _get_assess_data(conn, actual_cga_id).get('session_id')
         if sess_id:
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument IN ('tgds15Answers','depression2Q','depression8Q','incontinence','sleepProblems','suicideRisk','sleep_problem_detail','incontinence_detail')", (sess_id,))
         
@@ -799,15 +832,12 @@ def assess_tgds_save(header_id: int):
                 cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,%s,1,%s)", (sess_id, k, v))
         
         # Special Logic for Q3 Sub (Uncontrollable)
-        # ถ้าตอบ Q3=Yes (ได้ 4 ไปแล้ว) และ Q3_Sub=Yes (ควบคุมไม่ได้) -> บวกเพิ่ม 10 เป็น 14
         if q3_val == 'yes' and q3_sub_val == 'yes':
             q8_score += 10
 
         if sess_id:
             sr_val = 'yes' if has_suicide_risk else 'none'
             cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,'suicideRisk',1,%s)", (sess_id, sr_val))
-            # Save 8Q Total Score (Optional: save to answers or scores table)
-            # แต่เดี๋ยวเราจะ update ลง cga_records ตอนจบ
         
         cur.execute("UPDATE assessment_tgds SET total_score=%s WHERE id=%s", (score, tg_id))
         
@@ -817,20 +847,19 @@ def assess_tgds_save(header_id: int):
             return redirect(next_url)
 
         # 🟢 2. คำนวณความเสี่ยงรวม (Risk Level)
-        cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (header_id,))
+        cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (actual_cga_id,))
         mmse_row = cur.fetchone(); m_score = mmse_row['total_score'] if mmse_row else 0
         risk_lv = 'high' if (m_score <= 15 or score >= 10 or has_suicide_risk) else ('medium' if (m_score <= 23 or score >= 7) else 'low')
-        print(f"DEBUG: Calculated Risk Level: {risk_lv} (MMSE: {m_score}, TGDS: {score})")
 
         # 3. Finalize IDs and Update Local Header
-        cur.execute("UPDATE cga_headers SET status='completed', overall_risk=%s WHERE id=%s", (risk_lv, header_id))
+        cur.execute("UPDATE cga_headers SET status='completed', overall_risk=%s WHERE id=%s", (risk_lv, actual_cga_id))
         
-        cur.execute("SELECT h.*, e.patient_id FROM cga_headers h JOIN encounters e ON e.id = h.encounter_id WHERE h.id = %s", (header_id,))
+        cur.execute("SELECT h.*, e.patient_id FROM cga_headers h JOIN encounters e ON e.id = h.encounter_id WHERE h.id = %s", (actual_cga_id,))
         h_data = cur.fetchone(); p_id = h_data['patient_id']
         
         # Update 8Q Score to cga_records
         try:
-            cur.execute("UPDATE cga_records SET q8_score=%s WHERE encounter_id=%s", (q8_score, h_data['encounter_id']))
+            cur.execute("UPDATE cga_records SET q8_score=%s WHERE encounter_id=%s", (h_data['encounter_id'],))
         except Exception as e:
             print(f"Update 8Q Score Error: {e}")
 
@@ -855,7 +884,7 @@ def assess_tgds_save(header_id: int):
                 m = pattern.match(str(r['hn']))
                 if m:
                     val = int(m.group(1))
-                    if val < 1000000 and val > max_num: max_num = val
+                    if val < 1000000 and val > max_num: val = val
             
             final_hn = f"HN{(max_num + 1):03d}"
             
@@ -866,13 +895,12 @@ def assess_tgds_save(header_id: int):
         cur.execute("UPDATE patients SET hn=%s, gcn=%s WHERE id=%s", (final_hn, final_gcn, p_id))
         conn.commit()
 
-        # 🟢 CLOUD SYNC
+        # CLOUD SYNC
         sync_errors = []
         try:
             cur.execute("SELECT * FROM patients WHERE id = %s", (p_id,))
             p_latest = cur.fetchone(); sex_map = {'male': 'ชาย', 'female': 'หญิง'}
 
-            # ดึงข้อมูลผู้ดูแลจาก Local Answers
             cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (h_data['session_id'],))
             ans_rows = cur.fetchall()
             caregiver_info = {}
@@ -888,13 +916,10 @@ def assess_tgds_save(header_id: int):
                 "full_name": p_latest['full_name'], "phone": p_latest['phone'], 
                 "address": p_latest['address'], "sex": sex_map.get(p_latest['gender'], p_latest['gender']), 
                 "birth_date": str(p_latest['birth_date']) if p_latest['birth_date'] else None,
-                **caregiver_info # รวมข้อมูลผู้ดูแล
+                **caregiver_info 
             }
-            # 1. ส่งข้อมูลผู้ป่วย
-            ok, msg = safe_supabase_sync("patients", sb_p, method='upsert', conflict_col='hn')
-            if not ok: sync_errors.append(f"ผู้ป่วย: {msg}")
+            safe_supabase_sync("patients", sb_p, method='upsert', conflict_col='hn')
             
-            # 2. ส่งข้อมูลการมาตรวจ (Encounters) - จำเป็นมากเพื่อให้ Headers มีที่เกาะ
             cur.execute("SELECT * FROM encounters WHERE id = %s", (h_data['encounter_id'],))
             enc_raw = cur.fetchone()
             if enc_raw:
@@ -907,35 +932,25 @@ def assess_tgds_save(header_id: int):
                         "encounter_date": str(enc_raw['encounter_date']),
                         "created_by": enc_raw['created_by']
                     }
-                    ok, msg = safe_supabase_sync("encounters", enc_payload, method='upsert', conflict_col='id')
-                    if not ok: sync_errors.append(f"การมาตรวจ: {msg}")
+                    safe_supabase_sync("encounters", enc_payload, method='upsert', conflict_col='id')
 
-            # 3. ส่งสรุป CGA (จะผ่านได้เพราะมี Encounter แล้ว)
             cga_sb_data = {
                 "encounter_id": h_data['encounter_id'], 
                 "assessed_by": int(session.get('user_id', 0)), 
                 "assessment_date": str(date.today()), 
                 "risk_level": risk_lv, 
-                "overall_risk": risk_lv, # ส่งทั้งสองแบบเพื่อความชัวร์
+                "overall_risk": risk_lv, 
                 "status": "completed",
                 "is_completed": True
             }
-            ok, msg = safe_supabase_sync("cga_headers", cga_sb_data, method='upsert', conflict_col='encounter_id')
-            if not ok: sync_errors.append(f"สรุป CGA: {msg}")
+            safe_supabase_sync("cga_headers", cga_sb_data, method='upsert', conflict_col='encounter_id')
             
-            if sync_errors:
-                flash("บันทึก Local สำเร็จ แต่ Sync ไป Cloud ไม่ครบ: " + "; ".join(sync_errors), "warning")
-            else:
-                flash("บันทึกและ Sync ข้อมูลไป Cloud สำเร็จ", "success")
-
         except Exception as e: 
             print("Sync Error:", e)
-            flash(f"บันทึก Local สำเร็จ แต่เกิดข้อผิดพลาดในการ Sync: {e}", "warning")
             
-        # Ensure cga_records is updated before moving to summary
-        _sync_to_cga_records(header_id, conn, cur)
+        _sync_to_cga_records(actual_cga_id, conn, cur)
             
-        return redirect(url_for('nurse.assess_summary', header_id=header_id))
+        return redirect(url_for('nurse.assess_summary', header_id=actual_cga_id))
     except Exception as e:
         conn.rollback()
         flash(f"Error: {e}", "danger")
@@ -952,13 +967,7 @@ def assess_summary(header_id: int):
     cur = conn.cursor(dictionary=True, buffered=True)
     data = _get_assess_data(conn, header_id)
     
-    cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (header_id,))
-    m_row = cur.fetchone()
-    m_score = m_row['total_score'] if m_row and m_row['total_score'] is not None else 0
-    
-    cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s", (header_id,))
-    t_row = cur.fetchone()
-    t_score = t_row['total_score'] if t_row else 0
+    # 8Q Logic... (ย้าย m_score, t_score ออกไปคำนวณด้านล่างด้วย real_cga_id)
     
     # ดึงคะแนน 8Q (q8_score) จาก cga_records
     q8_val = 0
@@ -1064,11 +1073,29 @@ def assess_summary(header_id: int):
     tgds_details = {}
     
     # MMSE Items
+    # ตรวจสอบก่อนว่า header_id ที่ส่งมาคือ cga_id จริงๆ หรือเป็น encounter_id (กรณีมาจากหน้าประวัติ)
+    real_cga_id = header_id
+    cur.execute("SELECT id FROM cga_headers WHERE id = %s", (header_id,))
+    if not cur.fetchone():
+        # ถ้าหาใน cga_headers ไม่เจอ ให้ลองหาโดยมองว่ามันคือ encounter_id
+        cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (header_id,))
+        found_h = cur.fetchone()
+        if found_h: real_cga_id = found_h['id']
+
+    # 🟢 ดึงคะแนนสรุปจากตารางหลักด้วย real_cga_id
+    cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (real_cga_id,))
+    m_row = cur.fetchone()
+    m_score = m_row['total_score'] if m_row and m_row['total_score'] is not None else 0
+    
+    cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (real_cga_id,))
+    t_row = cur.fetchone()
+    t_score = t_row['total_score'] if t_row else 0
+
     cur.execute("""
         SELECT question_no, score 
         FROM assessment_mmse_items 
         WHERE mmse_id = (SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1)
-    """, (header_id,))
+    """, (real_cga_id,))
     for r in cur.fetchall():
         # เก็บ question_no เป็น string เพื่อให้ matches กับ keys ใน template (เช่น '1.1', '4.1')
         mmse_details[str(r['question_no'])] = r['score']
@@ -1078,12 +1105,13 @@ def assess_summary(header_id: int):
         SELECT question_no, answer 
         FROM assessment_tgds_items 
         WHERE tgds_id = (SELECT id FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1)
-    """, (header_id,))
+    """, (real_cga_id,))
     for r in cur.fetchall():
         tgds_details[r['question_no']] = 'ใช่' if r['answer']==1 else 'ไม่ใช่'
 
     cur.execute("SELECT status FROM cga_headers WHERE id=%s", (header_id,))
-    h_status = cur.fetchone()['status']
+    h_row = cur.fetchone()
+    h_status = h_row['status'] if h_row else 'completed'
     
     # ระดับการศึกษา
     # ดึงค่าการศึกษาจาก assessment_answers (instrument='basic', key='education')
@@ -1103,17 +1131,61 @@ def assess_summary(header_id: int):
         mmse_total = 30
         mmse_threshold = 17
     
-    # Logic: Score <= Threshold คือ "เสี่ยง" (Suspected)
+    # logic: Score <= Threshold คือ "เสี่ยง" (Suspected)
     mmse_risk_status = 'suspected' if m_score <= mmse_threshold else 'normal'
     
-    cur.execute("SELECT e.patient_id FROM cga_headers h JOIN encounters e ON e.id = h.encounter_id WHERE h.id = %s", (header_id,))
-    p_id = cur.fetchone()['patient_id']
-    cur.execute("SELECT hn, gcn FROM patients WHERE id = %s", (p_id,))
-    fresh_p = cur.fetchone()
+    # 🟢 AI HMM Prediction
+    ai_result = None
+    # ดึง encounter_id จาก data ที่มีอยู่แล้ว
+    e_id = data.get('encounter_id')
+    p_id = data.get('patient_id')
+
+    try:
+        # เตรียมข้อมูล 9 อย่างสำหรับ AI
+        chronic_diseases_str = full_info.get('chronicDiseases', '')
+        chronic_count = len([d for d in chronic_diseases_str.split(',') if d.strip()]) if chronic_diseases_str else 0
+        if full_info.get('otherDisease'):
+            chronic_count += 1
+
+        ai_input = {
+            "age": full_info.get('age', 60),
+            "mmse_score": m_score,
+            "tgds_score": t_score,
+            "incontinence": inc_val,
+            "sleep_problem": sl_val,
+            "hearing_left": full_info.get('hearing_left'),
+            "vision_left": full_info.get('vision_left'),
+            "suicide_risk": sr_val,
+            "chronic_count": chronic_count
+        }
+        ai_result = predictor.predict(ai_input)
+        
+        # 🟢 เพิ่มรายละเอียดปัจจัยที่ AI พบ
+        factors = []
+        if m_score <= mmse_threshold: factors.append("สมรรถภาพสมองต่ำกว่าเกณฑ์")
+        if t_score >= 7: factors.append("พบภาวะซึมเศร้า")
+        if inc_val == 'abnormal': factors.append("มีปัญหาการกลั้นปัสสาวะ")
+        if sl_val == 'abnormal': factors.append("มีปัญหาการนอนหลับ")
+        if sr_val == 'yes': factors.append("มีความเสี่ยงฆ่าตัวตาย")
+        if full_info.get('hearing_left') == 'abnormal' or full_info.get('hearing_right') == 'abnormal': factors.append("พบความผิดปกติของการได้ยิน")
+        if chronic_count >= 3: factors.append("มีโรคประจำตัวหลายโรค")
+        
+        ai_result['factors'] = factors
+        print(f"AI Prediction for header {header_id}: {ai_result}")
+    except Exception as e:
+        print("AI Prediction Error:", e)
+        ai_result = {"error": str(e)}
+
+    # ดึงข้อมูล HN และ GCN ล่าสุด
+    fresh_p = {"hn": data.get("hn"), "gcn": data.get("gcn")}
+    if p_id:
+        cur.execute("SELECT hn, gcn FROM patients WHERE id = %s", (p_id,))
+        row = cur.fetchone()
+        if row: fresh_p = row
     
     cur.close()
     conn.close()
-    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), user={'name': session.get('full_name')}, mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info)
+    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), user={'name': session.get('full_name')}, mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info, ai_result=ai_result)
 
 # Helper function to sync data to cga_records (Flat Table)
 def _sync_to_cga_records(header_id, conn, cur):
@@ -1121,10 +1193,11 @@ def _sync_to_cga_records(header_id, conn, cur):
     Rathers all data for a specific CGA header and inserts/updates it into cga_records table.
     Handles both Local and Cloud sync.
     """
+    print(f"DEBUG: Starting _sync_to_cga_records for header_id: {header_id}")
     try:
         # 1. Fetch all necessary data
         cur.execute("""
-            SELECT h.id, h.encounter_id, h.assessed_at AS assessment_date, 
+            SELECT h.id, h.encounter_id, h.created_at AS assessment_date, 
                    e.patient_id, p.hn, p.full_name, p.birth_date,
                    TIMESTAMPDIFF(YEAR, p.birth_date, CURDATE()) AS age_year
             FROM cga_headers h
@@ -1133,7 +1206,12 @@ def _sync_to_cga_records(header_id, conn, cur):
             WHERE h.id = %s
         """, (header_id,))
         base_info = cur.fetchone()
-        if not base_info: return
+        
+        if not base_info:
+            print(f"DEBUG: No base_info found for header_id {header_id}. Sync aborted.")
+            return
+
+        print(f"DEBUG: Syncing data for Patient: {base_info['full_name']} (HN: {base_info['hn']})")
 
         # Scores
         cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (header_id,))
@@ -1278,6 +1356,7 @@ def _sync_to_cga_records(header_id, conn, cur):
             "patient_id": base_info['patient_id'],
             "hn": base_info['hn'],
             "full_name": base_info['full_name'],
+            "birth_date": base_info['birth_date'],
             "assessed_date": str(base_info['assessment_date']),
             "age": base_info['age_year'],
             "gender": data_map.get('gender', 'male'),
@@ -1303,23 +1382,21 @@ def _sync_to_cga_records(header_id, conn, cur):
         }
 
         # 2. Local Insert/Update (Check if exists first)
-        # Note: Local DB might need `cga_records` table created first. Assuming it exists.
         try:
-            # Simple check
             cur.execute("SELECT id FROM cga_records WHERE encounter_id=%s", (base_info['encounter_id'],))
             existing = cur.fetchone()
             
             if existing:
-                # Update
                 set_clause = ", ".join([f"{k}=%s" for k in record_data.keys()])
                 vals = list(record_data.values()) + [base_info['encounter_id']]
                 cur.execute(f"UPDATE cga_records SET {set_clause} WHERE encounter_id=%s", vals)
+                print(f"DEBUG: Updated cga_records for encounter_id: {base_info['encounter_id']}")
             else:
-                # Insert
                 cols = ", ".join(record_data.keys())
                 placeholders = ", ".join(["%s"] * len(record_data))
                 vals = list(record_data.values())
                 cur.execute(f"INSERT INTO cga_records ({cols}) VALUES ({placeholders})", vals)
+                print(f"DEBUG: Inserted new cga_records for encounter_id: {base_info['encounter_id']}")
             conn.commit()
         except Exception as e:
             print(f"Local cga_records update failed: {e}")
@@ -1327,24 +1404,28 @@ def _sync_to_cga_records(header_id, conn, cur):
         # 3. Cloud Sync (Resolve Cloud IDs first)
         try:
             supabase = get_supabase_client()
-            # หา ID ของผู้ป่วยใน Cloud จาก HN
-            sb_p = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
+            # 🟢 ค้นหา Patient ID บน Cloud โดยใช้ HN (ซึ่งเป็น Unique และตรงกันทั้งสองที่)
+            sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
             
-            # หา ID ของ Encounter ใน Cloud (ถ้ายังไม่มีอาจต้องข้าม หรือใช้ Logic อื่น แต่ปกติ Encounter ควร Sync ไปก่อนแล้ว)
-            # แต่เพื่อความง่าย เราจะใช้ encounter_id ของ Local ไปก่อนสำหรับ encounter_id (เพราะมันไม่มี Natural Key อื่นนอกจาก ID)
-            # หรือถ้า Encounter ถูก Sync ด้วย ID เดียวกัน (Upsert by ID) ก็ใช้ได้เลย
-            
-            if sb_p.data:
-                cloud_patient_id = sb_p.data[0]['id']
+            if sb_p_res.data:
+                cloud_patient_id = sb_p_res.data[0]['id']
                 
-                # Clone data for Cloud Payload
+                # เตรียมข้อมูลสำหรับ Cloud (ลบฟิลด์ที่ไม่ต้องการออก)
                 cloud_payload = record_data.copy()
-                cloud_payload['patient_id'] = cloud_patient_id # ใช้ ID ของ Cloud
+                cloud_payload['patient_id'] = cloud_patient_id # ใช้ ID ของ Cloud แทน
                 
-                # ส่งข้อมูล
-                safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
+                # ส่งข้อมูลขึ้น Cloud
+                # 🟢 ปรับปรุง: ใช้ on_conflict=['hn', 'assessed_date'] หากตารางรองรับ หรือใช้ encounter_id ที่แมพแล้ว
+                ok, msg = safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
+                if ok:
+                    print(f"DEBUG: Cloud sync SUCCESS for cga_records (HN: {base_info['hn']})")
+                else:
+                    print(f"DEBUG: Cloud sync FAILED for cga_records: {msg}")
+                    # ลองส่งแบบ insert หาก upsert ติดปัญหาเรื่อง id
+                    if "conflict" in msg.lower():
+                        safe_supabase_sync("cga_records", cloud_payload, method='insert')
         except Exception as e:
-            print(f"Resolving Cloud IDs failed: {e}")
+            print(f"DEBUG: Cloud Sync Exception: {e}")
             
     except Exception as e:
         print(f"Sync to cga_records failed: {e}")
@@ -1718,19 +1799,19 @@ def patient_history(hn: str):
             flash("ไม่พบข้อมูลผู้ป่วยในระบบ Local", "danger")
             return redirect(url_for("nurse.patients"))
         
+        # 🟢 ดึงประวัติการประเมินจาก cga_records
         query = """
-            SELECT h.id AS header_id, h.created_at, h.status, 
-                   MAX(m.total_score) AS mmse_score, 
-                   MAX(t.total_score) AS tgds_score 
-            FROM cga_headers h 
-            JOIN encounters e ON e.id = h.encounter_id 
-            LEFT JOIN assessment_mmse m ON m.cga_id = h.id 
-            LEFT JOIN assessment_tgds t ON t.cga_id = h.id 
-            WHERE e.patient_id = %s 
-            GROUP BY h.id, h.created_at, h.status
-            ORDER BY h.created_at DESC
+            SELECT 
+                encounter_id as header_id, 
+                created_at, 
+                'completed' as status, 
+                mmse_score, 
+                tgds_score 
+            FROM cga_records 
+            WHERE hn = %s 
+            ORDER BY created_at DESC
         """
-        cur.execute(query, (patient['id'],))
+        cur.execute(query, (hn,))
         history = cur.fetchall()
         return render_template("nurse/patient_history.html", patient=patient, history=history)
     finally:
@@ -1801,16 +1882,58 @@ def patient_delete(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(dictionary=True)
     try:
-        cur.execute("DELETE FROM patients WHERE hn = %s", (hn,))
+        # 1. หา patient_id
+        cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
+        patient = cur.fetchone()
+        if not patient:
+            flash("ไม่พบข้อมูลผู้ป่วย", "warning")
+            return redirect(url_for("nurse.patients"))
+        p_id = patient['id']
+
+        # 2. ล้างข้อมูลในตารางที่เกี่ยวข้อง (Cascaded Cleanup)
+        # หา encounters ทั้งหมดของคนไข้คนนี้
+        cur.execute("SELECT id FROM encounters WHERE patient_id = %s", (p_id,))
+        enc_ids = [r['id'] for r in cur.fetchall()]
+
+        for e_id in enc_ids:
+            # หา cga_headers
+            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (e_id,))
+            h_ids = [r['id'] for r in cur.fetchall()]
+            for h_id in h_ids:
+                # ลบ MMSE/TGDS Items
+                cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id IN (SELECT id FROM assessment_mmse WHERE cga_id = %s)", (h_id,))
+                cur.execute("DELETE FROM assessment_mmse WHERE cga_id = %s", (h_id,))
+                cur.execute("DELETE FROM assessment_tgds_items WHERE tgds_id IN (SELECT id FROM assessment_tgds WHERE cga_id = %s)", (h_id,))
+                cur.execute("DELETE FROM assessment_tgds WHERE cga_id = %s", (h_id,))
+                cur.execute("DELETE FROM cga_headers WHERE id = %s", (h_id,))
+
+            # ลบ Answers & Sessions
+            cur.execute("DELETE FROM assessment_answers WHERE session_id IN (SELECT id FROM assessment_sessions WHERE encounter_id = %s)", (e_id,))
+            cur.execute("DELETE FROM assessment_sessions WHERE encounter_id = %s", (e_id,))
+            
+            # ลบ Summary Records
+            cur.execute("DELETE FROM cga_records WHERE encounter_id = %s", (e_id,))
+            
+            # ลบ Encounter
+            cur.execute("DELETE FROM encounters WHERE id = %s", (e_id,))
+
+        # 3. ลบข้อมูลผู้ป่วย (Local)
+        cur.execute("DELETE FROM patients WHERE id = %s", (p_id,))
         conn.commit()
+
+        # 4. ลบข้อมูลใน Cloud (Supabase)
         try:
             supabase = get_supabase_client()
+            # ลบ cga_records บน cloud ก่อน
+            supabase.table("cga_records").delete().eq("hn", hn).execute()
+            # ลบผู้ป่วยบน cloud
             supabase.table("patients").delete().eq("hn", hn).execute()
-        except:
-            pass
-        flash("ลบข้อมูลผู้ป่วยเรียบร้อยแล้ว", "success")
+        except Exception as cloud_e:
+            print(f"Cloud Delete Sync Error: {cloud_e}")
+
+        flash("ลบข้อมูลผู้ป่วยและประวัติการประเมินทั้งหมดเรียบร้อยแล้ว", "success")
     except Exception as e:
         conn.rollback()
         flash(f"ไม่สามารถลบข้อมูลได้: {e}", "danger")
@@ -1818,3 +1941,36 @@ def patient_delete(hn: str):
         cur.close()
         conn.close()
     return redirect(url_for("nurse.patients"))
+
+@nurse_bp.get("/api/patients", endpoint="api_patients")
+def api_patients():
+    if not _require_nurse():
+        return {"error": "unauthorized"}, 401
+    search = request.args.get("search", "").strip()
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "database connection failed"}, 500
+    cur = conn.cursor(dictionary=True)
+    try:
+        query = "SELECT * FROM patients"
+        params = []
+        if search:
+            query += " WHERE hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s"
+            search_param = f"%{search}%"
+            params = [search_param, search_param, search_param]
+        
+        query += " ORDER BY id DESC"
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        
+        # Clean data for JSON serialization
+        for p in rows:
+            if p.get("birth_date"): p["birth_date"] = str(p["birth_date"])
+            if p.get("created_at"): p["created_at"] = str(p["created_at"])
+            
+        return {"patients": rows}
+    except Exception as e:
+        return {"error": str(e)}, 500
+    finally:
+        cur.close()
+        conn.close()

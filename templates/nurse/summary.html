@@ -97,7 +97,7 @@
                         <ul class="space-y-2 text-sm text-slate-700">
                             <li class="flex justify-between border-b border-slate-50 pb-1">
                                 <span>บุหรี่:</span> 
-                                <span class="font-bold">{{ {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(full_info.get('smoke'), '-') }}</span>
+                                <span class="font-bold">{{ {'no':'ไม่สูบ','none':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(full_info.get('smoke'), '-') }}</span>
                             </li>
                             <li class="flex justify-between border-b border-slate-50 pb-1">
                                 <span>แอลกอฮอล์:</span> 
@@ -261,6 +261,92 @@
                             {% if q8_score == 0 %}ปกติ (ไม่เสี่ยง){% elif q8_score < 9 %}เสี่ยงปานกลาง{% else %}เสี่ยงรุนแรง{% endif %}
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <!-- AI Analysis Card -->
+            <div class="bg-slate-800 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden border border-slate-700">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                <div class="relative z-10 space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <h4 class="text-lg font-bold tracking-tight">AI Analysis (HMM)</h4>
+                    </div>
+
+                    {% if ai_result and not ai_result.error %}
+                    <div class="space-y-6">
+                        <!-- Result Banner -->
+                        <div class="p-5 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-inner">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">สรุปการพยากรณ์</p>
+                            <div class="text-3xl font-black {{ 'text-emerald-400' if ai_result.result == 'Non-Dementia' else 'text-rose-400' }}">
+                                {{ ai_result.label }}
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
+                                <span class="px-2 py-0.5 rounded-full bg-white/10 border border-white/5">HMM Model v1.0</span>
+                                <span>ความเชื่อมั่น: {{ ai_result.confidence }}%</span>
+                            </div>
+                        </div>
+
+                        <!-- Risk Meter -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-end px-1">
+                                <span class="text-xs font-bold text-slate-300">ดัชนีความเสี่ยง (Risk Index)</span>
+                                <span class="text-xl font-black {{ 'text-emerald-400' if ai_result.result == 'Non-Dementia' else 'text-rose-400' }}">{{ ai_result.risk_score|round(1) }}%</span>
+                            </div>
+                            <div class="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
+                                <div class="h-full rounded-full transition-all duration-1000 {{ 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]' if ai_result.result == 'Non-Dementia' else 'bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)]' }}" 
+                                     style="width: {{ ai_result.risk_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Factors & Insights -->
+                        <div class="space-y-4 pt-4 border-t border-white/10">
+                            <h5 class="text-sm font-bold text-blue-400 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                ปัจจัยที่ส่งผลต่อการวิเคราะห์
+                            </h5>
+                            
+                            {% if ai_result.factors %}
+                            <div class="grid grid-cols-1 gap-2">
+                                {% for factor in ai_result.factors %}
+                                <div class="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
+                                    <div class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <span class="text-[10px]">!</span>
+                                    </div>
+                                    <span class="text-xs text-slate-300">{{ factor }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-xs text-slate-500 italic pl-1">ไม่พบปัจจัยเสี่ยงที่มีนัยสำคัญ</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase mb-2">ข้อแนะนำทางคลินิก</p>
+                            <p class="text-xs text-slate-200 leading-relaxed">
+                                {% if ai_result.result == 'Dementia' %}
+                                    ควรส่งต่อให้แพทย์เฉพาะทางเพื่อตรวจยืนยันด้วย Neuropsychological Test และประเมินร่วมกับผลตรวจทางห้องปฏิบัติการอย่างละเอียด
+                                {% else %}
+                                    แนะนำให้ส่งเสริมกิจกรรมฝึกสมอง และนัดประเมินซ้ำทุก 6 เดือนเพื่อติดตามอาการอย่างต่อเนื่อง
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="p-6 bg-white/5 rounded-2xl border border-white/10 text-center space-y-2">
+                        <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <p class="text-sm font-bold text-slate-300">ไม่สามารถประมวลผลได้</p>
+                        {% if ai_result and ai_result.error %}
+                        <p class="text-[10px] text-slate-500 leading-relaxed">สาเหตุ: {{ ai_result.error }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 

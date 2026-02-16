@@ -9,3 +9,5 @@ customtkinter
 tkcalendar
 matplotlib
 numpy
+joblib
+scikit-learn
