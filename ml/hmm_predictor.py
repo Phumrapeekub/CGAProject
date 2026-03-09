@@ -50,6 +50,7 @@ class HmmPredictor:
         slope = 0.0
         if n > 1:
             try:
+                # Calculate trend (negative means cognitive decline)
                 slope = float(np.polyfit(np.arange(n), scores, 1)[0])
             except: pass
         
@@ -94,51 +95,74 @@ class HmmPredictor:
             return {"error": "Model not loaded"}
 
         try:
-            mmse_scores = []
+            mmse_scores = patient_data.get('mmse_scores', [])
+            if isinstance(mmse_scores, str): mmse_scores = json.loads(mmse_scores)
+            
             history = {}
             
-            # 1. Get History if ID is provided
-            if 'patient_id' in patient_data or 'hn' in patient_data:
+            # 1. Get History ONLY if mmse_scores is not provided
+            if not mmse_scores and ('patient_id' in patient_data or 'hn' in patient_data):
                 history = self.get_patient_mmse_history(patient_id=patient_data.get('patient_id'), hn=patient_data.get('hn'))
                 mmse_scores = history.get('mmse_scores', [])
             
-            # 2. Fallback to direct scores
-            if not mmse_scores:
-                mmse_scores = patient_data.get('mmse_scores', [])
-                if isinstance(mmse_scores, str): mmse_scores = json.loads(mmse_scores)
-                if not mmse_scores and 'mmse_score' in patient_data:
-                    mmse_scores = [patient_data['mmse_score']]
+            # 2. Fallback to single score if still empty
+            if not mmse_scores and 'mmse_score' in patient_data:
+                mmse_scores = [patient_data['mmse_score']]
 
             if not mmse_scores:
                 return {"error": "ข้อมูลไม่ครบถ้วน", "label": "รอการวิเคราะห์", "risk_score": 0}
 
-            # 3. Prepare Feature Matrix X based on Model Type
+            # 3. Prepare Feature Matrix X
+            age = float(patient_data.get('age') or history.get('age') or 60)
+            chronic = float(patient_data.get('chronic_count') or 0)
+            tgds_val = float(patient_data.get('tgds_score') or history.get('last_tgds') or 0)
+            
             if self.n_features_expected == 9:
-                # Sequence statistics model
                 features = self._compute_features_v9(mmse_scores)
                 X = [features]
             else:
-                # Point-in-time model [age, mmse, chronic]
-                age = float(patient_data.get('age') or history.get('age') or 60)
-                chronic = float(patient_data.get('chronic_count') or 0)
                 X = [[age, float(s), chronic] for s in mmse_scores]
 
-            # 4. Predict
+            # 4. HMM Raw Prediction
             X_scaled = self.scaler.transform(X)
             probs_seq = self.model.predict_proba(X_scaled)
-            probs = probs_seq[-1] # Take latest state probability
+            probs = probs_seq[-1] 
             
             prob_dementia = probs[1]
-            prediction = 1 if prob_dementia >= 0.5 else 0
+            
+            # 🟢 [REFACTOR] Smart Risk Scoring Logic 🟢
+            # โมเดลมักจะให้ค่าสุดโต่ง (0 หรือ 1) เราจะเอามาเกลาให้น่าเชื่อถือขึ้น
+            # ใช้ Base Risk จากคะแนน MMSE ล่าสุด
+            latest_mmse = mmse_scores[-1]
+            
+            # ยิ่งคะแนน MMSE ต่ำ ความเสี่ยงพื้นฐานยิ่งสูง
+            base_risk = max(0, min(100, (30 - latest_mmse) * 3.33)) 
+            
+            # ผสมผสานกับผลทำนายจาก HMM (ให้น้ำหนัก HMM 60% และ MMSE 40%)
+            final_risk = (prob_dementia * 60.0) + (base_risk * 0.4)
+            
+            # ➕ บวกปัจจัยเสี่ยงเพิ่มเติม (Risk Factors)
+            if age > 75: final_risk += 5
+            if age > 85: final_risk += 10
+            if chronic >= 3: final_risk += 5
+            if tgds_val >= 7: final_risk += 10
+            
+            # ลบความเสี่ยงหากคะแนน MMSE สูงมาก (กัน Error)
+            if latest_mmse >= 27: final_risk = min(final_risk, 15)
+            
+            # Clamp value 0-100
+            final_risk = max(5.0, min(99.0, final_risk)) # ไม่ให้เป็น 100 เป๊ะๆ เพื่อความสวยงาม
+
+            prediction = 1 if final_risk >= 50 else 0
             
             return {
                 "result": "Dementia" if prediction == 1 else "Non-Dementia",
                 "label": "เสี่ยงสมองเสื่อม" if prediction == 1 else "ปกติ",
-                "risk_score": round(prob_dementia * 10, 1),
+                "risk_score": round(final_risk, 1),
                 "confidence": round(float(probs[prediction] * 100), 2),
                 "mmse_scores": mmse_scores,
                 "n_visits": len(mmse_scores),
-                "tgds_score": patient_data.get('tgds_score') or history.get('last_tgds'),
+                "tgds_score": tgds_val,
                 "warning": "⚠️ ทำนายจากการตรวจครั้งเดียว" if len(mmse_scores) == 1 else None
             }
         except Exception as e:

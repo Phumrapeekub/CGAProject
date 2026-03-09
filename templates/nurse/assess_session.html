@@ -2,178 +2,179 @@
 {% block title %}ขั้นตอนการประเมิน | CGA Nurse{% endblock %}
 {% block content %}
 
+<!-- [1] CSS สำหรับสไตล์ภาพรวมและ Error State -->
+<style>
+  #addrDropdown {
+    z-index: 10000 !important;
+    background-color: white !important;
+    border: 2px solid #3b82f6 !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;
+    max-height: 350px !important;
+    overflow-y: auto !important;
+  }
+  .addr-item { padding: 14px 20px !important; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: all 0.2s; }
+  .addr-item:hover { background-color: #eff6ff !important; color: #1d4ed8 !important; }
+  .input-readonly { background-color: #f8fafc !important; color: #475569 !important; font-weight: 800 !important; border-color: #f1f5f9 !important; }
+  .field-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 2px #fecaca !important; }
+</style>
+
 <div class="max-w-6xl mx-auto px-4 py-6 space-y-8 text-slate-700 font-normal">
 
-  <!-- HN/GCN + ขั้นตอน -->
+  <!-- HN/GCN + Header -->
   <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-4">
-      <a href="{{ url_for('nurse.dashboard') }}" 
-         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all font-medium">
+      <a href="{{ url_for('nurse.dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all font-medium">
         <span>หน้าหลัก</span>
       </a>
       <span class="px-6 py-2 rounded-2xl bg-white shadow-sm border border-slate-100 text-slate-700 text-lg font-black tracking-tight">
         <span class="text-indigo-600">{{ hn }}</span>
         <span class="mx-3 text-slate-200">|</span>
-        <span class="text-slate-400 font-medium text-sm uppercase tracking-widest mr-1">GCN:</span>
-        <span class="text-emerald-600">{{ gcn }}</span>
+        <span class="text-emerald-600 font-bold">GCN: {{ gcn }}</span>
       </span>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-        ขั้นตอนที่ 1: ข้อมูลทั่วไป
-      </span>
-    </div>
+    <div class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-bold">ขั้นตอนที่ 1: ข้อมูลทั่วไป</div>
   </div>
 
-  <!-- แถบนำทางขั้นตอน 1-3 -->
+  <!-- แถบนำทางขั้นตอน 1-3 (เน้นหน้าปัจจุบันเป็นสีเขียว) -->
   <div class="flex justify-center items-center gap-2 md:gap-4 py-4">
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center font-medium shadow-md transition-all
-              bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">1</button>
+    <button type="button" onclick="validateAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')" 
+            class="w-12 h-12 rounded-full flex items-center justify-center font-black shadow-md transition-all bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl cursor-default">1</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center font-medium shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">2</button>
+    <button type="button" onclick="validateAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')" 
+            class="w-12 h-12 rounded-full flex items-center justify-center font-black shadow-sm transition-all bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">2</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_tgds', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center font-medium shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">3</button>
+    <button type="button" onclick="validateAndNavigate('{{ url_for('nurse.assess_tgds', header_id=header_id) }}')" 
+            class="w-12 h-12 rounded-full flex items-center justify-center font-black shadow-sm transition-all bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">3</button>
   </div>
 
-  <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_step1_save', header_id=header_id) }}" class="space-y-10">
+  <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_step1_save', header_id=header_id) }}" onsubmit="return validateForm()" class="space-y-10">
     <input type="hidden" name="next_url" id="nextUrlInput">
 
     <!-- 1. ข้อมูลพื้นฐาน -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-      <div class="px-6 py-5 bg-sky-50 border-b border-sky-100 font-bold text-xl text-sky-900">1. ข้อมูลพื้นฐานผู้สูงอายุ</div>
+    <div class="rounded-[32px] bg-white shadow-xl border border-slate-100 overflow-hidden" id="section1">
+      <div class="px-8 py-5 bg-sky-50 border-b border-sky-100 font-bold text-xl text-sky-900 flex items-center gap-3">
+        <div class="w-2 h-8 bg-sky-500 rounded-full"></div>
+        1. ข้อมูลพื้นฐานผู้สูงอายุ
+      </div>
       <div class="p-8 space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-3">
             <label class="block text-slate-700 font-bold text-lg ml-1">ชื่อ</label>
             {% set full_name = assess.get('full_name', '') if assess else '' %}
             {% set names = full_name.split(" ") %}
-            {% set first_name = names[0] if names|length > 0 else "" %}
-            <input type="text" name="name" placeholder="กรอกชื่อ"
-                   value="{{ first_name if first_name != 'รอกรอกข้อมูล' else '' }}"
-                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium">
+            <input type="text" name="name" value="{{ names[0] if names[0] != 'รอกรอกข้อมูล' else '' }}" placeholder="กรอกชื่อ" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl font-normal text-slate-900 shadow-sm">
           </div>
           <div class="space-y-3">
             <label class="block text-slate-700 font-bold text-lg ml-1">นามสกุล</label>
-            <input type="text" name="surname" placeholder="กรอกนามสกุล"
-                   value="{{ names[1] if names|length > 1 else '' }}"
-                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium">
+            <input type="text" name="surname" value="{{ names[1] if names|length > 1 else '' }}" placeholder="กรอกนามสกุล" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl font-normal text-slate-900 shadow-sm">
           </div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div class="space-y-3">
-            <label class="block text-slate-700 font-bold text-lg ml-1">วัน/เดือน/ปีเกิด (พ.ศ.)</label>
+            <label class="block text-slate-700 font-bold text-lg ml-1">วันเกิด (พ.ศ.)</label>
             {% set dob_val = "" %}
             {% if assess and assess.get('birth_date') %}
               {% set bd = assess.get('birth_date') %}
               {% set dob_val = "%02d/%02d/%d" % (bd.day, bd.month, bd.year + 543) %}
             {% endif %}
-            <input id="dob" name="dob" type="text" data-buddhist-date="1"
-                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 transition-all text-xl shadow-sm bg-white font-medium"
-                   value="{{ dob_val }}">
+            <input id="dob" name="dob" type="text" data-buddhist-date="1" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl bg-white font-medium" value="{{ dob_val }}">
             <input type="hidden" id="dob_ad" name="birthdate" value="{{ assess.get('birth_date') or '' }}">
           </div>
-
+          <div class="space-y-3">
+            <label class="block text-slate-700 font-bold text-lg ml-1 text-sky-700">อายุ (ปี)</label>
+            <input id="age" type="number" name="age" readonly class="w-full rounded-2xl border-2 input-readonly px-6 py-4 text-2xl font-black text-sky-700 shadow-inner" value="{{ assess.get('age_year', '') }}">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-3">
             <label class="block text-slate-700 font-bold text-lg ml-1">เพศ</label>
             {% set g = (assess.get('gender', '') or '').lower() %}
             <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
-                    <input type="radio" name="gender" value="male" class="hidden peer" {% if g in ['male', '1', 'ชาย'] %}checked{% endif %}>
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-sky-500 peer-checked:text-white peer-checked:border-sky-500 border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-sky-400 text-lg shadow-sm">ชาย</div>
+                    <input type="radio" name="gender" value="male" class="hidden peer" {% if g in ['male', 'ชาย'] %}checked{% endif %}>
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-sky-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm">ชาย</div>
                 </label>
                 <label class="cursor-pointer">
-                    <input type="radio" name="gender" value="female" class="hidden peer" {% if g in ['female', '2', 'หญิง'] %}checked{% endif %}>
-                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-rose-400 text-lg shadow-sm">หญิง</div>
+                    <input type="radio" name="gender" value="female" class="hidden peer" {% if g in ['female', 'หญิง'] %}checked{% endif %}>
+                    <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm">หญิง</div>
                 </label>
             </div>
           </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-3">
-                <label class="block text-slate-700 font-bold text-lg ml-1">อายุ (ปี)</label>
-                <input id="age" type="number" name="age" readonly
-                       class="w-full rounded-2xl border-2 border-slate-50 bg-slate-50 px-6 py-4 text-xl font-black text-sky-700 shadow-inner" value="{{ assess.get('age_year', '') }}">
-            </div>
-            <div class="space-y-3">
-                <label class="block text-slate-700 font-bold text-lg ml-1">หมายเลขโทรศัพท์</label>
-                <input type="text" name="phone" placeholder="0XXXXXXXXX"
-                       class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl shadow-sm bg-white font-medium" value="{{ assess.get('phone') or '' }}">
-            </div>
+          <div class="space-y-3">
+            <label class="block text-slate-700 font-bold text-lg ml-1">หมายเลขโทรศัพท์</label>
+            {% set p_val = assess.get('phone', '') %}
+            <input type="tel" name="phone" id="phone" placeholder="0XXXXXXXXX" maxlength="10" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                   class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl font-normal text-slate-900 shadow-sm" 
+                   value="{{ p_val if p_val and p_val.strip().lower() != 'none' else '' }}">
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 2. ที่อยู่ปัจจุบัน -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-      <div class="px-6 py-5 bg-sky-50 border-b border-sky-100 font-bold text-xl text-sky-900">2. ที่อยู่ปัจจุบัน</div>
+    <div class="rounded-[32px] bg-white shadow-xl border border-slate-100 overflow-hidden" id="section2">
+      <div class="px-8 py-5 bg-blue-50 border-b border-blue-100 font-bold text-xl text-blue-900 flex items-center gap-3">
+        <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
+        2. ที่อยู่ปัจจุบัน
+      </div>
       <div class="p-8 space-y-8">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">บ้านเลขที่</label>
-              <input type="text" name="house_no" value="{{ assess.get('house_no', '') }}" placeholder="เช่น 123/45"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+              <input type="text" name="house_no" value="{{ assess.get('house_no', '') }}" placeholder="เช่น 123/45" oninput="this.value = this.value.replace(/[^0-9\/]/g, '')" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 text-xl font-normal text-slate-900 shadow-sm">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">หมู่ที่</label>
-              <input type="text" name="moo" value="{{ assess.get('moo', '') }}" placeholder="เช่น 5"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+              <input type="text" name="moo" value="{{ assess.get('moo', '') }}" placeholder="เช่น 5" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-sky-400 bg-white shadow-sm transition-all">
             </div>
-            <div class="space-y-2">
-              <label class="block text-slate-600 font-bold ml-1">ตำบล/แขวง</label>
-              <input type="text" name="subdistrict" value="{{ assess.get('subdistrict', '') }}" placeholder="ระบุตำบล"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+            <div class="space-y-2 relative" id="subdistrictContainer">
+              <label class="block text-slate-600 font-bold ml-1 uppercase tracking-tight">ตำบล/แขวง</label>
+              <input type="text" id="subdistrict" name="subdistrict" value="{{ assess.get('subdistrict', '') }}" placeholder="พิมพ์ตำบล..." autocomplete="off" oninput="liveSearchAddress(this.value)" class="w-full rounded-2xl border-2 border-blue-200 bg-white px-6 py-4 outline-none focus:border-blue-500 text-xl font-normal text-slate-900 shadow-sm transition-all">
+              <div id="addrDropdown" class="hidden absolute z-[1000] left-0 right-0 mt-2 bg-white border-2 border-blue-400 rounded-2xl shadow-2xl overflow-y-auto"></div>
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">อำเภอ/เขต</label>
-              <input type="text" name="district" value="{{ assess.get('district', '') }}" placeholder="ระบุอำเภอ"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+              <input type="text" id="district" name="district" value="{{ assess.get('district', '') }}" readonly class="w-full rounded-2xl border-2 input-readonly px-6 py-4 text-xl shadow-inner">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">จังหวัด</label>
-              <input type="text" name="province" value="{{ assess.get('province', '') }}" placeholder="ระบุจังหวัด"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+              <input type="text" id="province" name="province" value="{{ assess.get('province', '') }}" readonly class="w-full rounded-2xl border-2 input-readonly px-6 py-4 text-xl shadow-inner">
             </div>
             <div class="space-y-2">
               <label class="block text-slate-600 font-bold ml-1">รหัสไปรษณีย์</label>
-              <input type="text" name="postal_code" value="{{ assess.get('postal_code', '') }}" placeholder="ระบุรหัสไปรษณีย์"
-                     class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 bg-white shadow-sm text-xl font-medium">
+              <input type="text" id="postal_code" name="postal_code" value="{{ assess.get('postal_code', '') }}" readonly class="w-full rounded-2xl border-2 input-readonly px-6 py-4 text-xl shadow-inner">
             </div>
           </div>
 
-          <!-- 2.7 การพักอาศัย (ย้ายมาจากการ์ด 3) -->
-          <div class="space-y-6 pt-8 border-t border-slate-50">
+          <div class="space-y-6 pt-8 border-t border-slate-50" id="livingContainer">
             <label class="block text-slate-700 font-bold text-xl ml-1">การพักอาศัย</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {% for val, lab in [('alone','อยู่คนเดียว'), ('caregiver','มีผู้ดูแล')] %}
+              {% set l = assess.get('live', '') %}
               <label class="cursor-pointer">
-                <input type="radio" name="live" value="{{ val }}" class="hidden peer">
-                <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-indigo-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white hover:border-indigo-400 shadow-sm text-lg">{{ lab }}</div>
+                <input type="radio" name="live" value="alone" class="hidden peer" {% if l == 'alone' %}checked{% endif %}>
+                <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-indigo-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm text-lg hover:border-indigo-400">อยู่คนเดียว</div>
               </label>
-              {% endfor %}
+              <label class="cursor-pointer">
+                <input type="radio" name="live" value="caregiver" class="hidden peer" {% if l == 'caregiver' %}checked{% endif %}>
+                <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-indigo-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm text-lg hover:border-indigo-400">มีผู้ดูแล</div>
+              </label>
             </div>
-            <!-- ข้อมูลผู้ดูแล -->
             <div id="caregiver_detail_container" class="hidden p-6 rounded-[32px] bg-indigo-50 border-2 border-indigo-100 space-y-4">
-              <div class="space-y-2">
-                <label class="block text-indigo-700 font-bold text-sm ml-1">ชื่อ-นามสกุล ผู้ดูแล</label>
-                <input type="text" name="caregiver_name" value="{{ assess.get('caregiver_name', '') }}" placeholder="ระบุชื่อ-นามสกุล"
-                       class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-indigo-300 text-lg shadow-inner bg-white">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-indigo-700 font-bold text-sm ml-1">ชื่อ-นามสกุล ผู้ดูแล</label>
+                  <input type="text" name="caregiver_name" value="{{ assess.get('caregiver_name', '') }}" class="w-full rounded-2xl border-none px-5 py-3 outline-none text-lg shadow-inner bg-white font-medium">
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-indigo-700 font-bold text-sm ml-1">ความสัมพันธ์</label>
+                  <input type="text" name="caregiver_relation" value="{{ assess.get('caregiver_relation', '') }}" class="w-full rounded-2xl border-none px-5 py-3 outline-none text-lg shadow-inner bg-white font-medium">
+                </div>
               </div>
               <div class="space-y-2">
-                <label class="block text-indigo-700 font-bold text-sm ml-1">ความสัมพันธ์</label>
-                <input type="text" name="caregiver_relation" value="{{ assess.get('caregiver_relation', '') }}" placeholder="เช่น ลูก, หลาน, เพื่อนบ้าน"
-                       class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-indigo-300 text-lg shadow-inner bg-white">
-              </div>
-              <div class="space-y-2">
-                <label class="block text-indigo-700 font-bold text-sm ml-1">เบอร์โทรติดต่อฉุกเฉิน (ผู้ดูแล)</label>
-                <input type="text" name="emergency_phone" value="{{ assess.get('emergency_phone', '') }}" placeholder="0XXXXXXXXX"
-                       class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-indigo-300 text-lg shadow-inner bg-white">
+                <label class="block text-indigo-700 font-bold text-sm ml-1">เบอร์โทรติดต่อฉุกเฉิน</label>
+                <input type="tel" name="emergency_phone" value="{{ assess.get('emergency_phone', '') }}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-2xl border-none px-5 py-3 outline-none text-lg shadow-inner bg-white font-medium">
               </div>
             </div>
           </div>
@@ -181,64 +182,60 @@
     </div>
 
     <!-- 3. การรับรู้ -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-      <div class="px-6 py-5 bg-indigo-50 border-b border-indigo-100 font-bold text-xl text-indigo-900">3. การรับรู้</div>
+    <div class="rounded-[32px] bg-white shadow-xl border border-slate-100 overflow-hidden" id="section3">
+      <div class="px-8 py-5 bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 font-bold text-xl text-indigo-900 flex items-center gap-3">
+        <div class="w-2 h-8 bg-indigo-500 rounded-full"></div>
+        3. การรับรู้
+      </div>
       <div class="p-8 space-y-10">
-          <div class="space-y-8">
-            <!-- การได้ยิน (ซ้าย) -->
-            <div class="space-y-4">
-              <label class="block text-slate-600 font-bold ml-1">การได้ยิน (หูซ้าย)</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div class="space-y-4" id="hearingLeftContainer">
+              <label class="block text-slate-700 font-bold text-lg ml-1">การได้ยิน (หูซ้าย)</label>
+              {% set hl = assess.get('hearing_left', 'normal') %}
               <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
-                  <input type="radio" name="hearing_left" value="normal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-emerald-400">ปกติ</div>
+                  <input type="radio" name="hearing_left" value="normal" class="hidden peer" {% if hl == 'normal' %}checked{% endif %}>
+                  <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold">ปกติ</div>
                 </label>
                 <label class="cursor-pointer">
-                  <input type="radio" name="hearing_left" value="abnormal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-rose-400">ผิดปกติ</div>
+                  <input type="radio" name="hearing_left" value="abnormal" class="hidden peer" {% if hl == 'abnormal' %}checked{% endif %}>
+                  <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold">ผิดปกติ</div>
                 </label>
               </div>
-              <!-- รายละเอียดหูซ้าย -->
               <div id="hearing_left_detail_container" class="hidden p-5 rounded-[24px] bg-rose-50 border-2 border-rose-100 space-y-2">
-                <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุรายละเอียด (หูซ้าย)</label>
-                <textarea name="hearing_left_detail" rows="2" class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-rose-300 text-lg shadow-inner bg-white" placeholder="ระบุอาการผิดปกติ...">{{ assess.get('hearing_left_detail', '') }}</textarea>
+                <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุอาการผิดปกติ (หูซ้าย)</label>
+                <textarea name="hearing_left_detail" rows="2" class="w-full rounded-2xl border-none px-5 py-3 outline-none text-lg shadow-inner bg-white" placeholder="ระบุอาการผิดปกติ...">{{ assess.get('hearing_left_detail', '') }}</textarea>
               </div>
             </div>
-            
-            <!-- การได้ยิน (ขวา) -->
-            <div class="space-y-4">
-              <label class="block text-slate-600 font-bold ml-1">การได้ยิน (หูขวา)</label>
+            <div class="space-y-4" id="hearingRightContainer">
+              <label class="block text-slate-700 font-bold text-lg ml-1">การได้ยิน (หูขวา)</label>
+              {% set hr = assess.get('hearing_right', 'normal') %}
               <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
-                  <input type="radio" name="hearing_right" value="normal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-emerald-400">ปกติ</div>
+                  <input type="radio" name="hearing_right" value="normal" class="hidden peer" {% if hr == 'normal' %}checked{% endif %}>
+                  <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all font-bold">ปกติ</div>
                 </label>
                 <label class="cursor-pointer">
-                  <input type="radio" name="hearing_right" value="abnormal" class="hidden peer">
-                  <div class="py-4 border-2 rounded-[20px] text-center peer-checked:border-rose-500 peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold text-slate-700 border-slate-200 bg-white hover:border-rose-400">ผิดปกติ</div>
+                  <input type="radio" name="hearing_right" value="abnormal" class="hidden peer" {% if hr == 'abnormal' %}checked{% endif %}>
+                  <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-rose-500 peer-checked:text-white transition-all font-bold">ผิดปกติ</div>
                 </label>
               </div>
-              <!-- รายละเอียดหูขวา -->
               <div id="hearing_right_detail_container" class="hidden p-5 rounded-[24px] bg-rose-50 border-2 border-rose-100 space-y-2">
-                <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุรายละเอียด (หูขวา)</label>
-                <textarea name="hearing_right_detail" rows="2" class="w-full rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-rose-300 text-lg shadow-inner bg-white" placeholder="ระบุอาการผิดปกติ...">{{ assess.get('hearing_right_detail', '') }}</textarea>
+                <label class="block text-rose-700 font-bold text-sm ml-1">โปรดระบุอาการผิดปกติ (หูขวา)</label>
+                <textarea name="hearing_right_detail" rows="2" class="w-full rounded-2xl border-none px-5 py-3 outline-none text-lg shadow-inner bg-white" placeholder="ระบุอาการผิดปกติ...">{{ assess.get('hearing_right_detail', '') }}</textarea>
               </div>
             </div>
           </div>
-
-          <!-- การมองเห็น -->
-          <div class="space-y-4">
-            <label class="block text-slate-600 font-bold ml-1">การมองเห็น (Vision Test / Snellen chart)</label>
+          <div class="space-y-4 pt-6 border-t border-slate-50">
+            <label class="block text-slate-700 font-bold text-lg ml-1">การมองเห็น (Vision Test / Snellen chart)</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
-                    <label class="block text-slate-500 text-sm font-semibold ml-1">ตาซ้าย (Left Eye)</label>
-                    <input type="text" name="vision_left" value="{{ assess.get('vision_left', '') }}" placeholder="ระบุผล (เช่น 20/70)"
-                           class="w-full rounded-[20px] border-2 border-slate-100 px-5 py-3 outline-none focus:border-indigo-400 text-lg shadow-sm bg-slate-50/50">
+                    <label class="text-slate-500 text-sm font-bold ml-1">ตาซ้าย (Left Eye)</label>
+                    <input type="text" name="vision_left" value="{{ assess.get('vision_left', '') }}" placeholder="ระบุผล" class="w-full rounded-2xl border-2 border-slate-100 px-5 py-3 outline-none bg-slate-50 focus:bg-white focus:border-indigo-400 transition-all text-lg shadow-sm font-medium">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-slate-500 text-sm font-semibold ml-1">ตาขวา (Right Eye)</label>
-                    <input type="text" name="vision_right" value="{{ assess.get('vision_right', '') }}" placeholder="ระบุผล (เช่น 20/20)"
-                           class="w-full rounded-[20px] border-2 border-slate-100 px-5 py-3 outline-none focus:border-indigo-400 text-lg shadow-sm bg-slate-50/50">
+                    <label class="text-slate-500 text-sm font-bold ml-1">ตาขวา (Right Eye)</label>
+                    <input type="text" name="vision_right" value="{{ assess.get('vision_right', '') }}" placeholder="ระบุผล" class="w-full rounded-2xl border-2 border-slate-100 px-5 py-3 outline-none bg-slate-50 focus:bg-white focus:border-indigo-400 transition-all text-lg shadow-sm font-medium">
                 </div>
             </div>
           </div>
@@ -246,169 +243,211 @@
     </div>
 
     <!-- 4. สุขภาพและพฤติกรรม -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
-        <div class="px-6 py-5 bg-emerald-50 border-b border-emerald-100 font-bold text-xl text-emerald-900">4. สุขภาพและพฤติกรรม</div>
+    <div class="rounded-[32px] bg-white shadow-xl border border-slate-100 overflow-hidden" id="section4">
+        <div class="px-8 py-5 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100 font-bold text-xl text-emerald-900 flex items-center gap-3">
+          <div class="w-2 h-8 bg-emerald-500 rounded-full"></div>
+          4. สุขภาพและพฤติกรรม
+        </div>
         <div class="p-8 space-y-10">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="space-y-2">
-                    <label class="block text-slate-700 font-bold">ส่วนสูง (ซม.)</label>
-                    <input type="number" name="height" placeholder="160" value="{{ assess.get('height', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
+                    <label class="block text-slate-700 font-bold text-lg">ส่วนสูง (ซม.)</label>
+                    <input type="number" name="height" value="{{ assess.get('height', '') }}" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white font-bold shadow-sm">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-slate-700 font-bold">น้ำหนัก (กก.)</label>
-                    <input type="number" name="weight" placeholder="60" value="{{ assess.get('weight', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
+                    <label class="block text-slate-700 font-bold text-lg">น้ำหนัก (กก.)</label>
+                    <input type="number" name="weight" value="{{ assess.get('weight', '') }}" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white font-bold shadow-sm">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-slate-700 font-bold">รอบเอว (ซม.)</label>
-                    <input type="number" name="waist" placeholder="85" value="{{ assess.get('waist', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white shadow-sm font-medium">
+                    <label class="block text-slate-700 font-bold text-lg">รอบเอว (ซม.)</label>
+                    <input type="number" name="waist" value="{{ assess.get('waist', '') }}" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 text-xl outline-none focus:border-emerald-400 bg-white font-bold shadow-sm">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div class="space-y-4">
-                    <label class="block text-slate-700 font-bold ml-1">การสูบบุหรี่</label>
+                    <label class="block text-slate-700 font-bold text-lg ml-1">การสูบบุหรี่</label>
+                    {% set sm = assess.get('smoke', 'none') %}
                     <div class="grid grid-cols-3 gap-3">
                         {% for val, lab in [('none','ไม่สูบ'), ('yes','สูบ'), ('quit','เลิกแล้ว')] %}
                         <label class="cursor-pointer">
-                            <input type="radio" name="smoke" value="{{ val }}" class="hidden peer">
-                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ lab }}</div>
+                            <input type="radio" name="smoke" value="{{ val }}" class="hidden peer" {% if sm == val %}checked{% endif %}>
+                            <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold shadow-sm">{{ lab }}</div>
                         </label>
                         {% endfor %}
                     </div>
-                    <p class="text-xs text-slate-500 mt-2 ml-1 italic leading-relaxed">
-                        (สูบบุหรี่ หมายถึง ปัจจุบันยังคงสูบหรือหยุดสูบไม่เกิน 1 ปี ก่อนการประเมิน)
-                    </p>
                 </div>
                 <div class="space-y-4">
-                    <label class="block text-slate-700 font-bold ml-1">การดื่มแอลกอฮอล์</label>
+                    <label class="block text-slate-700 font-bold text-lg ml-1">การดื่มแอลกอฮอล์</label>
+                    {% set al = assess.get('alcohol', 'none') %}
                     <div class="grid grid-cols-3 gap-3">
                         {% for val, lab in [('none','ไม่ดื่ม'), ('social','บางครั้ง'), ('daily','ทุกวัน')] %}
                         <label class="cursor-pointer">
-                            <input type="radio" name="alcohol" value="{{ val }}" class="hidden peer">
-                            <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ lab }}</div>
+                            <input type="radio" name="alcohol" value="{{ val }}" class="hidden peer" {% if al == val %}checked{% endif %}>
+                            <div class="py-4 border-2 rounded-2xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 transition-all font-bold shadow-sm">{{ lab }}</div>
                         </label>
                         {% endfor %}
                     </div>
-                    <!-- ปริมาณแอลกอฮอล์ (ปรากฏเมื่อดื่มทุกวัน) -->
-                    <div id="alcohol_daily_container" class="hidden p-5 rounded-[24px] bg-emerald-50 border-2 border-emerald-100 space-y-2">
-                        <label class="block text-emerald-700 font-bold text-sm ml-1">ปริมาณการดื่ม (ดื่มทุกวัน)</label>
-                        <div class="flex items-center gap-3">
-                            <input type="number" name="alcohol_daily_amount" value="{{ assess.get('alcohol_daily_amount', '') }}" placeholder="ระบุจำนวน"
-                                   class="flex-1 rounded-2xl border-none px-5 py-3 outline-none focus:ring-2 focus:ring-emerald-300 text-lg shadow-inner bg-white">
-                            <span class="text-emerald-700 font-bold">แก้ว/วัน</span>
-                        </div>
+                    <div id="alcohol_daily_container" class="hidden p-5 rounded-[24px] bg-emerald-50 border-2 border-emerald-100 flex items-center gap-4">
+                        <label class="text-emerald-800 font-bold">ปริมาณ:</label>
+                        <input type="number" name="alcohol_daily_amount" value="{{ assess.get('alcohol_daily_amount', '') }}" placeholder="ระบุ" class="w-24 rounded-xl border-none px-4 py-2 outline-none text-xl font-bold shadow-inner bg-white">
+                        <span class="text-emerald-800 font-bold">แก้ว/วัน</span>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-4 pt-6 border-t border-slate-50">
-                <label class="block text-slate-700 font-bold ml-1">โรคประจำตัว</label>
+                <label class="block text-slate-700 font-bold text-lg ml-1">โรคประจำตัว</label>
+                {% set cd = (assess.get('chronicDiseases') or '').split(',') %}
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {% for disease in [('diabetes','เบาหวาน'), ('kidney','ไต'), ('hypertension','ความดันสูง'), ('heart','หัวใจ'), ('cancer','มะเร็ง')] %}
+                    {% for key, lab in [('diabetes','เบาหวาน'), ('kidney','ไต'), ('hypertension','ความดันสูง'), ('heart','หัวใจ'), ('cancer','มะเร็ง')] %}
                     <label class="cursor-pointer">
-                        <input type="checkbox" name="chronicDiseases" value="{{ disease[0] }}" class="hidden peer">
-                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-100 peer-checked:border-emerald-500 peer-checked:text-emerald-700 border-slate-200 transition-all font-bold text-slate-700 bg-white shadow-sm hover:border-emerald-400">{{ disease[1] }}</div>
+                        <input type="checkbox" name="chronicDiseases" value="{{ key }}" class="hidden peer" {% if key in cd %}checked{% endif %}>
+                        <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-100 peer-checked:border-emerald-500 peer-checked:text-emerald-700 border-slate-200 transition-all font-bold">{{ lab }}</div>
                     </label>
                     {% endfor %}
                 </div>
                 <div class="pt-2">
-                    <input type="text" name="otherDisease" placeholder="โรคอื่นๆ (ถ้ามี)..." value="{{ assess.get('otherDisease', '') }}"
-                           class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-emerald-300 transition-all shadow-inner bg-white text-xl font-medium">
+                    <input type="text" name="otherDisease" placeholder="โรคอื่นๆ (ถ้ามี)..." value="{{ assess.get('otherDisease', '') }}" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-3 outline-none focus:border-emerald-300 shadow-inner bg-white text-xl font-medium">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ปุ่มล่าง -->
+    <!-- Buttons -->
     <div class="flex justify-between items-center mt-12 pb-16">
-      <a href="{{ url_for('nurse.dashboard') }}" class="px-10 py-4 bg-white border-2 border-slate-100 text-slate-500 rounded-[20px] font-bold text-lg">ยกเลิก</a>
-      <button type="submit" class="px-16 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[20px] font-black text-xl shadow-2xl">บันทึกและถัดไป</button>
+      <a href="{{ url_for('nurse.dashboard') }}" class="px-10 py-4 bg-white border-2 border-slate-100 text-slate-500 rounded-[20px] font-bold text-lg hover:bg-slate-50 transition-colors">ยกเลิก</a>
+      <button type="submit" class="px-16 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[24px] font-black text-2xl shadow-2xl hover:-translate-y-1 active:scale-95 transition-all">บันทึกและถัดไป</button>
     </div>
 
   </form>
 </div>
 
+<!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  const dob = document.getElementById("dob"), dobAd = document.getElementById("dob_ad"), age = document.getElementById("age");
-  function updateAge() {
-    if (!dob.value.includes("/")) return;
-    const parts = dob.value.split("/");
-    if (parts.length !== 3) return;
-    let [d, m, yBE] = parts.map(n => parseInt(n, 10));
-    if (yBE < 2400) return;
-    const yAD = yBE - 543;
-    const adStr = `${yAD}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    dobAd.value = adStr;
-    const birth = new Date(adStr), today = new Date();
-    let a = today.getFullYear() - birth.getFullYear();
-    if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) a--;
-    age.value = a >= 0 ? a : 0;
-  }
-  if (dob) { dob.addEventListener("change", updateAge); dob.addEventListener("input", updateAge); }
+// --- [1] Address Dropdown (Supabase API) ---
+let timer;
+async function liveSearchAddress(val) {
+    const dropdown = document.getElementById('addrDropdown');
+    if (val.length < 2) { dropdown.classList.add('hidden'); return; }
+    clearTimeout(timer);
+    timer = setTimeout(async () => {
+        try {
+            const resp = await fetch(`{{ url_for('nurse.address_search') }}?q=${encodeURIComponent(val)}`);
+            const data = await resp.json();
+            if (data.results && data.results.length > 0) {
+                dropdown.innerHTML = data.results.map(i => `<div onclick="fillAddr('${i.s}','${i.d}','${i.p}','${i.z}')" class="addr-item">
+                    <b>ต. ${i.s} &raquo; อ. ${i.d}</b><br><small>จ. ${i.p} | ${i.z}</small></div>`).join('');
+                dropdown.classList.remove('hidden');
+            } else { dropdown.classList.add('hidden'); }
+        } catch (e) { console.error(e); }
+    }, 300);
+}
+function fillAddr(s, d, p, z) {
+    document.getElementById('subdistrict').value = s;
+    document.getElementById('district').value = d;
+    document.getElementById('province').value = p;
+    document.getElementById('postal_code').value = z;
+    document.getElementById('addrDropdown').classList.add('hidden');
+}
 
-  function saveAndNavigate(url) {
-    document.getElementById('nextUrlInput').value = url;
-    document.getElementById('mainForm').submit();
-  }
+// --- [2] Age Calc ---
+function updateAge() {
+    const dob = document.getElementById("dob").value;
+    if (!dob.includes("/")) return;
+    const parts = dob.split("/"); if (parts.length !== 3) return;
+    const yAD = parseInt(parts[2]) - 543;
+    if (yAD < 1900) return;
+    document.getElementById("dob_ad").value = `${yAD}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+    const birth = new Date(yAD, parseInt(parts[1])-1, parseInt(parts[0]));
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+    document.getElementById("age").value = age >= 0 ? age : 0;
+}
 
-  function toggleHearingDetails() {
-    const hl = document.querySelector('input[name="hearing_left"]:checked');
-    const hr = document.querySelector('input[name="hearing_right"]:checked');
-    document.getElementById('hearing_left_detail_container')?.classList.toggle('hidden', !hl || hl.value !== 'abnormal');
-    document.getElementById('hearing_right_detail_container')?.classList.toggle('hidden', !hr || hr.value !== 'abnormal');
-  }
+// --- [3] Validation & Navigation (Red Border + Scroll) ---
+function validateForm() {
+    let isValid = true;
+    let firstError = null;
+    
+    // รายการฟิลด์ที่ต้องตรวจสอบ
+    const textFields = [
+        { name: 'name', label: 'ชื่อ' },
+        { name: 'surname', label: 'นามสกุล' },
+        { name: 'phone', label: 'หมายเลขโทรศัพท์' },
+        { name: 'subdistrict', label: 'ตำบล' }
+    ];
 
-  function toggleLivingDetails() {
-    const live = document.querySelector('input[name="live"]:checked');
-    document.getElementById('caregiver_detail_container')?.classList.toggle('hidden', !live || live.value !== 'caregiver');
-  }
+    textFields.forEach(f => {
+        const el = document.getElementById(f.name) || document.querySelector(`input[name="${f.name}"]`);
+        if (el) {
+            const val = el.value.trim();
+            let isError = !val;
+            
+            // เงื่อนไขพิเศษ: เบอร์โทรศัพท์ต้องครบ 10 หลัก
+            if (f.name === 'phone' && val && val.length !== 10) {
+                isError = true;
+            }
 
-  function toggleAlcoholDetails() {
-    const alcohol = document.querySelector('input[name="alcohol"]:checked');
-    document.getElementById('alcohol_daily_container')?.classList.toggle('hidden', !alcohol || alcohol.value !== 'daily');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const assess = {{ assess|tojson|safe if assess else '{}' }};
-    const radioFields = ['gender', 'marry', 'live', 'smoke', 'alcohol', 'hearing_left', 'hearing_right'];
-    radioFields.forEach(f => {
-        let val = assess[f];
-        if(!val) return;
-        if (f === 'gender') {
-            if (val === 'ชาย') val = 'male'; else if (val === 'หญิง') val = 'female';
+            if (isError) {
+                isValid = false; 
+                el.classList.add('field-error');
+                if (!firstError) firstError = el;
+            } else {
+                el.classList.remove('field-error');
+            }
         }
-        const el = document.querySelector(`input[name="${f}"][value="${val}"]`);
-        if(el) el.checked = true;
     });
 
-    // Event listeners for hearing details
-    document.querySelectorAll('input[name="hearing_left"], input[name="hearing_right"]').forEach(el => {
-        el.addEventListener('change', toggleHearingDetails);
-    });
-    toggleHearingDetails();
-
-    // Event listeners for living details
-    document.querySelectorAll('input[name="live"]').forEach(el => {
-        el.addEventListener('change', toggleLivingDetails);
-    });
-    toggleLivingDetails();
-
-    // Event listeners for alcohol details
-    document.querySelectorAll('input[name="alcohol"]').forEach(el => {
-        el.addEventListener('change', toggleAlcoholDetails);
-    });
-    toggleAlcoholDetails();
-
-    if(assess.chronicDiseases) {
-        assess.chronicDiseases.split(',').forEach(d => {
-            const el = document.querySelector(`input[name="chronicDiseases"][value="${d}"]`);
-            if(el) el.checked = true;
-        });
+    if (!isValid) {
+        window.cgaIsSubmitting = false;
+        if (firstError) {
+            try { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+            firstError.focus();
+        }
     }
+    return isValid;
+}
+
+document.getElementById('mainForm').onsubmit = function() {
+    return validateForm();
+};
+
+function validateAndNavigate(url) {
+    if (validateForm()) {
+        document.getElementById('nextUrlInput').value = url;
+        window.cgaIsSubmitting = true;
+        document.getElementById('mainForm').submit();
+    }
+}
+
+$(function() {
+    const phoneInput = document.getElementById("phone");
+    if (phoneInput && phoneInput.value.toLowerCase().trim() === 'none') {
+        phoneInput.value = '';
+    }
+
+    document.getElementById("dob")?.addEventListener("input", updateAge);
+    document.getElementById("dob")?.addEventListener("change", updateAge);
+    function refreshUI() {
+        const live = document.querySelector('input[name="live"]:checked')?.value;
+        document.getElementById('caregiver_detail_container')?.classList.toggle('hidden', live !== 'caregiver');
+        const alc = document.querySelector('input[name="alcohol"]:checked')?.value;
+        document.getElementById('alcohol_daily_container')?.classList.toggle('hidden', alc !== 'daily');
+        
+        const hl = document.querySelector('input[name="hearing_left"]:checked')?.value;
+        document.getElementById('hearing_left_detail_container')?.classList.toggle('hidden', hl !== 'abnormal');
+        const hr = document.querySelector('input[name="hearing_right"]:checked')?.value;
+        document.getElementById('hearing_right_detail_container')?.classList.toggle('hidden', hr !== 'abnormal');
+    }
+    document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', refreshUI));
+    refreshUI();
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('subdistrictContainer').contains(e.target)) document.getElementById('addrDropdown').classList.add('hidden');
+    });
     updateAge();
-  });
+});
 </script>
 {% endblock %}

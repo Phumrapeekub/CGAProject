@@ -1,6 +1,17 @@
 {% extends "nurse/base.html" %}
 {% block title %}ขั้นตอนที่ 3: สุขภาพจิตและกลุ่มอาการสูงอายุ | CGA Hospital{% endblock %}
 {% block content %}
+<style>
+  /* สไตล์สำหรับคำถามที่ลืมตอบ */
+  .question-error {
+    background-color: #fef2f2 !important;
+    border: 2px solid #ef4444 !important;
+    border-radius: 1.5rem !important;
+    box-shadow: 0 0 0 4px #fecaca !important;
+    padding: 1rem !important;
+    transition: all 0.3s ease;
+  }
+</style>
 
 <div class="max-w-6xl mx-auto px-4 py-6 space-y-6 text-slate-700 font-normal">
 
@@ -23,19 +34,16 @@
     </div>
   </div>
 
-  <!-- แถบนำทางขั้นตอน 1-3 -->
+  <!-- แถบนำทางขั้นตอน 1-3 (เน้นหน้าปัจจุบันเป็นสีเขียว) -->
   <div class="flex justify-center items-center gap-2 md:gap-4 py-4">
     <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">1</button>
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">1</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
     <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">2</button>
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">2</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
     <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_tgds', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all
-              bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">3</button>
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all cursor-default bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">3</button>
   </div>
 
   <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_tgds_save', header_id=header_id) }}" class="space-y-8 font-normal">
@@ -158,16 +166,17 @@
         ] %}
         
         {% for q_text in tgds_qs %}
+        {% set q_idx = loop.index %}
         <div class="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-slate-50 last:border-0 gap-4">
-            <div class="text-slate-700 font-medium">{{ loop.index }}. {{ q_text }}</div>
+            <div class="text-slate-700 font-medium">{{ q_idx }}. {{ q_text }}</div>
             <div class="grid grid-cols-2 gap-3 shrink-0">
               <label class="cursor-pointer">
-                <input type="radio" name="tgds15Answers_{{ loop.index }}" value="yes" class="hidden peer q-radio" onchange="calcTGDS()">
-                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all border-slate-200 bg-white hover:border-blue-400 font-bold text-slate-700 shadow-sm">ใช่</div>
+                <input type="radio" name="tgds15Answers_{{ q_idx }}" value="no" class="hidden peer q-radio" onchange="calcTGDS()">
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition-all border-slate-200 bg-white hover:border-rose-400 font-bold text-slate-700 shadow-sm">ไม่ใช่</div>
               </label>
               <label class="cursor-pointer">
-                <input type="radio" name="tgds15Answers_{{ loop.index }}" value="no" class="hidden peer q-radio" onchange="calcTGDS()">
-                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white transition-all border-slate-200 bg-white hover:border-blue-400 font-bold text-slate-700 shadow-sm">ไม่ใช่</div>
+                <input type="radio" name="tgds15Answers_{{ q_idx }}" value="yes" class="hidden peer q-radio" onchange="calcTGDS()">
+                <div class="px-8 py-2 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 transition-all border-slate-200 bg-white hover:border-blue-400 font-bold text-slate-700 shadow-sm">ใช่</div>
               </label>
             </div>
         </div>
@@ -188,7 +197,52 @@
             {% set q8_qs = [
                 "คิดอยากตาย หรือคิดว่าตายไปจะดีกว่า",
                 "อยากทำร้ายตัวเอง หรือทำให้ตัวเองบาดเจ็บ",
-                "คิดเกี่ยวกับการฆ่าตัวตาย",
+                "คิดเกี่ยวกับการฆ่าตัวตาย"
+            ] %}
+
+            {% for q_text in q8_qs %}
+            <div class="space-y-4 pb-8 border-b border-slate-50 last:border-0">
+                <div class="text-slate-700 font-medium text-lg leading-relaxed">{{ loop.index }}. {{ q_text }}</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="depression8Q_{{ loop.index }}" value="no" class="hidden peer">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 hover:border-emerald-400 shadow-sm">
+                            ไม่มี
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="depression8Q_{{ loop.index }}" value="yes" class="hidden peer">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 hover:border-rose-400 shadow-sm">
+                            มี
+                        </div>
+                    </label>
+                </div>
+            </div>
+            {% if loop.index == 3 %}
+            {# คำถามย่อยต่อจากข้อ 3 #}
+            <div id="q8_3_followup" class="space-y-4 pb-8 border-b border-slate-50 last:border-0 pl-8 bg-slate-50/50 rounded-2xl p-4">
+                <div class="text-slate-700 font-medium text-lg leading-relaxed italic">
+                    (ถ้าตอบว่ามี ให้ถามต่อ) ท่านสามารถควบคุมความอยากฆ่าตัวตายที่ท่านคิดอยู่นั้นได้หรือไม่ หรือบอกได้ไหมว่าคงจะไม่ทำตามความคิดนั้นในขณะนี้
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="depression8Q_3_followup" value="no" class="hidden peer">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 hover:border-emerald-400 shadow-sm">
+                            ควบคุมได้ (ไม่ใช่)
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="depression8Q_3_followup" value="yes" class="hidden peer">
+                        <div class="py-4 border-2 border-slate-200 rounded-2xl text-center text-slate-700 font-bold bg-white transition-all peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 hover:border-rose-400 shadow-sm">
+                            ควบคุมไม่ได้ (ใช่)
+                        </div>
+                    </label>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% set q8_remain = [
                 "มีแผนการที่จะฆ่าตัวตายหรือไม่",
                 "ได้เตรียมการที่จะทำร้ายตนเองหรือเตรียมการจะฆ่าตัวตาย โดยตั้งใจว่าจะให้ตายจริงๆ",
                 "ได้ทำให้ตนเองบาดเจ็บแต่ไม่ตั้งใจที่จะทำให้เสียชีวิต",
@@ -196,22 +250,11 @@
                 "ตลอดชีวิต ท่านเคยพยายามฆ่าตัวตาย"
             ] %}
 
-            {% for q_text in q8_qs %}
-            {% set q_idx = loop.index %}
-            
-            {# ถ้าไม่ใช่ Baseline (ครั้งแรก) ให้ข้ามข้อ 8 (ประวัติอดีต) #}
+            {% for q_text in q8_remain %}
+            {% set q_idx = loop.index + 3 %}
             {% if not (not is_baseline and q_idx == 8) %}
-            
             <div class="space-y-4 pb-8 border-b border-slate-50 last:border-0">
                 <div class="text-slate-700 font-medium text-lg leading-relaxed">{{ q_idx }}. {{ q_text }}</div>
-                
-                {% if q_idx == 3 %}
-                <div class="p-4 bg-indigo-50 rounded-xl text-sm text-indigo-700 border border-indigo-100 flex items-start gap-3">
-                    <svg class="w-5 h-5 text-indigo-500 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>ถ้าตอบว่า <b>มี</b> ให้ถามต่อ "ท่านสามารถควบคุมความอยากฆ่าตัวตายที่ท่านคิดอยู่นั้นได้หรือไม่ หรือบอกได้ไหมว่าคงจะไม่ทำตามความคิดนั้นในขณะนี้"</span>
-                </div>
-                {% endif %}
-
                 <div class="grid grid-cols-2 gap-4">
                     <label class="cursor-pointer group">
                         <input type="radio" name="depression8Q_{{ q_idx }}" value="no" class="hidden peer">
@@ -227,7 +270,6 @@
                     </label>
                 </div>
             </div>
-            
             {% endif %}
             {% endfor %}
         </div>
@@ -262,9 +304,56 @@
   }
 
   function saveAndNavigate(url) {
-    document.getElementById('nextUrlInput').value = url;
-    document.getElementById('mainForm').submit();
+    if (validateTGDSForm()) {
+            document.getElementById('nextUrlInput').value = url;
+            window.cgaIsSubmitting = true;
+            document.getElementById('mainForm').submit();
+    }
   }
+
+  function validateTGDSForm() {
+    let isValid = true;
+    let firstErrorElement = null;
+
+    // 1. ตรวจสอบ Radio Groups ทั้งหมดในฟอร์ม
+    const radioGroups = new Set();
+    document.querySelectorAll('input[type="radio"]').forEach(r => radioGroups.add(r.name));
+
+    radioGroups.forEach(name => {
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        const radioEl = document.querySelector(`input[name="${name}"]`);
+        
+        // หา Container ที่ครอบคลุมคำถาม (รวม 2Q, TGDS และ 8Q)
+        const container = radioEl.closest('.flex-col') || radioEl.closest('.space-y-4') || radioEl.closest('.py-4') || radioEl.closest('.space-y-3') || radioEl.closest('.pb-8');
+
+        if (!checked) {
+            isValid = false;
+            if (container) {
+                container.classList.add('question-error');
+                if (!firstErrorElement) firstErrorElement = container;
+            }
+        } else {
+            if (container) {
+                container.classList.remove('question-error', 'bg-red-50', 'ring-4', 'ring-red-100', 'rounded-2xl', 'p-4');
+            }
+        }
+    });
+
+    if (!isValid) {
+        window.cgaIsSubmitting = false;
+        if (firstErrorElement) {
+            // เลื่อนหน้าจอไปยังจุดที่ลืมกรอกจุดแรก
+            try { firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+        }
+    }
+
+    return isValid;
+  }
+
+  // ปรับปรุง onsubmit ของ Form
+  document.getElementById('mainForm').onsubmit = function() {
+    return validateTGDSForm();
+  };
 
   function toggleIncontinenceDetails() {
     const inc = document.querySelector('input[name="incontinence"]:checked');

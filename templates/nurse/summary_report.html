@@ -8,34 +8,34 @@
     
     <!-- Top Action Bar (Back & Print) -->
     <div class="flex items-center justify-between no-print">
-        <a href="{{ url_for('nurse.dashboard') }}" class="flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-3xl hover:bg-slate-50 hover:border-indigo-100 hover:text-indigo-600 transition-all shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="font-black text-sm uppercase tracking-tight">กลับหน้าหลัก</span>
+        <a href="{{ url_for('nurse.dashboard') }}" class="flex items-center gap-2 px-6 py-4 bg-white border-2 border-slate-100 text-slate-600 rounded-3xl hover:bg-slate-50 hover:border-indigo-100 hover:text-indigo-600 transition-all shadow-sm">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="font-black text-base uppercase tracking-tight">กลับหน้าหลัก</span>
         </a>
-        <button onclick="window.print()" class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+        <button onclick="window.print()" class="px-8 py-4 bg-indigo-600 text-white rounded-3xl font-bold text-lg shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
             พิมพ์รายงาน
         </button>
     </div>
 
     <!-- Header & Filter Card -->
-    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-        <div class="space-y-1">
-            <h1 class="text-4xl font-black text-slate-900 tracking-tight">CGA Summary Report</h1>
-            <p class="text-slate-500 font-medium">ภาพรวมสถิติการคัดกรองประชากรผู้สูงอายุ</p>
+    <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        <div class="space-y-2">
+            <h1 class="text-5xl font-black text-slate-900 tracking-tight">CGA Summary Report</h1>
+            <p class="text-slate-500 font-medium text-lg">ภาพรวมสถิติการคัดกรองประชากรผู้สูงอายุ</p>
         </div>
         
         <form method="GET" class="flex flex-wrap items-end gap-4 bg-slate-50 p-6 rounded-[32px] w-full lg:w-auto no-print">
             <div class="flex-1 sm:flex-initial space-y-1">
-                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">เริ่มต้น</label>
+                <label class="text-xs font-black text-slate-400 uppercase ml-2">เริ่มต้น</label>
                 <input type="date" name="start_date" value="{{ data.start_date }}" 
-                       class="block w-full sm:w-40 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                       class="block w-full sm:w-48 px-5 py-3 bg-white border border-slate-200 rounded-xl text-base font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
             <div class="flex-1 sm:flex-initial space-y-1">
-                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">สิ้นสุด</label>
+                <label class="text-xs font-black text-slate-400 uppercase ml-2">สิ้นสุด</label>
                 <input type="date" name="end_date" value="{{ data.end_date }}"
-                       class="block w-full sm:w-40 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                       class="block w-full sm:w-48 px-5 py-3 bg-white border border-slate-200 rounded-xl text-base font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
-            <button type="submit" class="w-full sm:w-auto px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+            <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-lg hover:bg-slate-800 transition-all">
                 กรองข้อมูล
             </button>
         </form>
@@ -44,54 +44,69 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <!-- Total -->
-        <div class="bg-gradient-to-br from-white to-slate-50 p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="bg-white p-8 rounded-[24px] border border-slate-100 border-t-4 border-t-blue-500 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-center min-h-[180px] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110 -z-0"></div>
+            <div class="relative z-10">
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <p class="text-base font-black text-slate-500 uppercase tracking-widest mb-2">คัดกรองสะสม</p>
+                <div class="flex items-baseline gap-2">
+                    <p class="text-7xl font-black text-slate-800 tracking-tight">{{ data.ov.total or 0 }}</p>
+                    <span class="text-lg font-bold text-slate-400">ราย</span>
+                </div>
             </div>
-            <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-2">คัดกรองสะสม</p>
-            <p class="text-6xl font-black text-slate-800 leading-none group-hover:text-blue-600 transition-colors">{{ data.ov.total or 0 }}</p>
-            <p class="text-sm font-bold text-slate-400 mt-2">ราย</p>
         </div>
         
         <!-- MMSE -->
-        <div class="bg-gradient-to-br from-rose-50 to-white p-8 rounded-[32px] border border-rose-100 shadow-sm hover:shadow-xl hover:shadow-rose-100 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
-            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="bg-white p-8 rounded-[24px] border border-slate-100 border-t-4 border-t-rose-500 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-center min-h-[180px] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110 -z-0"></div>
+            <div class="relative z-10">
+                <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <p class="text-base font-black text-rose-500 uppercase tracking-widest mb-2">เสี่ยงสมองเสื่อม</p>
+                <div class="flex items-baseline gap-3">
+                    <p class="text-7xl font-black text-rose-600 tracking-tight">{{ data.ov.mmse_risk or 0 }}</p>
+                    <span class="text-sm font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-lg">
+                        {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
+                    </span>
+                </div>
             </div>
-            <p class="text-sm font-black text-rose-400 uppercase tracking-widest mb-2">เสี่ยงสมองเสื่อม</p>
-            <p class="text-6xl font-black text-rose-600 leading-none">{{ data.ov.mmse_risk or 0 }}</p>
-            <p class="text-sm font-bold text-rose-400 mt-2 bg-white/60 inline-block px-3 py-1 rounded-full mx-auto backdrop-blur-sm">
-                {{ ((data.ov.mmse_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
-            </p>
         </div>
         
         <!-- TGDS -->
-        <div class="bg-gradient-to-br from-orange-50 to-white p-8 rounded-[32px] border border-orange-100 shadow-sm hover:shadow-xl hover:shadow-orange-100 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group">
-            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="bg-white p-8 rounded-[24px] border border-slate-100 border-t-4 border-t-amber-500 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-center min-h-[180px] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110 -z-0"></div>
+            <div class="relative z-10">
+                <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <p class="text-base font-black text-amber-500 uppercase tracking-widest mb-2">เสี่ยงภาวะซึมเศร้า</p>
+                <div class="flex items-baseline gap-3">
+                    <p class="text-7xl font-black text-amber-600 tracking-tight">{{ data.ov.tgds_risk or 0 }}</p>
+                    <span class="text-sm font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg">
+                        {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
+                    </span>
+                </div>
             </div>
-            <p class="text-sm font-black text-orange-400 uppercase tracking-widest mb-2">เสี่ยงภาวะซึมเศร้า</p>
-            <p class="text-6xl font-black text-orange-600 leading-none">{{ data.ov.tgds_risk or 0 }}</p>
-            <p class="text-sm font-bold text-orange-400 mt-2 bg-white/60 inline-block px-3 py-1 rounded-full mx-auto backdrop-blur-sm">
-                {{ ((data.ov.tgds_risk / data.ov.total * 100) if data.ov.total > 0 else 0) | round(1) }}%
-            </p>
         </div>
         
         <!-- Suicide -->
-        <div class="bg-gradient-to-br from-red-600 to-rose-700 text-white p-8 rounded-[32px] shadow-xl hover:shadow-2xl hover:shadow-red-200 hover:-translate-y-2 transition-all duration-300 text-center flex flex-col justify-center min-h-[200px] group relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-white/20 transition-all"></div>
-            
-            <p class="text-sm font-bold text-red-100 uppercase tracking-[0.2em] mb-2 relative z-10">ผู้มีความเสี่ยงฆ่าตัวตาย</p>
-            {% set suicide_count = data.high_risk | selectattr('suicide', 'equalto', 'yes') | list | length %}
-            <p class="text-7xl font-black tracking-tighter leading-none relative z-10">{{ suicide_count }}</p>
-            
-            <div class="mt-4 flex justify-center relative z-10">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 border border-white/30 backdrop-blur-md group-hover:bg-white/30 transition-all">
-                    <span class="relative flex h-2.5 w-2.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-400"></span>
+        <div class="bg-white p-8 rounded-[24px] border border-slate-100 border-t-4 border-t-red-600 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-center min-h-[180px] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110 -z-0"></div>
+            <div class="relative z-10">
+                <div class="w-14 h-14 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mb-5 shadow-sm relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-xl bg-red-400 opacity-20"></span>
+                    <svg class="w-7 h-7 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <p class="text-base font-black text-red-600 uppercase tracking-widest mb-2">เสี่ยงฆ่าตัวตาย</p>
+                {% set suicide_count = data.high_risk | selectattr('suicide', 'equalto', 'yes') | list | length %}
+                <div class="flex items-baseline gap-3">
+                    <p class="text-7xl font-black text-red-600 tracking-tight">{{ suicide_count }}</p>
+                    <span class="text-sm font-bold text-white bg-red-500 px-3 py-1.5 rounded-lg shadow-sm uppercase tracking-wider">
+                        เฝ้าระวัง
                     </span>
-                    <span class="text-xs font-bold text-white uppercase tracking-wide">เฝ้าระวัง</span>
                 </div>
             </div>
         </div>
@@ -136,7 +151,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     {% for p in data.high_risk %}
-                    <tr class="hover:bg-slate-50/50 transition-colors">
+                    <tr id="row-{{ p.header_id }}" class="hover:bg-slate-50/50 transition-colors">
                         <td class="px-10 py-6">
                             <p class="text-slate-900 font-black text-lg">{{ p.full_name }}</p>
                             <p class="text-slate-500 font-bold text-sm mt-1">
@@ -166,7 +181,7 @@
                             {% endif %}
                         </td>
                         <td class="px-10 py-6 text-right">
-                            <a href="{{ url_for('nurse.assess_summary', header_id=p.header_id) if p.header_id else '#' }}" class="text-indigo-600 font-black text-sm hover:underline hover:text-indigo-800">ดูรายละเอียด</a>
+                            <a href="{{ url_for('nurse.assess_summary', header_id=p.header_id) }}?from=reports" class="text-indigo-600 font-black text-sm hover:underline hover:text-indigo-800">ดูรายละเอียด</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -238,6 +253,37 @@
             layout: { padding: 20 }
         }
     });
+</script>
+
+<script>
+  // --- Scroll Restoration Highlight ---
+  window.addEventListener('load', () => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#row-')) {
+        setTimeout(() => {
+            const targetRow = document.querySelector(hash);
+            if (targetRow) {
+                // คำนวณตำแหน่งให้อยู่กึ่งกลางหน้าจอ
+                const elementPosition = targetRow.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.scrollY - (window.innerHeight / 2) + (targetRow.offsetHeight / 2);
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // เอฟเฟกต์กะพริบไฮไลท์
+                targetRow.style.transition = 'none';
+                targetRow.classList.add('bg-indigo-50', 'ring-4', 'ring-indigo-400', 'z-10', 'relative');
+                
+                setTimeout(() => {
+                    targetRow.style.transition = 'all 1.5s ease';
+                    targetRow.classList.remove('bg-indigo-50', 'ring-4', 'ring-indigo-400');
+                }, 3000);
+            }
+        }, 300);
+    }
+  });
 </script>
 
 <style>

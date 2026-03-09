@@ -8,7 +8,7 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="space-y-1">
       <div class="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
-        <a href="{{ url_for('nurse.patients') }}" class="hover:text-indigo-600 transition-colors">ทะเบียนผู้ป่วย</a>
+        <a href="{{ url_for('nurse.patients') }}#row-{{ patient.hn }}" class="hover:text-indigo-600 transition-colors">ทะเบียนผู้ป่วย</a>
         <span>/</span>
         <span class="text-slate-600">ประวัติการประเมิน</span>
       </div>
@@ -18,7 +18,7 @@
         <div class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-sm border border-indigo-100 uppercase tracking-tighter">
             HN: {{ patient.hn }}
         </div>
-        <a href="{{ url_for('nurse.patients') }}" class="px-6 py-2 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold hover:bg-slate-50 transition-all">
+        <a href="{{ url_for('nurse.patients') }}#row-{{ patient.hn }}" class="px-6 py-2 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold hover:bg-slate-50 transition-all">
             ย้อนกลับ
         </a>
     </div>

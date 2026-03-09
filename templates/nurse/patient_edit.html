@@ -10,7 +10,7 @@
       <h1 class="text-3xl font-black text-slate-900 tracking-tight">แก้ไขทะเบียนประวัติ</h1>
       <p class="text-slate-500 font-medium">Update Patient Demographics & Records</p>
     </div>
-    <a href="{{ url_for('nurse.patients') }}" 
+    <a href="{{ url_for('nurse.patients') }}#row-{{ patient.hn }}" 
        class="px-6 py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold hover:bg-slate-50 transition-all">
        ยกเลิก / กลับ
     </a>

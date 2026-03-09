@@ -1,6 +1,16 @@
 {% extends "nurse/base.html" %}
 {% block title %}ขั้นตอนที่ 2: สมรรถภาพสมอง (MMSE-T){% endblock %}
 {% block content %}
+<style>
+  .field-error {
+    border: 2px solid #ef4444 !important;
+    background-color: #fef2f2 !important;
+    border-radius: 1.5rem !important;
+    padding: 10px !important;
+    box-shadow: 0 0 0 4px #fecaca !important;
+    transition: all 0.3s ease;
+  }
+</style>
 
 <div class="max-w-6xl mx-auto px-4 py-6 space-y-6 text-slate-700">
 
@@ -23,26 +33,42 @@
     </div>
   </div>
 
-  <!-- แถบนำทางขั้นตอน 1-3 -->
+  <!-- แถบนำทางขั้นตอน 1-3 (เน้นหน้าปัจจุบันเป็นสีเขียว) -->
   <div class="flex justify-center items-center gap-2 md:gap-4 py-4">
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">1</button>
+    <button type="submit" onclick="window.skipMmseValidation=true; document.getElementById('nextUrlInput').value='{{ url_for('nurse.assess_session', header_id=header_id) }}';"
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">1</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_mmse', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all
-              bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">2</button>
+    <button type="button" 
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all cursor-default bg-emerald-500 text-white ring-4 ring-emerald-100 text-xl">2</button>
     <div class="w-10 h-0.5 bg-slate-200"></div>
-    <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_tgds', header_id=header_id) }}')"
-       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all
-              bg-white text-slate-400 border border-slate-200 hover:border-blue-400 text-xl">3</button>
+    <button type="submit" onclick="window.skipMmseValidation=true; document.getElementById('nextUrlInput').value='{{ url_for('nurse.assess_tgds', header_id=header_id) }}';"
+       class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer bg-white text-slate-400 border border-slate-200 hover:border-blue-400 hover:text-blue-500 text-xl">3</button>
   </div>
 
-  <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_mmse_save', header_id=header_id) }}" class="space-y-8 font-normal">
+  <!-- [NEW] แถบบอกตำแหน่งหน้าย่อยของ MMSE (1-4) -->
+  <div class="relative w-full max-w-lg mx-auto py-2 mb-4">
+    <div class="flex justify-between items-center relative z-10">
+      {% for i in range(1, 5) %}
+      <div class="flex flex-col items-center gap-1 cursor-pointer group" onclick="jumpToMmseStep({{ i }})">
+        <div id="substep-dot-{{ i }}" class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all duration-300 bg-white text-slate-300 border-slate-200 shadow-sm group-hover:border-blue-400 group-hover:text-blue-500">
+          {{ i }}
+        </div>
+        <span id="substep-label-{{ i }}" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter transition-all duration-300 group-hover:text-blue-500">ส่วนที่ {{ i }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="absolute top-[18px] left-4 right-4 h-1 bg-slate-100 -z-0 rounded-full overflow-hidden">
+      <div id="substep-progress" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <form id="mainForm" method="POST" action="{{ url_for('nurse.assess_mmse_save', header_id=header_id) }}" class="space-y-8 font-normal" onsubmit="return validateMMSEForm()">
     <input type="hidden" name="next_url" id="nextUrlInput">
 
+    <!-- ================== STEP 1 ================== -->
+    <div id="mmse-step-1" class="mmse-step-container space-y-8 animate-in fade-in duration-500">
     <!-- 0. ระดับการศึกษาและสรุปคะแนน -->
-    <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
+    <div id="eduContainer" class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
       <div class="px-6 py-5 bg-rose-50 flex items-center justify-between">
         <div class="flex items-center gap-3 text-rose-900">
           <div class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 grid place-items-center font-normal">M</div>
@@ -72,19 +98,19 @@
     </div>
 
     {% macro mmse_q(q_no, label, max_score=1) %}
-    <div class="py-6 border-b border-slate-50 last:border-0 space-y-4">
+    <div class="py-6 border-b border-slate-50 last:border-0 space-y-4 q-container" id="q_container_{{ q_no }}">
         <div class="flex justify-between items-start gap-4">
             <div class="text-slate-700 text-lg leading-snug">{{ q_no }} {{ label }}</div>
             <div class="shrink-0 bg-sky-100 text-sky-700 text-[10px] px-2 py-1 rounded uppercase tracking-tighter">{{ max_score }} คะแนน</div>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <label class="cursor-pointer">
-                <input type="radio" name="q{{ q_no }}" value="{{ max_score }}" class="hidden peer q-radio">
-                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ถูกต้อง</div>
-            </label>
-            <label class="cursor-pointer">
                 <input type="radio" name="q{{ q_no }}" value="0" class="hidden peer q-radio">
                 <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ผิด / ไม่ตอบ</div>
+            </label>
+            <label class="cursor-pointer">
+                <input type="radio" name="q{{ q_no }}" value="{{ max_score }}" class="hidden peer q-radio">
+                <div class="py-3 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm">ถูกต้อง</div>
             </label>
         </div>
     </div>
@@ -114,6 +140,10 @@
         </div>
     </div>
 
+    </div> <!-- End Step 1 -->
+
+    <!-- ================== STEP 2 ================== -->
+    <div id="mmse-step-2" class="mmse-step-container space-y-8 hidden animate-in fade-in duration-500">
     <!-- 3. การบันทึกความจำ (Registration) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
         <div class="px-6 py-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
@@ -143,6 +173,12 @@
             </div>
             <div>
                 <p class="text-slate-600 mb-3 ml-1 font-medium">จำนวนชื่อที่ผู้ป่วยตอบถูก (คะแนน):</p>
+                <div class="flex gap-2 items-center mb-4">
+                    <input type="text" id="stt_input_q3" name="stt_input_q3" placeholder="ข้อความที่ได้ยิน..." class="flex-1 rounded-2xl border-2 border-slate-200 px-4 py-3 outline-none focus:border-blue-400 text-lg" oninput="this.value = this.value.replace(/[^A-Za-zก-๙\s]/g, ''); autoCheckQ3_5('q3')">
+                    <button type="button" onclick="startSTT('stt_input_q3', 'q3')" class="shrink-0 w-14 h-14 bg-white border-2 border-slate-200 rounded-2xl flex items-center justify-center hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm text-2xl">
+                        🎤
+                    </button>
+                </div>
                 <div class="grid grid-cols-4 gap-4">
                     {% for s in [0, 1, 2, 3] %}
                     <label class="cursor-pointer">
@@ -206,6 +242,10 @@
         </div>
     </div>
 
+    </div> <!-- End Step 2 -->
+
+    <!-- ================== STEP 3 ================== -->
+    <div id="mmse-step-3" class="mmse-step-container space-y-8 hidden animate-in fade-in duration-500">
     <!-- 5. การระลึกได้ (Recall) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
         <div class="px-6 py-4 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
@@ -227,6 +267,12 @@
             </div>
             <div>
                 <p class="text-slate-600 mb-3 ml-1 font-medium">จำนวนชื่อที่ผู้ป่วยนึกออก (คะแนน):</p>
+                <div class="flex gap-2 items-center mb-4">
+                    <input type="text" id="stt_input_q5" name="stt_input_q5" placeholder="ข้อความที่ได้ยิน..." class="flex-1 rounded-2xl border-2 border-slate-200 px-4 py-3 outline-none focus:border-blue-400 text-lg" oninput="this.value = this.value.replace(/[^A-Za-zก-๙\s]/g, ''); autoCheckQ3_5('q5')">
+                    <button type="button" onclick="startSTT('stt_input_q5', 'q5')" class="shrink-0 w-14 h-14 bg-white border-2 border-slate-200 rounded-2xl flex items-center justify-center hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm text-2xl">
+                        🎤
+                    </button>
+                </div>
                 <div class="grid grid-cols-4 gap-4">
                     {% for s in [0, 1, 2, 3] %}
                     <label class="cursor-pointer">
@@ -278,21 +324,31 @@
                 "ตั้งใจฟังนะคะ หนูจะพูดประโยคหนึ่ง แล้วให้คุณ (ตา,ยาย) พูดตามหนูเพียงครั้งเดียวนะคะ ประโยคนั้นคือ: <br>
                 <span class="text-2xl text-sky-600 font-bold">ใครใคร่ขายไก่ไข่</span>"
             </div>
-            <div>
+            <div class="q-container" id="q_container_7">
+                <div class="flex gap-2 items-center mb-4">
+                    <input type="text" id="stt_input_q7" name="stt_input_q7" placeholder="ข้อความที่ได้ยิน..." class="flex-1 rounded-2xl border-2 border-slate-200 px-4 py-3 outline-none focus:border-blue-400 text-lg" oninput="this.value = this.value.replace(/[^A-Za-zก-๙\s]/g, ''); autoCheckQ7()">
+                    <button type="button" onclick="startSTT('stt_input_q7', 'q7')" class="shrink-0 w-14 h-14 bg-white border-2 border-slate-200 rounded-2xl flex items-center justify-center hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm text-2xl">
+                        🎤
+                    </button>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="q7" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ถูกต้อง (1 คะแนน)</div>
-                    </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q7" value="0" class="hidden peer q-radio">
                         <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ไม่ถูกต้อง (0 คะแนน)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="q7" value="1" class="hidden peer q-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ถูกต้อง (1 คะแนน)</div>
                     </label>
                 </div>
             </div>
         </div>
     </div>
 
+    </div> <!-- End Step 3 -->
+
+    <!-- ================== STEP 4 ================== -->
+    <div id="mmse-step-4" class="mmse-step-container space-y-8 hidden animate-in fade-in duration-500">
     <!-- 8. การเข้าใจความหมายและทำตามคำสั่ง (Verbal command) -->
     <div class="rounded-[26px] bg-white shadow-xl border border-slate-100 overflow-hidden">
         <div class="px-6 py-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between">
@@ -345,15 +401,15 @@
                 "หนูจะชูกระดาษแผ่นหนึ่งให้ดูนะคะ ให้คุณ (ตา/ยาย) อ่านแล้วทำตามที่เขียนไว้ในแผ่นนี้นะคะ": <br>
                 <span class="text-2xl text-cyan-600 underline font-bold">หลับตา</span>
             </div>
-            <div>
+            <div class="q-container" id="q_container_9">
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="q9" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ทำได้ (1 คะแนน)</div>
-                    </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q9" value="0" class="hidden peer q-radio">
                         <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ทำไม่ได้ (0 คะแนน)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="q9" value="1" class="hidden peer q-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">ทำได้ (1 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -376,15 +432,15 @@
                 <p class="mb-2 underline font-normal">คำแนะนำสำหรับพยาบาล:</p>
                 "ให้คุณ (ตา/ยาย) เขียนประโยคอะไรก็ได้ที่มีความหมายลงในกระดาษแผ่นนี้ 1 ประโยคค่ะ"
             </div>
-            <div>
+            <div class="q-container" id="q_container_10">
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="q10" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">เขียนได้ (1 คะแนน)</div>
-                    </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q10" value="0" class="hidden peer q-radio">
                         <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">เขียนไม่ได้ (0 คะแนน)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="q10" value="1" class="hidden peer q-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">เขียนได้ (1 คะแนน)</div>
                     </label>
                 </div>
             </div>
@@ -414,27 +470,36 @@
                 </div>
             </div>
             
-            <div>
+            <div class="q-container" id="q_container_11">
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="q11" value="1" class="hidden peer q-radio">
-                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">วาดภาพได้ (1 คะแนน)</div>
-                    </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="q11" value="0" class="hidden peer q-radio">
                         <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-rose-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">วาดภาพไม่ได้ (0 คะแนน)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="q11" value="1" class="hidden peer q-radio">
+                        <div class="py-4 border-2 rounded-xl text-center peer-checked:bg-emerald-500 peer-checked:text-white border-slate-200 bg-white hover:border-blue-400 transition-all font-bold text-slate-700 shadow-sm shadow-sm">วาดภาพได้ (1 คะแนน)</div>
                     </label>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ปุ่มนำทาง -->
+    </div> <!-- End Step 4 -->
+
+    <!-- ปุ่มนำทาง (แบ่งหน้า) -->
     <div class="flex justify-between items-center mt-12 pb-16">
-      <button type="button" onclick="saveAndNavigate('{{ url_for('nurse.assess_session', header_id=header_id) }}')" 
-         class="px-10 py-4 bg-slate-100 text-slate-600 rounded-[20px] text-lg hover:bg-slate-200 transition-all">ย้อนกลับ</button>
-      <button type="submit" 
-              class="px-16 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[20px] text-xl shadow-2xl shadow-blue-100 hover:opacity-95 transition-all font-medium">บันทึกและไปขั้นตอนที่ 3</button>
+      <button type="submit" onclick="window.skipMmseValidation=true; document.getElementById('nextUrlInput').value='{{ url_for('nurse.assess_session', header_id=header_id) }}';" id="btn-back-to-session" 
+         class="px-10 py-4 bg-white border-2 border-slate-100 text-slate-500 rounded-[20px] font-bold text-lg hover:bg-slate-50 transition-all">ย้อนกลับไปขั้นตอนที่ 1</button>
+      
+      <button type="button" id="btn-prev" onclick="moveStep(-1)" 
+              class="hidden px-12 py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-[24px] font-bold text-lg hover:bg-slate-50 transition-all">ย้อนกลับ</button>
+      
+      <button type="button" id="btn-next" onclick="moveStep(1)" 
+              class="px-16 py-5 bg-blue-600 text-white rounded-[24px] font-black text-xl shadow-xl hover:-translate-y-1 transition-all">ถัดไป</button>
+      
+      <button type="submit" id="btn-save" onclick="window.skipMmseValidation=false; document.getElementById('nextUrlInput').value='{{ url_for('nurse.assess_tgds', header_id=header_id) }}';" 
+              class="hidden px-16 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[24px] font-black text-xl shadow-2xl hover:-translate-y-1 active:scale-95 transition-all">บันทึกและไปขั้นตอนที่ 3</button>
     </div>
     
     <input type="hidden" name="total_score" id="total_score_input" value="0">
@@ -442,6 +507,70 @@
 </div>
 
 <script>
+  let currentMmseStep = 1;
+  const totalMmseSteps = 4;
+
+  function updateMmseStepUI() {
+    document.querySelectorAll('.mmse-step-container').forEach(el => el.classList.add('hidden'));
+    document.getElementById('mmse-step-' + currentMmseStep).classList.remove('hidden');
+
+    const btnBackToSession = document.getElementById('btn-back-to-session');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const btnSave = document.getElementById('btn-save');
+
+    if (currentMmseStep === 1) {
+        btnBackToSession.classList.remove('hidden');
+        btnPrev.classList.add('hidden');
+    } else {
+        btnBackToSession.classList.add('hidden');
+        btnPrev.classList.remove('hidden');
+    }
+
+    if (currentMmseStep === totalMmseSteps) {
+        btnNext.classList.add('hidden');
+        btnSave.classList.remove('hidden');
+    } else {
+        btnNext.classList.remove('hidden');
+        btnSave.classList.add('hidden');
+    }
+
+    // อัปเดตแถบสถานะด้านบน (Progress UI)
+    for (let i = 1; i <= totalMmseSteps; i++) {
+        const dot = document.getElementById('substep-dot-' + i);
+        const label = document.getElementById('substep-label-' + i);
+        if (i < currentMmseStep) {
+            dot.className = 'w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all duration-300 bg-blue-500 text-white border-blue-500 shadow-md';
+            label.className = 'text-[10px] font-bold text-blue-500 uppercase tracking-tighter transition-all duration-300';
+        } else if (i === currentMmseStep) {
+            dot.className = 'w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all duration-300 bg-white text-blue-600 border-blue-500 ring-4 ring-blue-100 shadow-md';
+            label.className = 'text-[10px] font-black text-blue-600 uppercase tracking-tighter transition-all duration-300';
+        } else {
+            dot.className = 'w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all duration-300 bg-white text-slate-300 border-slate-200 shadow-sm';
+            label.className = 'text-[10px] font-bold text-slate-400 uppercase tracking-tighter transition-all duration-300';
+        }
+    }
+    const progressPercent = ((currentMmseStep - 1) / (totalMmseSteps - 1)) * 100;
+    document.getElementById('substep-progress').style.width = progressPercent + '%';
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function moveStep(delta) {
+    const next = currentMmseStep + delta;
+    if (next >= 1 && next <= totalMmseSteps) {
+        currentMmseStep = next;
+        updateMmseStepUI();
+    }
+  }
+
+  function jumpToMmseStep(step) {
+    if (step >= 1 && step <= totalMmseSteps) {
+        currentMmseStep = step;
+        updateMmseStepUI();
+    }
+  }
+
   let currentAudio = null;
   let currentFilename = null;
   let activeButton = null;
@@ -541,16 +670,174 @@
     document.getElementById('score').textContent = sum;
     document.getElementById('total_score_input').value = sum;
   }
-  function saveAndNavigate(url) {
-    document.getElementById('nextUrlInput').value = url;
-    document.getElementById('mainForm').submit();
+  function validateMMSEForm() {
+    window.cgaIsSubmitting = true;
+    if (window.skipMmseValidation) {
+        return true;
+    }
+
+    let isValid = true;
+    let firstError = null;
+    
+    const groups = new Set();
+    document.querySelectorAll('.q-radio').forEach(r => groups.add(r.name));
+    
+    // ตรวจสอบระดับการศึกษา
+    const eduChecked = document.querySelector('input[name="edu"]:checked');
+    if (!eduChecked) {
+        isValid = false;
+        const eduContainer = document.getElementById('eduContainer');
+        if (eduContainer) {
+            eduContainer.classList.add('field-error');
+            if (!firstError) firstError = eduContainer;
+        }
+    } else {
+        const eduContainer = document.getElementById('eduContainer');
+        if (eduContainer) eduContainer.classList.remove('field-error');
+    }
+    
+    groups.forEach(name => {
+        if (name === 'q4.1' || name === 'q4.2') return;
+        
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        const container = document.getElementById('q_container_' + name.replace('q','')) || 
+                          document.querySelector(`input[name="${name}"]`).closest('.rounded-[26px], .py-6, #section-9, #section-10');
+        
+        // ถ้าเป็นข้อที่ถูกซ่อน (ข้ามเพราะระดับการศึกษา) ไม่ต้องเช็ค
+        if (container && container.classList.contains('hidden')) return;
+        
+        if (!checked) {
+            isValid = false;
+            if (container) {
+                container.classList.add('field-error');
+                if (!firstError) firstError = container;
+            }
+        } else {
+            if (container) container.classList.remove('field-error');
+        }
+    });
+
+    // ตรวจสอบข้อ 4 (เลือกทำอย่างใดอย่างหนึ่ง)
+    const q41Checked = document.querySelector('input[name="q4.1"]:checked');
+    const q42Checked = document.querySelector('input[name="q4.2"]:checked');
+    const q4Container = document.getElementById('section-4');
+    
+    if (q4Container && !q4Container.classList.contains('hidden')) {
+        if (!q41Checked && !q42Checked) {
+            isValid = false;
+            q4Container.classList.add('field-error');
+            if (!firstError) firstError = q4Container;
+        } else {
+            q4Container.classList.remove('field-error');
+        }
+    }
+
+    if (!isValid) {
+        window.cgaIsSubmitting = false; // Reset if we abort
+        if (firstError) {
+            // เลื่อนหน้าหลักไปยังข้อที่ผิด
+            try { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+            
+            // หาว่าข้อที่ผิดอยู่หน้าย่อย (substep) ไหน แล้วสลับไปหน้านั้น
+            const stepContainer = firstError.closest('.mmse-step-container');
+            if (stepContainer) {
+                const stepId = stepContainer.id;
+                const stepNum = parseInt(stepId.split('-')[2]);
+                if (stepNum !== currentMmseStep) {
+                    jumpToMmseStep(stepNum);
+                    // รอให้เปลี่ยนหน้าย่อยเสร็จก่อนแล้วค่อยเลื่อนซ้ำอีกรอบให้ตรงจุด
+                    setTimeout(() => { try { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {} }, 300);
+                }
+            }
+        }
+        return false;
+    }
+    return true;
   }
+
+  // --- [Speech to Text System] ---
+  function startSTT(inputId, qName) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+          alert("บราวเซอร์ของคุณไม่รองรับระบบสั่งงานด้วยเสียง (แนะนำให้ใช้ Google Chrome)");
+          return;
+      }
+      
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'th-TH';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const inputEl = document.getElementById(inputId);
+      const originalPlaceHolder = inputEl.placeholder;
+      
+      recognition.onstart = function() {
+          inputEl.placeholder = "กำลังฟังเสียง... (พูดเลย)";
+          inputEl.classList.add('border-emerald-500', 'bg-emerald-50');
+      };
+
+      recognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript;
+          inputEl.value = transcript;
+          if(qName === 'q3' || qName === 'q5') autoCheckQ3_5(qName);
+          else if(qName === 'q7') autoCheckQ7();
+      };
+
+      recognition.onerror = function(event) {
+          console.error("STT Error:", event.error);
+          inputEl.placeholder = "ไม่สามารถรับเสียงได้ กรุณาลองใหม่";
+      };
+
+      recognition.onend = function() {
+          inputEl.classList.remove('border-emerald-500', 'bg-emerald-50');
+          setTimeout(() => inputEl.placeholder = originalPlaceHolder, 2000);
+      };
+
+      recognition.start();
+  }
+
+  function autoCheckQ3_5(qName) {
+      const text = document.getElementById('stt_input_' + qName).value;
+      const isRepeat = {{ 'true' if is_repeat_2m else 'false' }};
+      const words = isRepeat ? ['ต้นไม้', 'ทะเล', 'รถยนต์'] : ['ดอกไม้', 'แม่น้ำ', 'รถไฟ'];
+      
+      let matchCount = 0;
+      words.forEach(w => { if(text.includes(w)) matchCount++; });
+      
+      const radio = document.querySelector(`input[name="${qName}"][value="${matchCount}"]`);
+      if(radio) {
+          radio.checked = true;
+          recalc(); // อัปเดตคะแนนทันที
+      }
+  }
+
+  function autoCheckQ7() {
+      const text = document.getElementById('stt_input_q7').value.replace(/\s+/g, ''); // ลบช่องว่างออก
+      const expected = "ใครใคร่ขายไก่ไข่";
+      
+      let score = 0;
+      if (text.includes(expected)) score = 1;
+      
+      const radio = document.querySelector(`input[name="q7"][value="${score}"]`);
+      if(radio) {
+          radio.checked = true;
+          recalc(); // อัปเดตคะแนนทันที
+      }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const existing = {{ answers|tojson|safe if answers else '{}' }};
     Object.keys(existing).forEach(k => {
-      const val = existing[k].score;
+      const scoreVal = existing[k].score;
+      const textVal = existing[k].val;
+      
       const radios = document.getElementsByName('q' + k);
-      radios.forEach(r => { if (r.value == val) r.checked = true; });
+      radios.forEach(r => { if (r.value == scoreVal) r.checked = true; });
+      
+      const sttInput = document.getElementById('stt_input_q' + k);
+      if (sttInput && textVal && textVal !== 'None') {
+          sttInput.value = textVal;
+      }
     });
     const eduVal = "{{ assess.get('edu', '') }}";
     if(eduVal) {
@@ -567,6 +854,7 @@
     });
 
     recalc();
+    updateMmseStepUI();
   });
 </script>
 {% endblock %}

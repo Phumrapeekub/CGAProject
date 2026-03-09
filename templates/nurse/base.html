@@ -18,9 +18,15 @@
         <img src="{{ url_for('static', filename='logo.png') }}" alt="CGA Logo" class="w-8 h-8 object-contain">
         <span class="text-xl font-bold tracking-tight">CGA<span class="text-blue-600">Nurse</span></span>
       </a>
+      <div class="hidden md:flex items-center gap-6 ml-8 mr-auto">
+        <a href="{{ url_for('nurse.dashboard') }}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">แดชบอร์ด</a>
+        <a href="{{ url_for('nurse.patients') }}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">รายชื่อผู้ป่วย</a>
+        <a href="{{ url_for('nurse.assess_new') }}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">ประเมินใหม่</a>
+        <a href="{{ url_for('nurse.reports') }}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">รายงาน</a>
+      </div>
       <div class="flex items-center gap-4">
-        <span class="text-sm text-slate-600">ผู้ใช้งาน: <span class="font-semibold">{{ user }}</span></span>
-        <a href="{{ url_for('auth.logout') }}" class="text-sm font-medium text-rose-600">ออกจากระบบ</a>
+        <span class="hidden sm:inline text-sm text-slate-600">ผู้ใช้งาน: <span class="font-semibold">{{ user }}</span></span>
+        <a href="{{ url_for('auth.logout') }}" class="text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors">ออกจากระบบ</a>
       </div>
     </div>
   </nav>
@@ -93,6 +99,105 @@
         }
     }
   });
+  </script>
+
+  <!-- [NEW] ระบบป้องกันข้อมูลสูญหาย (Enterprise Grade) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // ใช้กับเฉพาะหน้าที่มีฟอร์มประเมินหลัก
+        const form = document.getElementById("mainForm");
+        if (!form) return;
+
+        const draftKey = 'cga_draft_' + window.location.pathname;
+        let isFormDirty = false;
+        let isSubmitting = false;
+
+        // 1. ระบบจำฝังใจ (Auto-save to LocalStorage)
+        function loadDraft() {
+            try {
+                const draft = localStorage.getItem(draftKey);
+                if (draft) {
+                    const data = JSON.parse(draft);
+                    let hasRestored = false;
+                    
+                    Array.from(form.elements).forEach(el => {
+                        if (!el.name) return;
+                        if (data[el.name] !== undefined) {
+                            if (el.type === 'radio' || el.type === 'checkbox') {
+                                // สำหรับตัวเลือก เช็คค่าให้ตรง
+                                const isMatch = Array.isArray(data[el.name]) 
+                                    ? data[el.name].includes(el.value) 
+                                    : el.value === data[el.name];
+                                if (isMatch && !el.checked) {
+                                    el.checked = true;
+                                    hasRestored = true;
+                                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            } else {
+                                // สำหรับช่องข้อความ อย่าเขียนทับถ้ามีข้อมูลจากฐานข้อมูลมาอยู่แล้ว (ยกเว้นช่องว่าง)
+                                if (!el.value || el.value === '' || el.value === 'none') {
+                                    el.value = data[el.name];
+                                    hasRestored = true;
+                                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            }
+                        }
+                    });
+                    
+                    if (hasRestored) {
+                        console.log("CGA System: กู้คืนข้อมูลร่าง (Draft) สำเร็จ");
+                    }
+                }
+            } catch(e) { console.error("Draft load error", e); }
+        }
+
+        function saveDraft() {
+            try {
+                const data = {};
+                const formData = new FormData(form);
+                for (let [key, value] of formData.entries()) {
+                    if (data[key] !== undefined) {
+                        if (!Array.isArray(data[key])) data[key] = [data[key]];
+                        data[key].push(value);
+                    } else {
+                        data[key] = value;
+                    }
+                }
+                localStorage.setItem(draftKey, JSON.stringify(data));
+                isFormDirty = true;
+            } catch(e) {}
+        }
+
+        // จับเหตุการณ์การพิมพ์หรือคลิกเพื่อบันทึกร่างแบบเรียลไทม์
+        form.addEventListener('input', saveDraft);
+        form.addEventListener('change', saveDraft);
+
+        // หน่วงเวลาโหลดร่างเพื่อให้ Script อื่นๆ (เช่น UI Toggles) ทำงานตั้งต้นให้เสร็จก่อน
+        setTimeout(loadDraft, 300);
+
+        // 2. ระบบแจ้งเตือนก่อนออก (Active Warning)
+        window.cgaIsSubmitting = false;
+        window.addEventListener('beforeunload', function (e) {
+            if (isFormDirty && !window.cgaIsSubmitting) {
+                e.preventDefault();
+                e.returnValue = ''; // มาตรฐานสำหรับให้เบราว์เซอร์โชว์ Popup
+            }
+        });
+
+        // 3. ปิดระบบแจ้งเตือนและล้างร่างเมื่อบันทึกจริง
+        form.addEventListener('submit', function() {
+            window.cgaIsSubmitting = true;
+            localStorage.removeItem(draftKey);
+        });
+        
+        // Helper function for manual JS submits
+        window.cgaSubmitForm = function() {
+            window.cgaIsSubmitting = true;
+            localStorage.removeItem(draftKey);
+            form.submit();
+        };
+    });
   </script>
 </body>
 </html>

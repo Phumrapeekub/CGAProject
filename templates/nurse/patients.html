@@ -198,6 +198,37 @@
 
   // รีเฟรชทุก 5 วินาที เพื่อเช็คสถานะการลบ
   setInterval(refreshPatientList, 5000);
+
+  // --- Scroll Restoration Highlight ---
+  window.addEventListener('load', () => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#row-')) {
+        // หน่วงเวลาเล็กน้อยเพื่อให้ Browser Render ตารางเสร็จ 100%
+        setTimeout(() => {
+            const targetRow = document.querySelector(hash);
+            if (targetRow) {
+                // คำนวณตำแหน่งให้อยู่กึ่งกลางหน้าจอ
+                const elementPosition = targetRow.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.scrollY - (window.innerHeight / 2) + (targetRow.offsetHeight / 2);
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // เอฟเฟกต์กะพริบไฮไลท์ (สีเข้มขึ้นเพื่อให้เห็นชัด)
+                targetRow.style.transition = 'none';
+                targetRow.classList.add('bg-indigo-100', 'ring-4', 'ring-indigo-400', 'z-10', 'relative');
+                
+                // ค่อยๆ จางหายไป
+                setTimeout(() => {
+                    targetRow.style.transition = 'all 1.5s ease';
+                    targetRow.classList.remove('bg-indigo-100', 'ring-4', 'ring-indigo-400');
+                }, 3000);
+            }
+        }, 300); // หน่วงเวลา 300ms
+    }
+  });
 </script>
 
 {% endblock %}

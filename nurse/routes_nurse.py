@@ -12,10 +12,45 @@ from ml.hmm_predictor import predictor # 🟢 Import AI Predictor
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
 
-# Inject user into all templates
 @nurse_bp.context_processor
 def inject_user():
-    return dict(user=session.get("full_name") or session.get("username"))
+    return dict(user=session.get('full_name') or session.get('username') or 'พยาบาล')
+
+@nurse_bp.route("/api/address-search")
+def address_search():
+    q = request.args.get("q", "").strip()
+    if len(q) < 2: return {"results": []}
+    
+    try:
+        supabase = get_supabase_client()
+        
+        # ใช้ชื่อคอลัมน์จริงตามที่คุณแจ้งมา
+        sub_col = "subdistrict_name_th"
+        dist_col = "district_name_th"
+        prov_col = "province_name_th"
+        zip_col = "postal_code"
+
+        # ค้นหาข้อมูลจาก Supabase โดยเน้นค้นจาก ตำบล และ อำเภอ
+        res = supabase.table("thai_address").select("*") \
+            .or_(f"{sub_col}.ilike.%{q}%,{dist_col}.ilike.%{q}%") \
+            .limit(20).execute()
+
+        formatted = []
+        for item in res.data:
+            formatted.append({
+                "s": item.get(sub_col),
+                "d": item.get(dist_col),
+                "p": item.get(prov_col),
+                "z": str(item.get(zip_col) or "")
+            })
+        return {"results": formatted}
+    except Exception as e:
+        print(f"Supabase Address Search Error (Manual Fix): {e}")
+        return {"results": [], "error": str(e)}
+
+# -------------------------
+# Inject user into all templates
+# -------------------------
 
 # -------------------------
 # Auth guard
@@ -132,6 +167,18 @@ def _get_assess_data(conn, header_id):
         
         if hn_val and str(hn_val).startswith("TMP"):
             try:
+                # ถ้าเป็นคนไข้ใหม่ที่ยังกรอกไม่เสร็จ ให้ลองหา GCN เดิมที่เคยคำนวณไว้ก่อน
+                cur.execute("SELECT gcn FROM patients WHERE id = %s", (p_id,))
+                existing_gcn = cur.fetchone()
+                if existing_gcn and existing_gcn['gcn']:
+                    gcn_display = str(existing_gcn['gcn']).zfill(3)
+                else:
+                    # ถ้าไม่มีจริงๆ ค่อยคำนวณใหม่ (เฉพาะเคสใหม่แกะกล่อง)
+                    cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
+                    next_gcn = cur.fetchone()['c'] + 1
+                    gcn_display = f"{next_gcn:03d}"
+                
+                # ส่วนของ HN Display...
                 supabase = get_supabase_client()
                 sb_res = supabase.table("patients").select("hn").execute()
                 max_num = 0
@@ -154,9 +201,6 @@ def _get_assess_data(conn, header_id):
                             max_num = val
                 
                 hn_display = f"HN{(max_num + 1):03d}"
-                cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
-                next_gcn = cur.fetchone()['c'] + 1
-                gcn_display = f"{next_gcn:03d}"
             except Exception as e:
                 print("Preview ID Error:", e)
                 hn_display = "HN ---"
@@ -232,6 +276,16 @@ def _get_answers(conn, header_id, instrument):
 # -------------------------
 # Routes
 # -------------------------
+def _calculate_overall_risk(mmse_score, tgds_score, has_suicide_risk):
+    """
+    Standardizes risk level calculation for the entire nurse module.
+    """
+    if mmse_score <= 15 or tgds_score >= 10 or has_suicide_risk:
+        return 'high'
+    elif mmse_score <= 23 or tgds_score >= 7:
+        return 'medium'
+    return 'low'
+
 @nurse_bp.route("/dashboard", endpoint="dashboard")
 def dashboard():
     if not _require_nurse():
@@ -278,11 +332,11 @@ def dashboard():
                 if clean_hn.isdigit():
                     p['hn'] = f"HN{clean_hn.zfill(3)}"
     except Exception as e:
-        print("Dashboard Error:", e)
+        current_app.logger.error(f"Dashboard Error: {e}")
     finally:
         cur.close()
         conn.close()
-    return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, user=session.get("full_name") or session.get("username"), role="พยาบาล")
+    return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, role="พยาบาล")
 
 @nurse_bp.get("/api/kpis", endpoint="api_kpis")
 def api_kpis():
@@ -302,7 +356,7 @@ def api_kpis():
         total = cur.fetchone()["c"]
         return {"today": today, "week": week, "month": month, "total": total}
     except Exception as e:
-        print("API KPI Error:", e)
+        current_app.logger.error(f"API KPI Error: {e}")
         return {"error": str(e)}, 500
     finally:
         cur.close()
@@ -431,8 +485,13 @@ def assess_create():
         cur.execute("INSERT INTO assessment_sessions (encounter_id, session_type, created_by) VALUES (%s, 'baseline', %s)", (enc_id, session.get("user_id")))
         sess_id = cur.lastrowid
         cur.execute("INSERT INTO cga_headers (encounter_id, session_id, created_at, status) VALUES (%s, %s, NOW(), 'in_progress')", (enc_id, sess_id))
+        header_id = cur.lastrowid
         conn.commit()
-        return redirect(url_for("nurse.assess_session", header_id=cur.lastrowid))
+
+        # 🟢 Sync ลง cga_records ทันทีเพื่อให้รายชื่อปรากฏในหน้า Dashboard/Report
+        _sync_to_cga_records(header_id, conn, cur)
+
+        return redirect(url_for("nurse.assess_session", header_id=header_id))
     except Exception as e:
         conn.rollback()
         flash(f"Error: {e}", "danger")
@@ -533,6 +592,9 @@ def assess_new_encounter(hn: str):
         
         conn.commit()
         
+        # 🟢 Sync ลง cga_records ทันที
+        _sync_to_cga_records(header_id, conn, cur)
+        
         flash(f"เริ่มการประเมินใหม่สำหรับคุณ {patient['full_name']} เรียบร้อยแล้ว (ดึงข้อมูลเดิมมาให้บางส่วน)", "success")
         return redirect(url_for('nurse.assess_session', header_id=header_id))
         
@@ -549,9 +611,47 @@ def assess_session(header_id: int):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
+    cur = conn.cursor(dictionary=True, buffered=True)
     assess = _get_assess_data(conn, header_id)
-    conn.close()
-    return render_template("nurse/assess_session.html", assess=assess, hn=assess.get("hn"), gcn=assess.get("gcn"), header_id=header_id)
+    
+    # ตรวจสอบความสมบูรณ์ของแต่ละส่วน
+    completion = {
+        'step1': False, # Basic Info
+        'step2': False, # MMSE
+        'step3': False  # TGDS
+    }
+    
+    try:
+        # Step 1: เช็คว่ามีชื่อ นามสกุล และเพศครบไหม (ดึงจาก patients)
+        cur.execute("SELECT full_name, gender, birth_date FROM patients WHERE id = %s", (assess.get('patient_id'),))
+        p = cur.fetchone()
+        if p and p['full_name'] != 'รอกรอกข้อมูล' and p['gender'] and p['birth_date']:
+            completion['step1'] = True
+            
+        # Step 2: MMSE (เช็คว่ามีคะแนนสรุปใน cga_records หรือมีคำตอบใน answers)
+        cur.execute("SELECT mmse_score FROM cga_records WHERE encounter_id = %s", (assess.get('encounter_id'),))
+        r = cur.fetchone()
+        if r and r['mmse_score'] is not None:
+            completion['step2'] = True
+            
+        # Step 3: TGDS
+        cur.execute("SELECT tgds_score FROM cga_records WHERE encounter_id = %s", (assess.get('encounter_id'),))
+        r = cur.fetchone()
+        if r and r['tgds_score'] is not None:
+            completion['step3'] = True
+            
+    except Exception as e:
+        current_app.logger.error(f"Check completion error: {e}")
+    finally:
+        cur.close()
+        conn.close()
+        
+    return render_template("nurse/assess_session.html", 
+                           assess=assess, 
+                           hn=assess.get("hn"), 
+                           gcn=assess.get("gcn"), 
+                           header_id=header_id,
+                           completion=completion)
 
 @nurse_bp.post('/assess/step1/save/<int:header_id>', endpoint='assess_step1_save')
 def assess_step1_save(header_id: int):
@@ -635,9 +735,23 @@ def assess_mmse(header_id: int):
     except Exception as e:
         print("Check repeat MMSE error:", e)
 
+    # --- [เพิ่มส่วนนี้] ตรวจสอบความสมบูรณ์ของแต่ละส่วนเพื่อให้แถบนำทางทำงานได้ ---
+    completion = {'step1': False, 'step2': False, 'step3': False}
+    try:
+        cur.execute("SELECT full_name, gender, birth_date FROM patients WHERE id = %s", (data.get('patient_id'),))
+        p = cur.fetchone()
+        if p and p['full_name'] != 'รอกรอกข้อมูล' and p['gender'] and p['birth_date']:
+            completion['step1'] = True
+        cur.execute("SELECT mmse_score, tgds_score FROM cga_records WHERE encounter_id = %s", (data.get('encounter_id'),))
+        r = cur.fetchone()
+        if r:
+            if r['mmse_score'] is not None: completion['step2'] = True
+            if r['tgds_score'] is not None: completion['step3'] = True
+    except: pass
+
     cur.close()
     conn.close()
-    return render_template('nurse/mmse.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=answers, is_repeat_2m=is_repeat_2m)
+    return render_template('nurse/mmse.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=answers, is_repeat_2m=is_repeat_2m, completion=completion)
 
 @nurse_bp.post('/assess/mmse/save/<int:header_id>', endpoint='assess_mmse_save')
 def assess_mmse_save(header_id: int):
@@ -677,7 +791,8 @@ def assess_mmse_save(header_id: int):
         for q_no in normal_qs:
             val = f.get(f'q{q_no}', '0')
             score = int(val) if val.isdigit() else 0
-            cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score) VALUES (%s, %s, %s)", (mm_id, q_no, score))
+            stt_val = f.get(f'stt_input_q{q_no}', '')
+            cur.execute("INSERT INTO assessment_mmse_items (mmse_id, question_no, score, answer_text) VALUES (%s, %s, %s, %s)", (mm_id, q_no, score, stt_val))
             total_score += score
 
         if not is_no_edu:
@@ -738,6 +853,10 @@ def assess_tgds(header_id: int):
                     other[inst] = val
                 elif inst == 'depression2Q':
                     other[f"depression2Q_q{q_no}"] = val
+                elif inst == 'depression8Q':
+                    other[f"depression8Q_{q_no}"] = val
+                elif inst == 'depression8Q_sub':
+                    other[f"depression8Q_{q_no}_followup"] = val
                 else:
                     other[f"{inst}_{q_no}"] = val
     except:
@@ -762,9 +881,24 @@ def assess_tgds(header_id: int):
     count_prev = cur.fetchone()['c']
     is_baseline = (count_prev == 0)
     
-    conn.close()
+    # ตรวจสอบความสมบูรณ์ของแต่ละส่วน
+    completion = {'step1': False, 'step2': False, 'step3': False}
+    try:
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT full_name, gender, birth_date FROM patients WHERE id = %s", (data.get('patient_id'),))
+        p = cur.fetchone()
+        if p and p['full_name'] != 'รอกรอกข้อมูล' and p['gender'] and p['birth_date']:
+            completion['step1'] = True
+        cur.execute("SELECT mmse_score, tgds_score FROM cga_records WHERE encounter_id = %s", (data.get('encounter_id'),))
+        r = cur.fetchone()
+        if r:
+            if r['mmse_score'] is not None: completion['step2'] = True
+            if r['tgds_score'] is not None: completion['step3'] = True
+    except: pass
+    finally:
+        conn.close()
 
-    return render_template('nurse/tgds15.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=comb, is_baseline=is_baseline)
+    return render_template('nurse/tgds15.html', header_id=header_id, hn=data.get("hn"), gcn=data.get("gcn"), assess=data, answers=comb, is_baseline=is_baseline, completion=completion)
 
 @nurse_bp.post('/assess/tgds/save/<int:header_id>', endpoint='assess_tgds_save')
 def assess_tgds_save(header_id: int):
@@ -818,22 +952,24 @@ def assess_tgds_save(header_id: int):
                 cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,'depression2Q',%s,%s)", (sess_id, (1 if 'q1' in k else 2), v))
             elif k.startswith('depression8Q_') and sess_id:
                 # 8Q Logic
-                if k == 'depression8Q_3_uncontrollable':
+                if k in ['depression8Q_3_uncontrollable', 'depression8Q_3_followup']:
                     q3_sub_val = v
                     cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,'depression8Q_sub',3,%s)", (sess_id, v))
                 else:
-                    q_idx = int(k.split('_')[1])
-                    if v == 'yes':
-                        has_suicide_risk = True
-                        q8_score += q8_weights.get(q_idx, 0)
-                        if q_idx == 3: q3_val = 'yes'
-                    cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,'depression8Q',%s,%s)", (sess_id, q_idx, v))
+                    try:
+                        q_idx = int(k.split('_')[1])
+                        if v == 'yes':
+                            has_suicide_risk = True
+                            q8_score += q8_weights.get(q_idx, 0)
+                            if q_idx == 3: q3_val = 'yes'
+                        cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,'depression8Q',%s,%s)", (sess_id, q_idx, v))
+                    except: pass
             elif k in ['incontinence','sleepProblems', 'sleep_problem_detail', 'incontinence_detail'] and sess_id:
                 cur.execute("INSERT INTO assessment_answers (session_id,instrument,question_no,answer_text) VALUES (%s,%s,1,%s)", (sess_id, k, v))
         
         # Special Logic for Q3 Sub (Uncontrollable)
         if q3_val == 'yes' and q3_sub_val == 'yes':
-            q8_score += 10
+            q8_score += 10 # 4 (จากข้อ 3) + 10 (จาก followup) = 14 คะแนน
 
         if sess_id:
             sr_val = 'yes' if has_suicide_risk else 'none'
@@ -849,7 +985,7 @@ def assess_tgds_save(header_id: int):
         # 🟢 2. คำนวณความเสี่ยงรวม (Risk Level)
         cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (actual_cga_id,))
         mmse_row = cur.fetchone(); m_score = mmse_row['total_score'] if mmse_row else 0
-        risk_lv = 'high' if (m_score <= 15 or score >= 10 or has_suicide_risk) else ('medium' if (m_score <= 23 or score >= 7) else 'low')
+        risk_lv = _calculate_overall_risk(m_score, score, has_suicide_risk)
 
         # 3. Finalize IDs and Update Local Header
         cur.execute("UPDATE cga_headers SET status='completed', overall_risk=%s WHERE id=%s", (risk_lv, actual_cga_id))
@@ -859,9 +995,9 @@ def assess_tgds_save(header_id: int):
         
         # Update 8Q Score to cga_records
         try:
-            cur.execute("UPDATE cga_records SET q8_score=%s WHERE encounter_id=%s", (h_data['encounter_id'],))
+            cur.execute("UPDATE cga_records SET q8_score=%s WHERE encounter_id=%s", (q8_score, h_data['encounter_id']))
         except Exception as e:
-            print(f"Update 8Q Score Error: {e}")
+            current_app.logger.error(f"Update 8Q Score Error: {e}")
 
         cur.execute("SELECT * FROM patients WHERE id = %s", (p_id,))
         p_row = cur.fetchone()
@@ -894,13 +1030,13 @@ def assess_tgds_save(header_id: int):
         
         cur.execute("UPDATE patients SET hn=%s, gcn=%s WHERE id=%s", (final_hn, final_gcn, p_id))
         conn.commit()
+        current_app.logger.info(f"✅ Local Database Committed: CGA ID {actual_cga_id}")
 
-        # CLOUD SYNC
-        sync_errors = []
+        # CLOUD SYNC (ทำงานต่อหลังจาก Commit แล้วเพื่อความรวดเร็วของหน้าจอ)
         try:
+            # 1. Sync Patients
             cur.execute("SELECT * FROM patients WHERE id = %s", (p_id,))
             p_latest = cur.fetchone(); sex_map = {'male': 'ชาย', 'female': 'หญิง'}
-
             cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (h_data['session_id'],))
             ans_rows = cur.fetchall()
             caregiver_info = {}
@@ -920,20 +1056,7 @@ def assess_tgds_save(header_id: int):
             }
             safe_supabase_sync("patients", sb_p, method='upsert', conflict_col='hn')
             
-            cur.execute("SELECT * FROM encounters WHERE id = %s", (h_data['encounter_id'],))
-            enc_raw = cur.fetchone()
-            if enc_raw:
-                supabase = get_supabase_client()
-                sb_p_res = supabase.table("patients").select("id").eq("hn", p_latest['hn']).execute()
-                if sb_p_res.data:
-                    enc_payload = {
-                        "id": enc_raw['id'],
-                        "patient_id": sb_p_res.data[0]['id'],
-                        "encounter_date": str(enc_raw['encounter_date']),
-                        "created_by": enc_raw['created_by']
-                    }
-                    safe_supabase_sync("encounters", enc_payload, method='upsert', conflict_col='id')
-
+            # 2. Sync CGA Headers
             cga_sb_data = {
                 "encounter_id": h_data['encounter_id'], 
                 "assessed_by": int(session.get('user_id', 0)), 
@@ -945,8 +1068,8 @@ def assess_tgds_save(header_id: int):
             }
             safe_supabase_sync("cga_headers", cga_sb_data, method='upsert', conflict_col='encounter_id')
             
-        except Exception as e: 
-            print("Sync Error:", e)
+        except Exception as cloud_err: 
+            current_app.logger.warning(f"⚠️ Cloud Sync Error (Local Data is Safe): {cloud_err}")
             
         _sync_to_cga_records(actual_cga_id, conn, cur)
             
@@ -965,37 +1088,43 @@ def assess_summary(header_id: int):
         return redirect(url_for('auth.login'))
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True, buffered=True)
+    # ดึงข้อมูล HN/Encounter
     data = _get_assess_data(conn, header_id)
+    encounter_id = data.get('encounter_id')
     
-    # 8Q Logic... (ย้าย m_score, t_score ออกไปคำนวณด้านล่างด้วย real_cga_id)
-    
-    # ดึงคะแนน 8Q (q8_score) จาก cga_records
+    # ดึงคะแนน 8Q (q8_score)
     q8_val = 0
     try:
-        cur.execute("SELECT q8_score FROM cga_records WHERE encounter_id=%s", (data.get('encounter_id'),))
-        q8_row = cur.fetchone()
-        if q8_row and q8_row['q8_score'] > 0:
-            q8_val = q8_row['q8_score']
-        else:
-            # Fallback: คำนวณสดจาก assessment_answers
+        # 1. ลองดึงจาก cga_records ก่อน
+        if encounter_id:
+            cur.execute("SELECT q8_score FROM cga_records WHERE encounter_id=%s", (encounter_id,))
+            q8_row = cur.fetchone()
+            if q8_row and q8_row['q8_score'] and q8_row['q8_score'] > 0:
+                q8_val = q8_row['q8_score']
+        
+        if q8_val == 0:
+            # 2. Fallback: คำนวณสดจาก assessment_answers (รวม followup ข้อ 3)
             cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s AND (instrument='depression8Q' OR instrument='depression8Q_sub')", (data.get('session_id'),))
             ans8q = cur.fetchall()
             q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
             q3_v = 'no'; q3_s = 'no'
+            temp_score = 0
             for r in ans8q:
                 if r['instrument'] == 'depression8Q':
                     try:
                         q_idx = int(r['question_no'])
                         if r['answer_text'] == 'yes':
-                            q8_val += q8_weights.get(q_idx, 0)
+                            temp_score += q8_weights.get(q_idx, 0)
                             if q_idx == 3: q3_v = 'yes'
                     except: pass
                 elif r['instrument'] == 'depression8Q_sub':
                     q3_s = r['answer_text']
+            
             if q3_v == 'yes' and q3_s == 'yes':
-                q8_val += 10
+                temp_score += 10
+            q8_val = temp_score
     except Exception as e:
-        print("Summary 8Q Error:", e)
+        current_app.logger.error(f"Summary 8Q Error: {e}")
     
     cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='suicideRisk'", (data.get('session_id'),))
     sr_res = cur.fetchone()
@@ -1068,47 +1197,51 @@ def assess_summary(header_id: int):
         full_info['bmi'] = '-'
         full_info['bmi_eval'] = '-'
 
-    # ดึงรายละเอียดคำตอบรายข้อ (สำหรับ Modal ดูรายละเอียด)
+    # 🟢 [FIX] ประกาศตัวแปรให้ครบเพื่อป้องกัน NameError
     mmse_details = {}
     tgds_details = {}
+    m_score = 0
+    t_score = 0
     
-    # MMSE Items
-    # ตรวจสอบก่อนว่า header_id ที่ส่งมาคือ cga_id จริงๆ หรือเป็น encounter_id (กรณีมาจากหน้าประวัติ)
-    real_cga_id = header_id
-    cur.execute("SELECT id FROM cga_headers WHERE id = %s", (header_id,))
-    if not cur.fetchone():
-        # ถ้าหาใน cga_headers ไม่เจอ ให้ลองหาโดยมองว่ามันคือ encounter_id
-        cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (header_id,))
-        found_h = cur.fetchone()
-        if found_h: real_cga_id = found_h['id']
+    # ดึงข้อมูลจาก cga_records มาเป็นอันดับแรก (เพราะน่าเชื่อถือที่สุด)
+    encounter_id = data.get('encounter_id')
+    if encounter_id:
+        cur.execute("SELECT mmse_score, tgds_score FROM cga_records WHERE encounter_id = %s", (encounter_id,))
+        record = cur.fetchone()
+        if record:
+            m_score = record['mmse_score'] or 0
+            t_score = record['tgds_score'] or 0
+            current_app.logger.info(f"DEBUG: Fetched scores from cga_records for encounter {encounter_id}: MMSE={m_score}, TGDS={t_score}")
 
-    # 🟢 ดึงคะแนนสรุปจากตารางหลักด้วย real_cga_id
-    cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (real_cga_id,))
-    m_row = cur.fetchone()
-    m_score = m_row['total_score'] if m_row and m_row['total_score'] is not None else 0
+    # หากใน cga_records ยังเป็น 0 ให้ลองดึงจากตารางประเมินโดยตรง (header_id คือ ID ของ cga_headers)
+    if header_id:
+        if m_score == 0:
+            cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+            m_row = cur.fetchone()
+            if m_row: m_score = m_row['total_score'] or 0
+            
+        if t_score == 0:
+            cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+            t_row = cur.fetchone()
+            if t_row: t_score = t_row['total_score'] or 0
+
+    if header_id:
+        # 3. ดึงรายละเอียดรายข้อ (ถ้ามี)
+        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+        mm_main = cur.fetchone()
+        if mm_main:
+            cur.execute("SELECT question_no, score FROM assessment_mmse_items WHERE mmse_id = %s", (mm_main['id'],))
+            for r in cur.fetchall():
+                mmse_details[str(r['question_no'])] = r['score']
+            
+        # 4. ดึงรายละเอียดรายข้อ TGDS
+        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+        tg_main = cur.fetchone()
+        if tg_main:
+            cur.execute("SELECT question_no, answer FROM assessment_tgds_items WHERE tgds_id = %s", (tg_main['id'],))
+            for r in cur.fetchall():
+                tgds_details[str(r['question_no'])] = 'ใช่' if r['answer']==1 else 'ไม่ใช่'
     
-    cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (real_cga_id,))
-    t_row = cur.fetchone()
-    t_score = t_row['total_score'] if t_row else 0
-
-    cur.execute("""
-        SELECT question_no, score 
-        FROM assessment_mmse_items 
-        WHERE mmse_id = (SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1)
-    """, (real_cga_id,))
-    for r in cur.fetchall():
-        # เก็บ question_no เป็น string เพื่อให้ matches กับ keys ใน template (เช่น '1.1', '4.1')
-        mmse_details[str(r['question_no'])] = r['score']
-        
-    # TGDS Items
-    cur.execute("""
-        SELECT question_no, answer 
-        FROM assessment_tgds_items 
-        WHERE tgds_id = (SELECT id FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1)
-    """, (real_cga_id,))
-    for r in cur.fetchall():
-        tgds_details[r['question_no']] = 'ใช่' if r['answer']==1 else 'ไม่ใช่'
-
     cur.execute("SELECT status FROM cga_headers WHERE id=%s", (header_id,))
     h_row = cur.fetchone()
     h_status = h_row['status'] if h_row else 'completed'
@@ -1135,46 +1268,75 @@ def assess_summary(header_id: int):
     mmse_risk_status = 'suspected' if m_score <= mmse_threshold else 'normal'
     
     # 🟢 AI HMM Prediction
-    ai_result = None
-    # ดึง encounter_id จาก data ที่มีอยู่แล้ว
+    ai_result = {"label": "รอการประมวลผล", "risk_score": 0, "factors": []}
     e_id = data.get('encounter_id')
     p_id = data.get('patient_id')
+    hn_id = data.get('hn')
+    real_cga_id = header_id # กำหนด ID ให้ถูกต้องเพื่อป้องกัน NameError
 
     try:
-        # เตรียมข้อมูล 9 อย่างสำหรับ AI
+        # 1. ดึงประวัติคะแนน MMSE ทั้งหมดของผู้ป่วยคนนี้จาก Local MySQL
+        cur.execute("""
+            SELECT m.total_score 
+            FROM assessment_mmse m
+            JOIN cga_headers h ON m.cga_id = h.id
+            JOIN encounters e ON h.encounter_id = e.id
+            WHERE e.patient_id = %s AND h.id != %s
+            ORDER BY h.created_at ASC
+        """, (p_id, real_cga_id))
+        mmse_history = [row['total_score'] for row in cur.fetchall() if row['total_score'] is not None]
+        
+        # รวมคะแนนครั้งปัจจุบันเข้าไปท้ายสุดของประวัติ
+        mmse_history.append(m_score)
+
+        # 2. เตรียมข้อมูลสำหรับ AI
         chronic_diseases_str = full_info.get('chronicDiseases', '')
         chronic_count = len([d for d in chronic_diseases_str.split(',') if d.strip()]) if chronic_diseases_str else 0
         if full_info.get('otherDisease'):
             chronic_count += 1
 
         ai_input = {
-            "age": full_info.get('age', 60),
+            "patient_id": p_id,
+            "hn": hn_id,
+            "age": int(full_info.get('age') or 60),
+            "mmse_scores": mmse_history,
             "mmse_score": m_score,
             "tgds_score": t_score,
-            "incontinence": inc_val,
-            "sleep_problem": sl_val,
-            "hearing_left": full_info.get('hearing_left'),
-            "vision_left": full_info.get('vision_left'),
-            "suicide_risk": sr_val,
             "chronic_count": chronic_count
         }
-        ai_result = predictor.predict(ai_input)
         
-        # 🟢 เพิ่มรายละเอียดปัจจัยที่ AI พบ
+        # 3. ให้ Predictor ประมวลผล
+        try:
+            predictor.set_supabase(get_supabase_client())
+        except: pass
+        
+        raw_res = predictor.predict(ai_input)
+        if raw_res:
+            if not raw_res.get('error'):
+                ai_result = raw_res
+            else:
+                ai_result['label'] = f"AI Error: {raw_res.get('error')}"
+                ai_result['error'] = raw_res.get('error')
+        
+        # 4. ตรวจสอบปัจจัยเสี่ยง (Factors) เสมอ (เพื่อให้ UI แสดงผลได้สมบูรณ์)
         factors = []
         if m_score <= mmse_threshold: factors.append("สมรรถภาพสมองต่ำกว่าเกณฑ์")
         if t_score >= 7: factors.append("พบภาวะซึมเศร้า")
         if inc_val == 'abnormal': factors.append("มีปัญหาการกลั้นปัสสาวะ")
         if sl_val == 'abnormal': factors.append("มีปัญหาการนอนหลับ")
         if sr_val == 'yes': factors.append("มีความเสี่ยงฆ่าตัวตาย")
-        if full_info.get('hearing_left') == 'abnormal' or full_info.get('hearing_right') == 'abnormal': factors.append("พบความผิดปกติของการได้ยิน")
-        if chronic_count >= 3: factors.append("มีโรคประจำตัวหลายโรค")
+        
+        if full_info.get('hearing_left') == 'abnormal' or full_info.get('hearing_right') == 'abnormal':
+            factors.append("พบความผิดปกติของการได้ยิน")
+        if chronic_count >= 3:
+            factors.append("มีโรคประจำตัวหลายโรค")
         
         ai_result['factors'] = factors
-        print(f"AI Prediction for header {header_id}: {ai_result}")
+        print(f"DEBUG: AI Success for HN {hn_id}: {ai_result}")
+        
     except Exception as e:
-        print("AI Prediction Error:", e)
-        ai_result = {"error": str(e)}
+        print(f"AI Critical Error: {e}")
+        ai_result = {"error": str(e), "label": "ไม่สามารถวิเคราะห์ได้", "risk_score": 0, "factors": []}
 
     # ดึงข้อมูล HN และ GCN ล่าสุด
     fresh_p = {"hn": data.get("hn"), "gcn": data.get("gcn")}
@@ -1185,250 +1347,169 @@ def assess_summary(header_id: int):
     
     cur.close()
     conn.close()
-    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), user={'name': session.get('full_name')}, mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info, ai_result=ai_result)
+    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info, ai_result=ai_result)
 
 # Helper function to sync data to cga_records (Flat Table)
 def _sync_to_cga_records(header_id, conn, cur):
     """
-    Rathers all data for a specific CGA header and inserts/updates it into cga_records table.
-    Handles both Local and Cloud sync.
+    Gather all data for a specific CGA header and insert/update it into cga_records table.
+    Ensures data consistency across Local and Cloud.
     """
-    print(f"DEBUG: Starting _sync_to_cga_records for header_id: {header_id}")
+    print(f"\n--- [START SYNC] Header ID: {header_id} ---")
     try:
-        # 1. Fetch all necessary data
+        # 1. ค้นหาข้อมูลพื้นฐาน
         cur.execute("""
-            SELECT h.id, h.encounter_id, h.created_at AS assessment_date, 
+            SELECT e.id as encounter_id, h.id as header_id, 
+                   COALESCE(e.encounter_date, CURDATE()) AS assessment_date, 
                    e.patient_id, p.hn, p.full_name, p.birth_date,
-                   TIMESTAMPDIFF(YEAR, p.birth_date, CURDATE()) AS age_year
-            FROM cga_headers h
-            JOIN encounters e ON h.encounter_id = e.id
+                   CASE 
+                     WHEN p.birth_date IS NOT NULL THEN TIMESTAMPDIFF(YEAR, p.birth_date, CURDATE())
+                     ELSE 0 
+                   END AS age_year
+            FROM encounters e
             JOIN patients p ON e.patient_id = p.id
-            WHERE h.id = %s
-        """, (header_id,))
+            LEFT JOIN cga_headers h ON h.encounter_id = e.id
+            WHERE h.id = %s OR e.id = %s
+            ORDER BY h.id DESC LIMIT 1
+        """, (header_id, header_id))
         base_info = cur.fetchone()
         
         if not base_info:
-            print(f"DEBUG: No base_info found for header_id {header_id}. Sync aborted.")
+            print(f"⚠️ [SYNC FAIL] Could not find base_info for ID {header_id}")
             return
 
-        print(f"DEBUG: Syncing data for Patient: {base_info['full_name']} (HN: {base_info['hn']})")
-
-        # Scores
-        cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s", (header_id,))
-        m_row = cur.fetchone()
-        mmse_score = m_row['total_score'] if m_row else 0
+        # 🟢 บังคับค่า NOT NULL ให้มีค่าเสมอ
+        actual_encounter_id = base_info.get('encounter_id') or 0
+        actual_patient_id = base_info.get('patient_id') or 0
         
-        cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s", (header_id,))
-        t_row = cur.fetchone()
-        tgds_score = t_row['total_score'] if t_row else 0
+        if actual_encounter_id == 0 or actual_patient_id == 0:
+            print(f"⚠️ [SYNC FAIL] Missing IDs: Enc={actual_encounter_id}, Pat={actual_patient_id}")
+            return
 
-        # Answers
-        cur.execute("SELECT session_id FROM cga_headers WHERE id=%s", (header_id,))
-        sess_id = cur.fetchone()['session_id']
-        
-        cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (sess_id,))
-        answers = cur.fetchall()
-        
-        # 8Q Score Calculation logic
-        q8_score_val = 0
-        q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
-        q3_val = 'no'
-        q3_sub_val = 'no'
+        actual_header_id = base_info.get('header_id')
 
-        # Parse Answers
+        # 2. ดึงคะแนน
+        mmse_score = 0
+        tgds_score = 0
+        q8_score = 0
+        if actual_header_id:
+            cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_header_id,))
+            m_row = cur.fetchone()
+            if m_row: mmse_score = m_row['total_score'] or 0
+            
+            cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_header_id,))
+            t_row = cur.fetchone()
+            if t_row: tgds_score = t_row['total_score'] or 0
+
+            # คำนวณคะแนน 8Q จาก answers
+            cur.execute("SELECT session_id FROM cga_headers WHERE id=%s", (actual_header_id,))
+            h_row = cur.fetchone()
+            if h_row and h_row['session_id']:
+                cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s AND (instrument='depression8Q' OR instrument='depression8Q_sub')", (h_row['session_id'],))
+                ans8q = cur.fetchall()
+                q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
+                q3_v = 'no'; q3_s = 'no'
+                for r in ans8q:
+                    if r['instrument'] == 'depression8Q':
+                        try:
+                            q_idx = int(r['question_no'])
+                            if r['answer_text'] == 'yes':
+                                q8_score += q8_weights.get(q_idx, 0)
+                                if q_idx == 3: q3_v = 'yes'
+                        except: pass
+                    elif r['instrument'] == 'depression8Q_sub':
+                        q3_s = r['answer_text']
+                if q3_v == 'yes' and q3_s == 'yes':
+                    q8_score += 10
+
+        # 3. ดึงคำตอบอื่นๆ
+        cur.execute("SELECT session_id FROM cga_headers WHERE encounter_id=%s ORDER BY id DESC LIMIT 1", (actual_encounter_id,))
+        h_row = cur.fetchone()
+        sess_id = h_row['session_id'] if h_row else None
+        
         data_map = {
             "education": "3", "caregiver_name": "", "caregiver_relation": "", "emergency_phone": "",
-            "smoke": "no", "alcohol": "no", "incontinence": "normal", "sleep_problem": "normal",
+            "smoke": "no", "alcohol": "no", "alcohol_daily_amount": "",
+            "incontinence": "normal", "incontinence_detail": "",
+            "sleep_problem": "normal", "sleep_problem_detail": "",
             "suicide_risk": "none", "vision_left": "normal", "vision_right": "normal", 
-            "hearing_left": "normal", "hearing_right": "normal", "gender": "male"
+            "hearing_left": "normal", "hearing_left_detail": "",
+            "hearing_right": "normal", "hearing_right_detail": "", "gender": "male"
         }
         
-        for r in answers:
-            inst = r['instrument']
-            txt = r['answer_text']
-            
-            if inst == 'basic' and ':' in txt:
-                k, v = txt.split(':', 1)
-                if k in data_map: data_map[k] = v
-            elif inst == 'incontinence': data_map['incontinence'] = txt
-            elif inst == 'sleepProblems': data_map['sleep_problem'] = txt
-            elif inst == 'suicideRisk': data_map['suicide_risk'] = txt
-            elif inst == 'depression8Q':
-                try:
-                    q_idx = int(r['question_no'])
-                    if txt == 'yes':
-                        q8_score_val += q8_weights.get(q_idx, 0)
-                        if q_idx == 3: q3_val = 'yes'
-                except: pass
-            elif inst == 'depression8Q_sub':
-                q3_sub_val = txt
+        if sess_id:
+            cur.execute("SELECT instrument, answer_text FROM assessment_answers WHERE session_id=%s", (sess_id,))
+            for r in cur.fetchall():
+                inst, txt = r['instrument'], r['answer_text']
+                if inst == 'basic' and ':' in txt:
+                    try:
+                        k, v = txt.split(':', 1)
+                        if k in data_map: data_map[k] = v
+                    except: pass
+                elif inst in data_map: data_map[inst] = txt
 
-        if q3_val == 'yes' and q3_sub_val == 'yes':
-            q8_score_val += 10
-            # Vision Test (Left/Right) is now handled in 'basic' loop above
-            # Hearing Test (Left/Right) also handled in 'basic' loop (hearing_left, hearing_right, hearing_left_detail, hearing_right_detail)
-
-        # Hearing Logic: If abnormal, use detail text. Else 'ปกติ'
-        hl_val = data_map.get('hearing_left', 'normal')
-        hl_det = data_map.get('hearing_left_detail', '')
-        if hl_val == 'abnormal':
-            final_hl = hl_det if hl_det else 'ผิดปกติ (ไม่ระบุ)'
+        # 4. จัดการวันที่ให้เป็นมาตรฐาน
+        assessed_dt = base_info['assessment_date']
+        if hasattr(assessed_dt, 'strftime'):
+            assessed_dt_str = assessed_dt.strftime('%Y-%m-%d')
         else:
-            final_hl = 'ปกติ'
+            assessed_dt_str = str(assessed_dt) if assessed_dt else date.today().strftime('%Y-%m-%d')
 
-        hr_val = data_map.get('hearing_right', 'normal')
-        hr_det = data_map.get('hearing_right_detail', '')
-        if hr_val == 'abnormal':
-            final_hr = hr_det if hr_det else 'ผิดปกติ (ไม่ระบุ)'
-        else:
-            final_hr = 'ปกติ'
+        # 5. เตรียม Payload
+        # คำนวณความเสี่ยง MMSE ตามระดับการศึกษาจริง
+        record_mmse_cutoff = 22
+        if data_map['education'] == '1': record_mmse_cutoff = 14
+        elif data_map['education'] == '2': record_mmse_cutoff = 17
 
-        # Incontinence Logic
-        inc_val = data_map.get('incontinence', 'normal')
-        inc_det = data_map.get('incontinence_detail', '')
-        if inc_val == 'abnormal':
-            final_inc = inc_det if inc_det else 'มีปัญหาการกลั้นปัสสาวะ (ไม่ระบุ)'
-        else:
-            final_inc = 'ปกติ'
-
-        # Sleep Problem Logic (ทำเผื่อไว้เลย คล้ายกัน)
-        sl_val = data_map.get('sleep_problem', 'normal')
-        sl_det = data_map.get('sleep_problem_detail', '')
-        if sl_val == 'abnormal':
-            final_sl = sl_det if sl_det else 'มีปัญหาการนอน (ไม่ระบุ)'
-        else:
-            final_sl = 'ปกติ'
-
-        # Calc MMSE Result
-        edu_code = data_map['education']
-        cutoff = 22
-        if edu_code == '1': cutoff = 14
-        elif edu_code == '2': cutoff = 17
-        mmse_res = 'เสี่ยง' if mmse_score <= cutoff else 'ปกติ'
-        
-        tgds_res = 'ซึมเศร้า' if tgds_score >= 7 else 'ปกติ'
-
-        # แปลงรหัสการศึกษาเป็นข้อความภาษาไทย
-        edu_map = {
-            '1': 'ไม่ได้เรียน/อ่านเขียนไม่ได้',
-            '2': 'ประถมศึกษา',
-            '3': 'สูงกว่าประถมศึกษา'
-        }
-        edu_text = edu_map.get(edu_code, 'สูงกว่าประถมศึกษา') # Default
-
-        # แปลงข้อมูลบุหรี่/สุรา เป็นภาษาไทย
-        habit_map = {
-            'no': 'ไม่เคย',
-            'quit': 'เลิกแล้ว',
-            'yes': 'ดื่ม/สูบ', # ใช้คำกลางๆ หรือจะแยกก็ได้
-            'none': 'ไม่ระบุ'
-        }
-        # Smoke
-        s_val = data_map.get('smoke', 'no')
-        if s_val == 'no': s_th = 'ไม่สูบ'
-        elif s_val == 'quit': s_th = 'เคยสูบแต่เลิกแล้ว'
-        elif s_val == 'yes': s_th = 'สูบ'
-        else: s_th = 'ไม่ระบุ'
-
-        # Alcohol
-        a_val = data_map.get('alcohol', 'none')
-        a_amt = data_map.get('alcohol_daily_amount', '') # ดึงจำนวนแก้ว
-        
-        if a_val == 'none' or a_val == 'no': 
-            a_th = 'ไม่ดื่ม'
-            a_amt = '' # ถ้าไม่ดื่ม ไม่ควรมีจำนวน
-        elif a_val == 'social': 
-            a_th = 'ดื่มบางครั้ง'
-            a_amt = '' # บางครั้งอาจไม่ระบุจำนวนต่อวัน
-        elif a_val == 'daily' or a_val == 'yes': 
-            a_th = 'ดื่มทุกวัน'
-            # a_amt ใช้ค่าเดิมที่ดึงมา
-        else: 
-            a_th = 'ไม่ระบุ'
-
-        # แปลง Suicide Risk เป็นภาษาไทย
-        sr_val = data_map.get('suicide_risk', 'none')
-        sr_th = 'มี' if sr_val == 'yes' else 'ไม่มี'
-
-        # Prepare Payload
         record_data = {
-            "encounter_id": base_info['encounter_id'],
-            "patient_id": base_info['patient_id'],
-            "hn": base_info['hn'],
-            "full_name": base_info['full_name'],
-            "birth_date": base_info['birth_date'],
-            "assessed_date": str(base_info['assessment_date']),
-            "age": base_info['age_year'],
-            "gender": data_map.get('gender', 'male'),
-            "education": edu_text, # เก็บเป็นข้อความแทนรหัส
-            "caregiver_name": data_map['caregiver_name'],
-            "caregiver_relation": data_map['caregiver_relation'],
-            "emergency_phone": data_map['emergency_phone'],
-            "smoke": s_th,
-            "alcohol": a_th,
-            "alcohol_amount": a_amt, # เพิ่มคอลัมน์จำนวนแก้ว
+            "encounter_id": actual_encounter_id,
+            "patient_id": actual_patient_id,
+            "hn": base_info['hn'] or "N/A",
+            "full_name": base_info['full_name'] or "รอกรอกข้อมูล",
+            "assessed_date": assessed_dt_str,
+            "age": base_info['age_year'] or 0,
+            "education": {'1':'ไม่ได้เรียน','2':'ประถม','3':'สูงกว่าประถม'}.get(data_map['education'], 'สูงกว่าประถม'),
+            "caregiver_name": data_map['caregiver_name'] or "",
             "mmse_score": mmse_score,
-            "mmse_result": mmse_res,
+            "mmse_result": 'เสี่ยง' if mmse_score <= record_mmse_cutoff else 'ปกติ',
             "tgds_score": tgds_score,
-            "tgds_result": tgds_res,
-            "suicide_risk": sr_th, # เก็บเป็นภาษาไทย
-            "incontinence": final_inc, # ใช้ค่าที่คำนวณ (ปกติ/รายละเอียด)
-            "sleep_problem": final_sl, # ใช้ค่าที่คำนวณ (ปกติ/รายละเอียด)
-            "vision_left": data_map['vision_left'], # ข้อความจาก Vision Test ตาซ้าย
-            "vision_right": data_map['vision_right'], # ข้อความจาก Vision Test ตาขวา
-            "hearing_left": final_hl, # ใช้ค่าที่คำนวณแล้ว (ปกติ / รายละเอียดผิดปกติ)
-            "hearing_right": final_hr, # ใช้ค่าที่คำนวณแล้ว
-            "q8_score": q8_score_val
+            "tgds_result": 'ซึมเศร้า' if tgds_score >= 7 else 'ปกติ',
+            "q8_score": q8_score, # เพิ่มฟิลด์คะแนน 8Q ให้สมบูรณ์
+            "suicide_risk": 'มี' if data_map['suicide_risk'] == 'yes' else 'ไม่มี',
+            "incontinence": data_map['incontinence_detail'] if data_map['incontinence']=='abnormal' else 'ปกติ',
+            "sleep_problem": data_map['sleep_problem_detail'] if data_map['sleep_problem']=='abnormal' else 'ปกติ',
+            "smoke": {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(data_map['smoke'], 'ไม่ระบุ'),
+            "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ')
         }
 
-        # 2. Local Insert/Update (Check if exists first)
+        # 6. Local Update (ใช้วิธี DELETE แล้ว INSERT เพื่อความแน่นอน 100% บนทุก Engine)
         try:
-            cur.execute("SELECT id FROM cga_records WHERE encounter_id=%s", (base_info['encounter_id'],))
-            existing = cur.fetchone()
-            
-            if existing:
-                set_clause = ", ".join([f"{k}=%s" for k in record_data.keys()])
-                vals = list(record_data.values()) + [base_info['encounter_id']]
-                cur.execute(f"UPDATE cga_records SET {set_clause} WHERE encounter_id=%s", vals)
-                print(f"DEBUG: Updated cga_records for encounter_id: {base_info['encounter_id']}")
-            else:
-                cols = ", ".join(record_data.keys())
-                placeholders = ", ".join(["%s"] * len(record_data))
-                vals = list(record_data.values())
-                cur.execute(f"INSERT INTO cga_records ({cols}) VALUES ({placeholders})", vals)
-                print(f"DEBUG: Inserted new cga_records for encounter_id: {base_info['encounter_id']}")
+            cur.execute("DELETE FROM cga_records WHERE encounter_id = %s", (actual_encounter_id,))
+            cols = ", ".join(record_data.keys())
+            placeholders = ", ".join(["%s"] * len(record_data))
+            cur.execute(f"INSERT INTO cga_records ({cols}) VALUES ({placeholders})", list(record_data.values()))
             conn.commit()
-        except Exception as e:
-            print(f"Local cga_records update failed: {e}")
+            print(f"✅ [LOCAL SYNC OK] HN: {record_data['hn']}")
+        except Exception as local_e:
+            print(f"❌ [LOCAL SYNC ERR] {local_e}")
+            conn.rollback()
 
-        # 3. Cloud Sync (Resolve Cloud IDs first)
+        # 7. Cloud Sync
         try:
             supabase = get_supabase_client()
-            # 🟢 ค้นหา Patient ID บน Cloud โดยใช้ HN (ซึ่งเป็น Unique และตรงกันทั้งสองที่)
             sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
-            
             if sb_p_res.data:
-                cloud_patient_id = sb_p_res.data[0]['id']
-                
-                # เตรียมข้อมูลสำหรับ Cloud (ลบฟิลด์ที่ไม่ต้องการออก)
                 cloud_payload = record_data.copy()
-                cloud_payload['patient_id'] = cloud_patient_id # ใช้ ID ของ Cloud แทน
-                
-                # ส่งข้อมูลขึ้น Cloud
-                # 🟢 ปรับปรุง: ใช้ on_conflict=['hn', 'assessed_date'] หากตารางรองรับ หรือใช้ encounter_id ที่แมพแล้ว
-                ok, msg = safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
-                if ok:
-                    print(f"DEBUG: Cloud sync SUCCESS for cga_records (HN: {base_info['hn']})")
-                else:
-                    print(f"DEBUG: Cloud sync FAILED for cga_records: {msg}")
-                    # ลองส่งแบบ insert หาก upsert ติดปัญหาเรื่อง id
-                    if "conflict" in msg.lower():
-                        safe_supabase_sync("cga_records", cloud_payload, method='insert')
-        except Exception as e:
-            print(f"DEBUG: Cloud Sync Exception: {e}")
+                cloud_payload['patient_id'] = sb_p_res.data[0]['id']
+                safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
+                print(f"☁️ [CLOUD SYNC OK] HN: {record_data['hn']}")
+        except Exception as cloud_e: 
+            print(f"☁️ [CLOUD SYNC ERR] {cloud_e}")
             
     except Exception as e:
-        print(f"Sync to cga_records failed: {e}")
+        print(f"🔥 [CRITICAL SYNC ERR] {e}")
+        import traceback
+        traceback.print_exc()
 
 
 @nurse_bp.post('/assess/send_to_doctor/<int:header_id>', endpoint='send_to_doctor')
@@ -1455,7 +1536,7 @@ def send_to_doctor(header_id: int):
         has_suicide_risk = (sr_res['answer_text'] == 'yes') if sr_res else False
         
         # คำนวณ Risk Level
-        risk_lv = 'high' if (m_score <= 15 or t_score >= 10 or has_suicide_risk) else ('medium' if (m_score <= 23 or t_score >= 7) else 'low')
+        risk_lv = _calculate_overall_risk(m_score, t_score, has_suicide_risk)
 
         final_hn = p_raw['hn']
         final_gcn = p_raw['gcn']
@@ -1799,6 +1880,11 @@ def patient_history(hn: str):
             flash("ไม่พบข้อมูลผู้ป่วยในระบบ Local", "danger")
             return redirect(url_for("nurse.patients"))
         
+        # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
+        raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+        if raw_hn.isdigit():
+            patient['hn'] = f"HN{raw_hn.zfill(3)}"
+
         # 🟢 ดึงประวัติการประเมินจาก cga_records
         query = """
             SELECT 
@@ -1830,6 +1916,12 @@ def patient_edit(hn: str):
         if not patient:
             flash("ไม่พบข้อมูลผู้ป่วย", "danger")
             return redirect(url_for("nurse.patients"))
+        
+        # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
+        raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+        if raw_hn.isdigit():
+            patient['hn'] = f"HN{raw_hn.zfill(3)}"
+
         return render_template("nurse/patient_edit.html", patient=patient)
     finally:
         cur.close()
@@ -1843,14 +1935,32 @@ def patient_update(hn: str):
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
+        # 1. หาข้อมูล ID เดิมก่อนอัปเดต
+        cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
+        p_row = cur.fetchone()
+        if not p_row:
+            flash("ไม่พบข้อมูลผู้ป่วย", "danger")
+            return redirect(url_for("nurse.patients"))
+        p_id = p_row['id']
+
+        # 2. ทำการอัปเดตตาราง patients
         sex_val = 'male' if f.get('gender')=='male' else ('female' if f.get('gender')=='female' else None)
-        cur.execute("UPDATE patients SET full_name=%s, phone=%s, address=%s, gender=%s, birth_date=%s WHERE hn=%s",
-                    (f.get('full_name'), f.get('phone'), f.get('address'), sex_val, f.get('birthdate') or None, hn))
+        cur.execute("UPDATE patients SET hn=%s, full_name=%s, phone=%s, address=%s, gender=%s, birth_date=%s WHERE id=%s",
+                    (f.get('hn') or hn, f.get('full_name'), f.get('phone'), f.get('address'), sex_val, f.get('birthdate') or None, p_id))
         
-        # 🟢 อัปเดตชื่อใน cga_records ด้วยเพื่อให้ในหน้ารายงานเปลี่ยนตาม
-        try:
-            cur.execute("UPDATE cga_records SET full_name=%s WHERE hn=%s", (f.get('full_name'), hn))
-        except: pass
+        # 3. 🟢 บังคับ Sync ลง cga_records สำหรับ Encounter ล่าสุด
+        # หา Encounter ล่าสุดของคนไข้คนนี้ (ใช้ p_id จะแม่นยำกว่า hn เพราะ hn พึ่งเปลี่ยนได้)
+        cur.execute("SELECT id FROM encounters WHERE patient_id = %s ORDER BY created_at DESC LIMIT 1", (p_id,))
+        latest_e = cur.fetchone()
+        if latest_e:
+            # พยายามหา Header ที่ผูกกับ Encounter นี้
+            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s ORDER BY id DESC LIMIT 1", (latest_e['id'],))
+            latest_h = cur.fetchone()
+            
+            # รัน Sync โดยส่ง header_id (ถ้ามี) หรือ encounter_id ไป
+            sync_id = latest_h['id'] if latest_h else latest_e['id']
+            _sync_to_cga_records(sync_id, conn, cur)
+            print(f"DEBUG: Force synced cga_records for patient ID {p_id}")
 
         conn.commit()
         try:
