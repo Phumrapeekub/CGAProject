@@ -798,7 +798,7 @@
 
   function autoCheckQ3_5(qName) {
       const text = document.getElementById('stt_input_' + qName).value;
-      const isRepeat = {{ 'true' if is_repeat_2m else 'false' }};
+      const isRepeat = ("{{ 'true' if is_repeat_2m else 'false' }}" === "true");
       const words = isRepeat ? ['ต้นไม้', 'ทะเล', 'รถยนต์'] : ['ดอกไม้', 'แม่น้ำ', 'รถไฟ'];
       
       let matchCount = 0;
@@ -826,7 +826,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const existing = {{ answers|tojson|safe if answers else '{}' }};
+    const existing = JSON.parse('{{ answers|tojson|safe if answers else "{}" }}');
     Object.keys(existing).forEach(k => {
       const scoreVal = existing[k].score;
       const textVal = existing[k].val;

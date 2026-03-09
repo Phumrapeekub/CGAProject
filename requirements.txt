@@ -11,4 +11,5 @@ matplotlib
 numpy
 joblib
 scikit-learn
-hmmlearngunicorn
+hmmlearn
+gunicorn

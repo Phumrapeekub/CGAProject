@@ -1,37 +1,184 @@
 [
   {
-    "timestamp": "2026-02-16T18:49:51.916671",
+    "timestamp": "2026-02-17T09:53:08.340246",
     "table": "patients",
     "method": "upsert",
     "payload": {
-      "hn": "HN051",
-      "gcn": "005",
-      "full_name": "เวลา ทาย",
-      "phone": "",
-      "address": "",
-      "sex": null,
-      "birth_date": null
+      "hn": "HN063",
+      "gcn": "010",
+      "full_name": "ทิติสัก ไทยใหม่",
+      "phone": "021451552",
+      "address": "เลขที่ 269 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1957-02-15"
     }
   },
   {
-    "timestamp": "2026-02-16T18:49:53.828431",
+    "timestamp": "2026-02-17T09:53:10.041082",
     "table": "encounters",
     "method": "upsert",
     "payload": {
-      "id": 156,
-      "patient_id": 90,
-      "encounter_date": "2026-02-16",
+      "id": 170,
+      "patient_id": 125,
+      "encounter_date": "2026-02-17",
       "created_by": 3
     }
   },
   {
-    "timestamp": "2026-02-16T18:49:54.709628",
+    "timestamp": "2026-02-17T09:53:10.802040",
     "table": "cga_headers",
     "method": "upsert",
     "payload": {
-      "encounter_id": 156,
+      "encounter_id": 170,
       "assessed_by": 3,
-      "assessment_date": "2026-02-16",
+      "assessment_date": "2026-02-17",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:12.462160",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 170,
+      "patient_id": 125,
+      "hn": "HN063",
+      "full_name": "ทิติสัก ไทยใหม่",
+      "assessed_date": "2026-02-17",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:27.789671",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN063",
+      "gcn": "010",
+      "full_name": "ทิติสัก ไทยใหม่",
+      "phone": "021451552",
+      "address": "เลขที่ 269 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1957-02-15"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:29.482671",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 170,
+      "patient_id": 125,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:30.338539",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN063",
+      "patient_name": "ทิติสัก ไทยใหม่",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 17,
+      "tgds_score": 9,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:31.267516",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 170,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T09:53:32.890689",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 170,
+      "patient_id": 125,
+      "hn": "HN063",
+      "full_name": "ทิติสัก ไทยใหม่",
+      "assessed_date": "2026-02-17",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:05.515401",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:11.693131",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:13.234091",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
       "risk_level": "high",
       "overall_risk": "high",
       "status": "completed",
@@ -39,25 +186,35 @@
     }
   },
   {
-    "timestamp": "2026-02-16T18:49:56.371377",
+    "timestamp": "2026-02-17T10:47:13.744440",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:17.611686",
     "table": "cga_records",
     "method": "upsert",
     "payload": {
-      "encounter_id": 156,
-      "patient_id": 90,
-      "hn": "HN051",
-      "full_name": "เวลา ทาย",
-      "birth_date": null,
-      "assessed_date": "2026-02-16 18:36:22",
-      "age": null,
-      "gender": "male",
-      "education": "สูงกว่าประถมศึกษา",
-      "caregiver_name": "",
-      "caregiver_relation": "",
-      "emergency_phone": "",
-      "smoke": "ไม่สูบ",
-      "alcohol": "ไม่ดื่ม",
-      "alcohol_amount": "",
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
       "mmse_score": 0,
       "mmse_result": "เสี่ยง",
       "tgds_score": 0,
@@ -65,11 +222,2109 @@
       "suicide_risk": "ไม่มี",
       "incontinence": "ปกติ",
       "sleep_problem": "ปกติ",
-      "vision_left": "normal",
-      "vision_right": "normal",
-      "hearing_left": "ปกติ",
-      "hearing_right": "ปกติ",
-      "q8_score": 0
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:19.011011",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:31.898630",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:35.577922",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:38.176024",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:38.718245",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:46.191978",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:46.654753",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:49.338178",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:53.844553",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:54.880799",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:55.371814",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:56.678214",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:57.683706",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:47:58.517085",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:00.182382",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:13.111938",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:17.319103",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:18.147199",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:19.836696",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:41.419701",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:43.591209",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:44.363868",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:48:45.990224",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:49:27.750874",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN064",
+      "gcn": "011",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "phone": "066695842",
+      "address": "เลขที่ 12214 หมู่ 8 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0621481149",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:49:35.742238",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 171,
+      "patient_id": 127,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:49:36.523269",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:49:42.565315",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 171,
+      "patient_id": 127,
+      "hn": "HN064",
+      "full_name": "โชติกาญจน์ คำต่อ",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "พิพัฒน์ ทนายความ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:53:26.972140",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN065",
+      "gcn": "012",
+      "full_name": "มาย เนม",
+      "phone": "0645215889",
+      "address": "เลขที่ 269 หมู่ 14 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0321458993",
+      "caregiver_name": "ศุภลักษณ์ คำต่อ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:53:29.113759",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 172,
+      "patient_id": 135,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:53:34.679157",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 172,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-17",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-17T10:53:36.304000",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 172,
+      "patient_id": 135,
+      "hn": "HN065",
+      "full_name": "มาย เนม",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "ศุภลักษณ์ คำต่อ",
+      "mmse_score": 15,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T11:07:11.825464",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN065",
+      "gcn": "012",
+      "full_name": "มาย เนม",
+      "phone": "0645215889",
+      "address": "เลขที่ 269 หมู่ 14 ต. แม่กา อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "หญิง",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0321458993",
+      "caregiver_name": "ศุภลักษณ์ คำต่อ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T11:07:15.179072",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 172,
+      "patient_id": 135,
+      "encounter_date": "2026-02-17",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-17T11:07:22.979866",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN065",
+      "patient_name": "มาย เนม",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 15,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 84,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T11:07:23.906745",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 172,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-02-17T11:07:25.477131",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 172,
+      "patient_id": 135,
+      "hn": "HN065",
+      "full_name": "มาย เนม",
+      "assessed_date": "2026-02-17",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "ศุภลักษณ์ คำต่อ",
+      "mmse_score": 15,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:32:20.079708",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN066",
+      "gcn": "002",
+      "full_name": "เนติ พายัพ",
+      "phone": "0254785442",
+      "address": "เลขที่ 63 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0361524886",
+      "caregiver_name": "มานพ พายัพ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:32:22.085998",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 173,
+      "patient_id": 137,
+      "encounter_date": "2026-02-26",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:32:22.866113",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:32:24.524368",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:37:10.997236",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN066",
+      "gcn": "002",
+      "full_name": "เนติ พายัพ",
+      "phone": "0254785442",
+      "address": "เลขที่ 63 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0361524886",
+      "caregiver_name": "มานพ พายัพ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:37:13.168027",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 173,
+      "patient_id": 137,
+      "encounter_date": "2026-02-26",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:37:13.865088",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:37:15.342800",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:37:41.223041",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:44:22.166583",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN066",
+      "gcn": "002",
+      "full_name": "เนติ พายัพ",
+      "phone": "0254785442",
+      "address": "เลขที่ 63 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0361524886",
+      "caregiver_name": "มานพ พายัพ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:44:24.513456",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 173,
+      "patient_id": 137,
+      "encounter_date": "2026-02-26",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:44:25.253551",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:44:26.773488",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T21:59:43.233973",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:00:09.239168",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN066",
+      "gcn": "002",
+      "full_name": "เนติ พายัพ",
+      "phone": "0254785442",
+      "address": "เลขที่ 63 หมู่ 1 ต. ป่างิ้ว อ. เวียงป่าเป้า จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1942-02-10",
+      "emergency_phone": "0361524886",
+      "caregiver_name": "มานพ พายัพ",
+      "caregiver_relation": "ลูก"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:00:10.360420",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:00:11.910685",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 173,
+      "patient_id": 137,
+      "hn": "HN066",
+      "full_name": "เนติ พายัพ",
+      "assessed_date": "2026-02-26",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "มานพ พายัพ",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:06:43.639208",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN067",
+      "gcn": "003",
+      "full_name": "อองรี สมีทาว",
+      "phone": "02365214554",
+      "address": "เลขที่ 15/7 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1944-02-22"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:06:44.633088",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:06:46.096118",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "patient_id": 141,
+      "hn": "HN067",
+      "full_name": "อองรี สมีทาว",
+      "assessed_date": "2026-02-26",
+      "age": 82,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:10:34.241421",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN067",
+      "gcn": "003",
+      "full_name": "อองรี สมีทาว",
+      "phone": "02365214554",
+      "address": "เลขที่ 15/7 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1944-02-22"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:10:35.964144",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:10:37.548123",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "patient_id": 141,
+      "hn": "HN067",
+      "full_name": "อองรี สมีทาว",
+      "assessed_date": "2026-02-26",
+      "age": 82,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:24.784129",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN067",
+      "gcn": "003",
+      "full_name": "อองรี สมีทาว",
+      "phone": "02365214554",
+      "address": "เลขที่ 15/7 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1944-02-22"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:25.599777",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:27.358397",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "patient_id": 141,
+      "hn": "HN067",
+      "full_name": "อองรี สมีทาว",
+      "assessed_date": "2026-02-26",
+      "age": 82,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:33.457293",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN067",
+      "gcn": "003",
+      "full_name": "อองรี สมีทาว",
+      "phone": "02365214554",
+      "address": "เลขที่ 15/7 หมู่ 1 ต. แม่กา อ. เมือง จ. เชียงราย 57000",
+      "sex": "ชาย",
+      "birth_date": "1944-02-22"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:35.354323",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 174,
+      "patient_id": 141,
+      "encounter_date": "2026-02-26",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:36.539754",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:11:38.642749",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 174,
+      "patient_id": 141,
+      "hn": "HN067",
+      "full_name": "อองรี สมีทาว",
+      "assessed_date": "2026-02-26",
+      "age": 82,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:14:02.741990",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN068",
+      "gcn": "004",
+      "full_name": "บาดาล น้ำสิงห์",
+      "phone": "021457886",
+      "address": "เลขที่ 145/6 หมู่ 5 ต. กนก อ. ชลธาน จ. มาเล 25478",
+      "sex": "ชาย",
+      "birth_date": "1935-02-20"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:14:03.730485",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 175,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-26",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:14:05.179996",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 175,
+      "patient_id": 145,
+      "hn": "HN068",
+      "full_name": "บาดาล น้ำสิงห์",
+      "assessed_date": "2026-02-26",
+      "age": 91,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:17:56.276553",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN068",
+      "gcn": "004",
+      "full_name": "บาดาล น้ำสิงห์",
+      "phone": "021457886",
+      "address": "เลขที่ 145/6 หมู่ 5 ต. กนก อ. ชลธาน จ. มาเล 25478",
+      "sex": "ชาย",
+      "birth_date": "1935-02-20"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:17:58.357470",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 175,
+      "patient_id": 145,
+      "encounter_date": "2026-02-26",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:17:59.143230",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN068",
+      "patient_name": "บาดาล น้ำสิงห์",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 30,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 91,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:quit, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:17:59.938036",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 175,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-02-26T22:18:01.481171",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 175,
+      "patient_id": 145,
+      "hn": "HN068",
+      "full_name": "บาดาล น้ำสิงห์",
+      "assessed_date": "2026-02-26",
+      "age": 91,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-02-27T10:10:38.882371",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN069",
+      "gcn": "002",
+      "full_name": "สนน นน",
+      "phone": "0222222222",
+      "address": "เลขที่ 11 หมู่ 11 ต. 11 อ. 11 จ. 11 ุุ",
+      "sex": "ชาย",
+      "birth_date": "1942-02-24"
+    }
+  },
+  {
+    "timestamp": "2026-02-27T10:10:40.165842",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 176,
+      "assessed_by": 3,
+      "assessment_date": "2026-02-27",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-02-27T10:10:42.510075",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 176,
+      "patient_id": 147,
+      "hn": "HN069",
+      "full_name": "สนน นน",
+      "assessed_date": "2026-02-27",
+      "age": 84,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 20,
+      "mmse_result": "ปกติ",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 18,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-06T20:29:25.006701",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN070",
+      "gcn": "001",
+      "full_name": "พัดกะพง ทรงผู้ดี",
+      "phone": "0646521144",
+      "address": "เลขที่ 36 หมู่ 4 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-11"
+    }
+  },
+  {
+    "timestamp": "2026-03-06T20:29:26.104472",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 177,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-06",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-06T20:29:27.780279",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 177,
+      "patient_id": 148,
+      "hn": "HN070",
+      "full_name": "พัดกะพง ทรงผู้ดี",
+      "assessed_date": "2026-03-03",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-07T17:50:44.094771",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 177,
+      "patient_id": 148,
+      "hn": "HN070",
+      "full_name": "พัดกะพง ทรงผู้ดี",
+      "assessed_date": "2026-03-03",
+      "age": 83,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-08T18:01:34.508913",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 177,
+      "patient_id": 148,
+      "hn": "HN070",
+      "full_name": "พัดกะพง ทรงผู้ดี",
+      "assessed_date": "2026-03-03",
+      "age": 83,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:35:06.009406",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN071",
+      "gcn": "002",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "phone": "0212458553",
+      "address": "เลขที่ 134 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:35:06.982202",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:35:08.459461",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:43:05.881934",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN071",
+      "gcn": "002",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "phone": "0212458553",
+      "address": "เลขที่ 134 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:43:07.481553",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:43:09.013176",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:55:24.805507",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:55:45.082471",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN071",
+      "gcn": "002",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "phone": "0212458553",
+      "address": "เลขที่ 134 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:55:46.154649",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:55:47.886253",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:56:02.941368",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:56:43.921649",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:57:16.549239",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN071",
+      "gcn": "002",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "phone": "0212458553",
+      "address": "เลขที่ 134 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:57:17.453821",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T01:57:18.923593",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 179,
+      "patient_id": 149,
+      "hn": "HN071",
+      "full_name": "ทีเจ โรเบิร์ต",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:01:41.778729",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN072",
+      "gcn": "003",
+      "full_name": "ค่อม ชวนชื่น",
+      "phone": "0147854966",
+      "address": "เลขที่ 85 หมู่ 3 ต. บางบัวทอง อ. บางบัวทอง จ. นนทบุรี 11110",
+      "sex": "ชาย",
+      "birth_date": "1935-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:01:42.676798",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 180,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:01:44.159664",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 180,
+      "patient_id": 153,
+      "hn": "HN072",
+      "full_name": "ค่อม ชวนชื่น",
+      "assessed_date": "2026-03-09",
+      "age": 90,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 4,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:01:59.321626",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN072",
+      "gcn": "003",
+      "full_name": "ค่อม ชวนชื่น",
+      "phone": "0147854966",
+      "address": "เลขที่ 85 หมู่ 3 ต. บางบัวทอง อ. บางบัวทอง จ. นนทบุรี 11110",
+      "sex": "ชาย",
+      "birth_date": "1935-03-18"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:02:00.658671",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 180,
+      "patient_id": 153,
+      "encounter_date": "2026-03-09",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:02:01.437193",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN072",
+      "patient_name": "ค่อม ชวนชื่น",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 17,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 90,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:02:02.276986",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 180,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:02:03.718729",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 180,
+      "patient_id": 153,
+      "hn": "HN072",
+      "full_name": "ค่อม ชวนชื่น",
+      "assessed_date": "2026-03-09",
+      "age": 90,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 4,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:19:43.719514",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN073",
+      "gcn": "004",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0258745874",
+      "address": "เลขที่ 156 หมู่ 4 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-26"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:19:44.640259",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 181,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:19:46.120068",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 181,
+      "patient_id": 155,
+      "hn": "HN073",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:20:25.492987",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN073",
+      "gcn": "004",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0258745874",
+      "address": "เลขที่ 156 หมู่ 4 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1942-03-26"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:20:27.235558",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 181,
+      "patient_id": 155,
+      "encounter_date": "2026-03-09",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:20:28.024786",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN073",
+      "patient_name": "ทดสอบ ระบบ",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 17,
+      "tgds_score": 9,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 83,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:20:28.911897",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 181,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T02:20:30.386034",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 181,
+      "patient_id": 155,
+      "hn": "HN073",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:00:33.197875",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN073",
+      "gcn": "004",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0147665446",
+      "address": "เลขที่ 48 หมู่ 9 ต. สันสลี อ. เวียงป่าเป้า จ. เชียงราย 57170",
+      "sex": "หญิง",
+      "birth_date": "1942-03-11"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:00:34.576023",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 182,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-09",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:00:36.919229",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 182,
+      "patient_id": 157,
+      "hn": "HN073",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 18,
+      "mmse_result": "ปกติ",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 28,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:29:25.957374",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN073",
+      "gcn": "004",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0147665446",
+      "address": "เลขที่ 48 หมู่ 9 ต. สันสลี อ. เวียงป่าเป้า จ. เชียงราย 57170",
+      "sex": "หญิง",
+      "birth_date": "1942-03-11"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:29:29.558428",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 182,
+      "patient_id": 157,
+      "encounter_date": "2026-03-09",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:29:30.421724",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN073",
+      "patient_name": "ทดสอบ ระบบ",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 18,
+      "tgds_score": 10,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 83,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:29:31.565438",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 182,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-03-09T11:29:33.675252",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 182,
+      "patient_id": 157,
+      "hn": "HN073",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-03-09",
+      "age": 83,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 18,
+      "mmse_result": "ปกติ",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 28,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
     }
   }
 ]

@@ -366,7 +366,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const existing = {{ answers|tojson|safe if answers else '{}' }};
+    const existing = JSON.parse('{{ answers|tojson|safe if answers else "{}" }}');
     Object.keys(existing).forEach(k => {
         const val = existing[k];
         const el = document.querySelector(`input[name="${k}"][value="${val}"]`);
