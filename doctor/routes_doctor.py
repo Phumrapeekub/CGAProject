@@ -749,33 +749,31 @@ def patients():
                     is_dementia = (prediction.get("result") == "Dementia")
                     risk_score_ai = prediction.get("risk_score", 0)
 
-                # --- UNIFIED CLINICAL RISK LOGIC (Sync with patient_detail) ---
+                # --- UNIFIED CLINICAL RISK LOGIC (Sync with 3-state HMM) ---
                 
-                # A. Dementia Score (Weighted by Severity)
+                # A. Dementia Score (HMM 3-state: 0-5 scale)
                 clinical_dementia_score = risk_score_ai
-                if is_dementia and mmse is not None:
-                    if mmse >= 18: clinical_dementia_score = 5.0 + (23 - mmse) * 0.5 
-                    elif mmse >= 10: clinical_dementia_score = 7.6 + (17 - mmse) * 0.2
-                    else: clinical_dementia_score = 9.1 + (9 - mmse) * 0.1
-
-                # B. Suicide Risk (Weighted)
+                
+                # B. Suicide Risk (Weighted to match 0-5 scale roughly)
                 sra_score = 0
-                if sra_val >= 17: sra_score = 9.0 + min(1.0, (sra_val - 17) * 0.1)
-                elif sra_val >= 9: sra_score = 5.0 + (sra_val - 9) * 0.375
+                if sra_val >= 17: sra_score = 4.5 + min(0.5, (sra_val - 17) * 0.05)
+                elif sra_val >= 9: sra_score = 2.5 + (sra_val - 9) * 0.2
 
-                # C. Depression Score (Weighted)
+                # C. Depression Score (Weighted to match 0-5 scale)
                 dep_score = 0
                 tgds_val = tgds if tgds is not None else 0
-                if tgds_val >= 10: dep_score = 7.5 + (tgds_val - 10) * 0.5
-                elif tgds_val >= 5: dep_score = 4.0 + (tgds_val - 5) * 0.75
+                if tgds_val >= 10: dep_score = 3.75 + (tgds_val - 10) * 0.25
+                elif tgds_val >= 5: dep_score = 2.0 + (tgds_val - 5) * 0.35
                 
                 # Final Display Score (Max of all risks)
                 final_score = max(clinical_dementia_score, sra_score, dep_score)
 
-                # Determine Slug
-                if is_dementia or sra_val >= 17 or tgds_val >= 10 or final_score >= 7.5:
+                # Determine Slug based on 3-state logic
+                # HIGH: Dementia OR High Suicide/Depression
+                if (prediction.get("state") == "Dementia") or sra_val >= 17 or tgds_val >= 10 or final_score >= 3.75:
                     risk_slug = "high"
-                elif sra_val >= 9 or tgds_val >= 5 or (mmse is not None and mmse <= 24) or final_score >= 4.0:
+                # MEDIUM: MCI OR Moderate Suicide/Depression
+                elif (prediction.get("state") == "MCI") or sra_val >= 9 or tgds_val >= 5 or (mmse is not None and mmse <= 24) or final_score >= 2.0:
                     risk_slug = "medium"
                 else:
                     risk_slug = "low"
@@ -956,10 +954,9 @@ def patient_detail(hn):
                 p_age = today.year - bd_dt.year - ((today.month, today.day) < (bd_dt.month, bd_dt.day))
             except: pass
 
-# 5) Real AI analysis using HMM model
+# 5) Real AI analysis using HMM model (3-state version)
         ai_analysis = {}
         try:
-            # ✅ Set Supabase client ให้ predictor
             predictor.set_supabase(supabase)
             
             def _get_score(d1, d2, key):
@@ -969,17 +966,18 @@ def patient_detail(hn):
 
             # ✅ ส่ง patient_id เพื่อให้ดึงประวัติ MMSE จาก cga_records
             p_data = {
-                "patient_id": patient_id,  # ✅ เพิ่มบรรทัดนี้
-                "hn": hn,                   # ✅ เพิ่มบรรทัดนี้
+                "patient_id": patient_id,
+                "hn": hn,
                 "mmse_score": _get_score(latest_cga, latest_c, "mmse_score"),
                 "tgds_score": _get_score(latest_cga, latest_c, "tgds_score"),
+                "education": latest_cga.get("education") or latest_c.get("education") or "primary",
             }
             
             prediction = predictor.predict(p_data)
             
             if "error" not in prediction:
-                is_dementia = (prediction["result"] == "Dementia")
-                risk_score_display = prediction["risk_score"]
+                # 3-state HMM: Normal(0), MCI(1), Dementia(2) -> Scale 0-5
+                risk_score_display = prediction.get("risk_score", 0) 
                 
                 # Fetch SRA and TGDS for unified risk check
                 sra_val = 0
@@ -991,136 +989,83 @@ def patient_detail(hn):
                         else: sra_val = int(float(s_raw))
                 except: pass
                 
-                tgds_val = p_data.get("tgds_score") or 0
-                mmse_val = p_data.get("mmse_score") or 0
-                
-                # --- LOGIC SEPARATION ---
-                # risk_score_display = AI's specific dementia probability (0.3)
-                # final_risk_level = Clinical urgency (High/Medium/Low)
-                
-                final_risk_level = "low"
-                reasons = []
-                
-                # 1. Dementia (AI Logic)
-                if is_dementia: 
-                    final_risk_level = "high"
-                    reasons.append("ความเสี่ยงภาวะสมองเสื่อม")
-                
-                # 2. Safety (Suicide)
-                s_tone = "good"
-                s_pct = 20
-                if sra_val >= 17:
-                    final_risk_level = "high"
-                    reasons.append("ความเสี่ยงด้านการฆ่าตัวตาย (สูง)")
-                    s_tone = "bad"
-                    s_pct = 100
-                elif sra_val >= 9:
-                    if final_risk_level != "high": final_risk_level = "medium"
-                    reasons.append("ความเสี่ยงด้านการฆ่าตัวตาย (ปานกลาง)")
-                    s_tone = "warn"
-                    s_pct = 60
+                tgds_val = float(p_data.get("tgds_score") or 0)
+                mmse_val = float(p_data.get("mmse_score") or 0)
 
-                # 3. Emotional (Depression)
-                if tgds_val >= 10:
-                    final_risk_level = "high"
-                    reasons.append("ภาวะซึมเศร้ารุนแรง")
-                elif tgds_val >= 5:
-                    if final_risk_level != "high": final_risk_level = "medium"
-                    reasons.append("ภาวะซึมเศร้า")
-
-                # 4. Cognitive Baseline
-                if mmse_val <= 24 and final_risk_level == "low":
-                    final_risk_level = "medium"
-                    reasons.append("คะแนนพุทธิปัญญาต่ำกว่าเกณฑ์")
-
-                # --- CALCULATE UNIFIED SCORE (0-10) ---
-                # To avoid confusion, the main score should reflect the clinical priority
+                # --- UNIFIED CLINICAL RISK LOGIC (Scaled to 0-5) ---
                 
-                # 1. Dementia Score (Weighted by Severity)
-                # Raw HMM probability indicates 'likelihood', but we want 'severity' for the score
+                # A. Dementia Score
                 clinical_dementia_score = risk_score_display
-                if is_dementia:
-                    if mmse_val >= 18:
-                        # Mild Impairment (MMSE 18-23): Score 5.0 - 7.5
-                        # Linear map: 23->5.0, 18->7.5 (Slope = 0.5 per point)
-                        clinical_dementia_score = 5.0 + (23 - mmse_val) * 0.5 
-                    elif mmse_val >= 10:
-                        # Moderate Impairment (MMSE 10-17): Score 7.6 - 9.0
-                        # Linear map: 17->7.6, 10->9.0 (Slope = 0.2 per point)
-                        clinical_dementia_score = 7.6 + (17 - mmse_val) * 0.2
-                    else:
-                        # Severe Impairment (MMSE < 10): Score 9.1 - 10.0
-                        clinical_dementia_score = 9.1 + (9 - mmse_val) * 0.1
-
-                # 2. Suicide Risk (Weighted)
-                # SRA 9-16 (Med): 5.0 - 8.0
-                # SRA >= 17 (High): 9.0 - 10.0
-                sra_score = 0
-                if sra_val >= 17:
-                    sra_score = 9.0 + min(1.0, (sra_val - 17) * 0.1)
-                elif sra_val >= 9:
-                    sra_score = 5.0 + (sra_val - 9) * 0.375
-
-                # 3. Depression Score (Weighted)
-                # TGDS 5-9 (Med): 4.0 - 7.0
-                # TGDS 10-15 (High): 7.5 - 10.0
-                dep_score = 0
-                if tgds_val >= 10:
-                    dep_score = 7.5 + (tgds_val - 10) * 0.5
-                elif tgds_val >= 5:
-                    dep_score = 4.0 + (tgds_val - 5) * 0.75
                 
-                # Final display score is the highest risk detected
+                # B. Suicide Risk (Scaled to 0-5)
+                sra_score = 0
+                if sra_val >= 17: sra_score = 4.5 + min(0.5, (sra_val - 17) * 0.05)
+                elif sra_val >= 9: sra_score = 2.5 + (sra_val - 9) * 0.2
+                
+                # C. Depression Score (Scaled to 0-5)
+                dep_score = 0
+                if tgds_val >= 10: dep_score = 3.75 + (tgds_val - 10) * 0.25
+                elif tgds_val >= 5: dep_score = 2.0 + (tgds_val - 5) * 0.35
+                
                 final_display_score = max(clinical_dementia_score, sra_score, dep_score)
-                final_display_score = round(min(10.0, final_display_score), 1)
+                final_display_score = round(min(5.0, final_display_score), 1)
 
                 # Badge mapping
                 badge_map = {"high": "rose", "medium": "amber", "low": "emerald"}
-                risk_badge = badge_map.get(final_risk_level, "emerald")
+                
+                # Risk Level Determination
+                if final_display_score >= 3.75: f_lvl = "high"
+                elif final_display_score >= 2.0: f_lvl = "medium"
+                else: f_lvl = "low"
+                
+                risk_badge = badge_map.get(f_lvl, "emerald")
 
-                # Labels for display - Explicitly state if it's a safety concern
-                if final_risk_level == "high" and not is_dementia:
-                    overall_label = "เสี่ยงสูง (ด้านความปลอดภัย/อารมณ์)"
-                elif final_risk_level == "high":
-                    overall_label = "เสี่ยงสูง (สมองเสื่อม/ความปลอดภัย)"
-                elif final_risk_level == "medium":
+                # Mapping findings
+                findings = []
+                if prediction.get("state") == "Dementia": findings.append("ความเสี่ยงภาวะสมองเสื่อม")
+                elif prediction.get("state") == "MCI": findings.append("ความเสี่ยงภาวะ MCI")
+                if tgds_val >= 10: findings.append("ภาวะซึมเศร้ารุนแรง")
+                elif tgds_val >= 5: findings.append("ภาวะซึมเศร้า")
+                if sra_val >= 17: findings.append("ความเสี่ยงด้านความปลอดภัย")
+
+                # Final labels
+                if f_lvl == "high":
+                    overall_label = "เสี่ยงสูง"
+                elif f_lvl == "medium":
                     overall_label = "เสี่ยงปานกลาง"
                 else:
                     overall_label = "ปกติ/เสี่ยงต่ำ"
                 
-                # Description to clear confusion
-                if not is_dementia and final_risk_level == "high":
-                    desc = f"AI พบว่าสมรรถภาพสมองปกติ (คะแนน {mmse_val}/30) แต่ตรวจพบปัจจัยเสี่ยงวิกฤต: " + ", ".join([r for r in reasons if "สมอง" not in r])
-                elif reasons:
-                    desc = "ตรวจพบ: " + ", ".join(reasons)
-                else:
-                    desc = "วิเคราะห์ด้วยโมเดล HMM อิงจากคะแนน MMSE, TGDS และปัจจัยเสี่ยงทางกายภาพ"
+                desc = f"ตรวจพบ: {', '.join(findings)}" if findings else "ไม่พบความเสี่ยงที่ผิดปกติ"
 
-                mmse_percent = int((mmse_val / 30) * 100) if mmse_val else 0
-                tgds_percent = int(((15 - tgds_val) / 15) * 100) if tgds_val else 100
+                # Progress percentages (based on 5.0 max)
+                mmse_pct = int((clinical_dementia_score / 5) * 100)
+                tgds_pct = int((dep_score / 5) * 100)
+                sra_pct = int((sra_score / 5) * 100)
                 
                 ai_analysis = {
                     "overall_label": overall_label,
                     "overall_desc": desc,
-                    "risk_score": final_display_score, # ✅ Uses weighted clinical score
+                    "risk_score": final_display_score, 
+                    "risk_max": 5,
                     "risk_badge": risk_badge,
                     "domains": [
                         {
                             "name": "สมรรถภาพสมอง (MMSE)", 
-                            "percent": mmse_percent, 
-                            "tone": "good" if mmse_val > 23 else "warn" if mmse_val > 18 else "bad", 
-                            "note": f"คะแนน {mmse_val}/30"
+                            "percent": mmse_pct, 
+                            "tone": "bad" if prediction.get("state") == "Dementia" else "warn" if prediction.get("state") == "MCI" else "good", 
+                            "note": f"สถานะ: {prediction.get('state')}"
                         },
                         {
                             "name": "สภาวะทางอารมณ์ (TGDS)", 
-                            "percent": tgds_percent, 
-                            "tone": "good" if tgds_val < 5 else "warn" if tgds_val < 10 else "bad", 
-                            "note": f"TGDS {tgds_val}/15"
+                            "percent": tgds_pct, 
+                            "tone": "bad" if tgds_val >= 10 else "warn" if tgds_val >= 5 else "good", 
+                            "note": f"TGDS {int(tgds_val)}/15"
                         },
                         {
                             "name": "ความปลอดภัย/ฆ่าตัวตาย", 
-                            "percent": s_pct, 
-                            "tone": s_tone, 
+                            "percent": sra_pct, 
+                            "tone": "bad" if sra_val >= 17 else "warn" if sra_val >= 9 else "good", 
                             "note": "อิงจากการประเมิน SRA"
                         },
                         {
@@ -1130,22 +1075,18 @@ def patient_detail(hn):
                             "note": "ระดับความเชื่อมั่นของ AI"
                         },
                     ],
-                    "cautions": [
-                        prediction.get("warning") if prediction.get("warning") else (
-                            "พบความเสี่ยงภาวะสมองเสื่อมระยะเริ่มต้น" if final_risk_level == "high" 
-                            else "ไม่พบความเสี่ยงที่ชัดเจนในขณะนี้"
-                        ),
-                        "มีภาวะซึมเศร้าร่วมด้วย" if tgds_val >= 6 else "อารมณ์อยู่ในเกณฑ์ปกติ"
-                    ],
-                    "recs": [
-                        "ควรตรวจประเมิน MoCA หรือ MRI เพิ่มเติม" if final_risk_level == "high" else "ตรวจติดตามผล MMSE ทุก 6 เดือน",
-                        "ทบทวนการใช้ยาที่มีผลต่อระบบประสาท",
-                        "ส่งเสริมกิจกรรมลับสมองและเข้าสังคม"
-                    ],
-                    "risk_level": overall_label,
-                    "n_visits": prediction.get("n_visits", 1),
-                    "mmse_scores": prediction.get("mmse_scores", []),
+                    "cautions": [prediction.get("warning")] if prediction.get("warning") else [],
+                    "recs": []
                 }
+                
+                if prediction.get("state") == "Dementia":
+                    ai_analysis["recs"].extend(["ควรตรวจประเมิน MoCA หรือ MRI เพิ่มเติม", "ทบทวนการใช้ยาที่มีผลต่อระบบประสาท"])
+                elif prediction.get("state") == "MCI":
+                    ai_analysis["recs"].append("แนะนำกิจกรรมลับสมองและเข้าสังคม")
+                if sra_val >= 9:
+                    ai_analysis["recs"].append("ควรส่งพบผู้เชี่ยวชาญด้านสุขภาพจิต")
+                if not ai_analysis["recs"]:
+                    ai_analysis["recs"].append("ติดตามอาการตามนัดหมายปกติ")
             else:
                 raise Exception(prediction.get("error", "Unknown error"))
                 
