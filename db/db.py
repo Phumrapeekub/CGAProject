@@ -20,6 +20,7 @@ def get_db_connection():
             user=user,
             password=password,
             database=database,
+            ssl_disabled=True
         )
         return conn
     except mysql.connector.Error as err:
