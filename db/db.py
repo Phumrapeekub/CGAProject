@@ -11,10 +11,12 @@ def get_db_connection():
     user = os.getenv("DB_USER", "root")
     password = os.getenv("DB_PASSWORD", "Kantiya203_")
     database = os.getenv("DB_NAME", "cga_system_dev")
+    port = os.getenv("DB_PORT", "3306")
 
     try:
         conn = mysql.connector.connect(
             host=host,
+            port=int(port),
             user=user,
             password=password,
             database=database,
