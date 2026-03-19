@@ -1,175 +1,181 @@
 """
-================================================================================
-HMM PREDICTOR (SMART VERSION) - Supporting 3 or 9 features
-================================================================================
+ml/hmm_predictor.py
+===================
+วางที่  your_project/ml/hmm_predictor.py
+ต้องมี  your_project/hmm_output/hmm_model.pkl
+
+Usage ใน routes_doctor.py:
+    from ml.hmm_predictor import predictor
+    predictor.set_supabase(supabase)
+    result = predictor.predict(p_data)
 """
-
-import os
+import os, pickle
 import numpy as np
-import joblib
-import json
-import traceback
-from typing import Optional, Dict, List, Any
+
+_BASE = os.path.dirname(os.path.abspath(__file__))
+_PKL  = os.path.join(_BASE, '..', 'hmm_output', 'hmm_model.pkl')
+
+try:
+    _b      = pickle.load(open(_PKL, 'rb'))
+    _model  = _b['model']
+    _s2l    = _b['state_to_label']
+    _LABELS = _b['label_names']
+    _N      = _b['n_states']
+    _ACC    = _b['metrics']['accuracy']
+    print(f'[HMM] \u2705 Model loaded  accuracy={_ACC*100:.1f}%')
+except Exception as e:
+    _model = None
+    print(f'[HMM] \u26a0 WARNING: {e}')
+
+_COLORS = ['#10b981', '#f59e0b', '#ef4444']
+_SLUGS  = ['normal', 'mci', 'dementia']
 
 
-class HmmPredictor:
-    def __init__(self, supabase_client=None):
-        self.supabase = supabase_client
-        self.base_path = os.path.dirname(os.path.abspath(__file__))
-        self.model_path = os.path.join(self.base_path, 'models', 'hmm_best_model.joblib')
-        self.scaler_path = os.path.join(self.base_path, 'models', 'hmm_scaler.joblib')
-        
-        self.model = None
-        self.scaler = None
-        self.n_features_expected = 3
-        self._load_model()
+def _cutoff(max_score: int, edu: str = '') -> int:
+    ms = int(max_score) if max_score else 30
+    if ms not in [23, 30]: ms = 30
+    if ms == 23: return 14
+    e = str(edu or '').strip().lower()
+    if 'สูงกว่า' in e or 'bach' in e or 'uni' in e or 'sec' in e or 'มัธยม' in e: return 22
+    elif 'ประถม' in e or 'pri' in e: return 17
+    return 17
 
-    def set_supabase(self, supabase_client):
-        self.supabase = supabase_client
 
-    def _load_model(self) -> bool:
-        if self.model is not None:
-            return True
-        try:
-            if os.path.exists(self.model_path) and os.path.exists(self.scaler_path):
-                self.model = joblib.load(self.model_path)
-                self.scaler = joblib.load(self.scaler_path)
-                # Detect expected features from scaler
-                self.n_features_expected = getattr(self.scaler, 'n_features_in_', 3)
-                print(f"✅ HMM Model loaded (Expected features: {self.n_features_expected})")
-                return True
-            return False
-        except Exception as e:
-            print(f"❌ Error loading model: {e}")
-            return False
+def _parse(val):
+    if val is None: return None
+    s = str(val).strip()
+    if s in ['', '-', 'nan', 'หูตึงประเมินไม่ได้', 'ไม่พูด ไม่รับรู้']: return None
+    if '/' in s:
+        try: return int(s.split('/')[0])
+        except: return None
+    try: return int(float(s))
+    except: return None
 
-    def _compute_features_v9(self, mmse_scores: List[int]) -> List[float]:
-        """Calculates 9 features from MMSE sequence for the V9 model."""
-        scores = np.array(mmse_scores, dtype=float)
-        n = len(scores)
-        slope = 0.0
-        if n > 1:
+
+def predict(mmse_scores: list, max_score: int = 30, edu: str = 'ประถม') -> dict:
+    if _model is None:
+        return {'error': 'Model not loaded', 'result': 'Unknown',
+                'risk_score': 0, 'confidence': 0, 'warning': None,
+                'n_visits': 0, 'mmse_scores': []}
+    c   = _cutoff(max_score, edu)
+    obs = np.array([s - c for s in mmse_scores], dtype=float).reshape(-1, 1)
+    hs  = _model.predict(obs)
+    pb  = _model.predict_proba(obs)
+    p_lbl = np.zeros(_N)
+    for state, lbl in _s2l.items():
+        p_lbl[lbl] += pb[-1][state]
+    pred       = _s2l[int(hs[-1])]
+    confidence = float(p_lbl[pred])
+    risk_score = float(np.dot(p_lbl, [0, 1, 2]))
+    warning = state_path = None
+    if len(hs) > 1:
+        seq        = [_s2l[int(h)] for h in hs]
+        state_path = ' \u2192 '.join(_LABELS[s] for s in seq)
+        if seq[-1] - seq[-2] >= 2:
+            warning = f'\u26a0 Rapid decline: {_LABELS[seq[-2]]} \u2192 {_LABELS[seq[-1]]}'
+    return {
+        'result':          _LABELS[pred],
+        'risk_score':      round(risk_score * 5, 2),
+        'confidence':      round(confidence * 100),
+        'warning':         warning,
+        'n_visits':        len(mmse_scores),
+        'mmse_scores':     mmse_scores,
+        'predicted_label': _LABELS[pred],
+        'label_index':     pred,
+        'label_slug':      _SLUGS[pred],
+        'label_color':     _COLORS[pred],
+        'risk_level':      'HIGH' if pred == 2 else ('MEDIUM' if pred == 1 else 'LOW'),
+        'state_probs':     {_LABELS[i]: round(float(p_lbl[i]), 4) for i in range(_N)},
+        'state_path':      state_path,
+        'model_accuracy':  round(_ACC, 4),
+    }
+
+
+class _Predictor:
+    def __init__(self): self._db = None
+
+    @property
+    def is_loaded(self): return _model is not None
+    @property
+    def accuracy(self): return _ACC
+
+    def set_supabase(self, client): self._db = client
+
+    def predict(self, p_data: dict) -> dict:
+        edu   = p_data.get('education') or p_data.get('edu') or 'ประถม'
+        max_s = int(p_data.get('max_score') or 30)
+        if max_s not in [23, 30]: max_s = 30
+        scores = []
+
+        hist = p_data.get('mmse_scores') or []
+        if isinstance(hist, list) and hist:
+            scores = [s for s in hist if s is not None]
+
+        if not scores and self._db and p_data.get('patient_id'):
             try:
-                # Calculate trend (negative means cognitive decline)
-                slope = float(np.polyfit(np.arange(n), scores, 1)[0])
-            except: pass
-        
-        return [
-            float(np.mean(scores)), 
-            float(np.std(scores)) if n > 1 else 0.0,
-            float(np.min(scores)), float(np.max(scores)),
-            slope, float(scores[0]), float(scores[-1]),
-            float(scores[-1] - scores[0]), float(n)
-        ]
+                res = (self._db.table('cga_records')
+                       .select('mmse_score,max_score,education,assessed_date')
+                       .eq('patient_id', p_data['patient_id'])
+                       .order('assessed_date').execute())
+                for row in (res.data or []):
+                    s = _parse(row.get('mmse_score'))
+                    if s is not None:
+                        scores.append(s)
+                        max_s = int(row.get('max_score') or max_s)
+                        edu   = str(row.get('education') or edu)
+            except Exception as ex:
+                print(f'[HMM] DB error: {ex}')
 
-    def get_patient_mmse_history(self, patient_id: int = None, hn: str = None) -> Dict[str, Any]:
-        if not self.supabase:
-            return {"error": "Supabase not connected", "mmse_scores": [], "n_visits": 0}
-        try:
-            query = self.supabase.table('cga_records').select('patient_id, hn, mmse_score, tgds_score, assessed_date, age')
-            if patient_id: query = query.eq('patient_id', patient_id)
-            elif hn: query = query.eq('hn', hn)
-            else: return {"error": "Missing ID", "mmse_scores": [], "n_visits": 0}
-            
-            response = query.order('assessed_date', desc=False).execute()
-            valid_records = [r for r in (response.data or []) if r.get('mmse_score') is not None]
-            
-            if not valid_records:
-                return {"error": "No MMSE data", "mmse_scores": [], "n_visits": 0}
-            
-            return {
-                'patient_id': valid_records[0].get('patient_id'),
-                'hn': valid_records[0].get('hn'),
-                'mmse_scores': [r['mmse_score'] for r in valid_records],
-                'tgds_scores': [r.get('tgds_score') for r in valid_records],
-                'n_visits': len(valid_records),
-                'age': valid_records[-1].get('age'),
-                'last_tgds': valid_records[-1].get('tgds_score')
-            }
-        except Exception as e:
-            print(f"❌ DB Error: {e}")
-            return {"error": str(e), "mmse_scores": [], "n_visits": 0}
+        if not scores:
+            s = _parse(p_data.get('mmse_score'))
+            if s is not None: scores = [s]
 
-    def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
-        if not self.model and not self._load_model():
-            return {"error": "Model not loaded"}
+        if not scores:
+            return {'error': 'ไม่มีค่า MMSE score', 'result': 'Unknown',
+                    'risk_score': 0, 'confidence': 0, 'warning': None,
+                    'n_visits': 0, 'mmse_scores': []}
 
-        try:
-            mmse_scores = patient_data.get('mmse_scores', [])
-            if isinstance(mmse_scores, str): mmse_scores = json.loads(mmse_scores)
-            
-            history = {}
-            
-            # 1. Get History ONLY if mmse_scores is not provided
-            if not mmse_scores and ('patient_id' in patient_data or 'hn' in patient_data):
-                history = self.get_patient_mmse_history(patient_id=patient_data.get('patient_id'), hn=patient_data.get('hn'))
-                mmse_scores = history.get('mmse_scores', [])
-            
-            # 2. Fallback to single score if still empty
-            if not mmse_scores and 'mmse_score' in patient_data:
-                mmse_scores = [patient_data['mmse_score']]
+        return predict(scores, max_score=max_s, edu=edu)
 
-            if not mmse_scores:
-                return {"error": "ข้อมูลไม่ครบถ้วน", "label": "รอการวิเคราะห์", "risk_score": 0}
+    def predict_from_supabase_row(self, row: dict) -> dict:
+        s = _parse(row.get('mmse_score'))
+        if s is None: return {'error': 'No mmse_score'}
+        return predict([s], max_score=int(row.get('max_score') or 30),
+                       edu=str(row.get('education') or ''))
 
-            # 3. Prepare Feature Matrix X
-            age = float(patient_data.get('age') or history.get('age') or 60)
-            chronic = float(patient_data.get('chronic_count') or 0)
-            tgds_val = float(patient_data.get('tgds_score') or history.get('last_tgds') or 0)
-            
-            if self.n_features_expected == 9:
-                features = self._compute_features_v9(mmse_scores)
-                X = [features]
-            else:
-                X = [[age, float(s), chronic] for s in mmse_scores]
+    def predict_from_supabase_history(self, rows: list) -> dict:
+        scores, max_s, edu = [], 30, ''
+        for row in rows:
+            s = _parse(row.get('mmse_score'))
+            if s is not None:
+                scores.append(s)
+                max_s = int(row.get('max_score') or max_s)
+                edu   = str(row.get('education') or edu)
+        if not scores: return {'error': 'No valid MMSE scores'}
+        return predict(scores, max_score=max_s, edu=edu)
 
-            # 4. HMM Raw Prediction
-            X_scaled = self.scaler.transform(X)
-            probs_seq = self.model.predict_proba(X_scaled)
-            probs = probs_seq[-1] 
-            
-            prob_dementia = probs[1]
-            
-            # 🟢 [REFACTOR] Smart Risk Scoring Logic 🟢
-            # โมเดลมักจะให้ค่าสุดโต่ง (0 หรือ 1) เราจะเอามาเกลาให้น่าเชื่อถือขึ้น
-            # ใช้ Base Risk จากคะแนน MMSE ล่าสุด
-            latest_mmse = mmse_scores[-1]
-            
-            # ยิ่งคะแนน MMSE ต่ำ ความเสี่ยงพื้นฐานยิ่งสูง
-            base_risk = max(0, min(100, (30 - latest_mmse) * 3.33)) 
-            
-            # ผสมผสานกับผลทำนายจาก HMM (ให้น้ำหนัก HMM 60% และ MMSE 40%)
-            final_risk = (prob_dementia * 60.0) + (base_risk * 0.4)
-            
-            # ➕ บวกปัจจัยเสี่ยงเพิ่มเติม (Risk Factors)
-            if age > 75: final_risk += 5
-            if age > 85: final_risk += 10
-            if chronic >= 3: final_risk += 5
-            if tgds_val >= 7: final_risk += 10
-            
-            # ลบความเสี่ยงหากคะแนน MMSE สูงมาก (กัน Error)
-            if latest_mmse >= 27: final_risk = min(final_risk, 15)
-            
-            # Clamp value 0-100
-            final_risk = max(5.0, min(99.0, final_risk)) # ไม่ให้เป็น 100 เป๊ะๆ เพื่อความสวยงาม
 
-            prediction = 1 if final_risk >= 50 else 0
-            
-            return {
-                "result": "Dementia" if prediction == 1 else "Non-Dementia",
-                "label": "เสี่ยงสมองเสื่อม" if prediction == 1 else "ปกติ",
-                "risk_score": round(final_risk, 1),
-                "confidence": round(float(probs[prediction] * 100), 2),
-                "mmse_scores": mmse_scores,
-                "n_visits": len(mmse_scores),
-                "tgds_score": tgds_val,
-                "warning": "⚠️ ทำนายจากการตรวจครั้งเดียว" if len(mmse_scores) == 1 else None
-            }
-        except Exception as e:
-            traceback.print_exc()
-            return {"error": str(e)}
+predictor = _Predictor()
 
-    def predict_from_cga_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        return self.predict(record)
 
-predictor = HmmPredictor()
+if __name__ == '__main__':
+    print("="*55)
+    print("  HMM Predictor \u2014 Quick Test")
+    print("="*55)
+    print(f"  Model loaded : {predictor.is_loaded}")
+    print(f"  Accuracy     : {predictor.accuracy*100:.1f}%\n")
+    tests = [
+        ([27], 30, 'สูงกว่าประถม', 'adj=+5 \u2192 Normal'),
+        ([18], 30, 'สูงกว่าประถม', 'adj=-4 \u2192 MCI'),
+        ([10], 30, 'ประถม',        'adj=-7 \u2192 Dementia'),
+        ([12], 23, 'ไม่ได้เรียน',  'adj=-2 \u2192 MCI (MaxScore=23)'),
+        ([17, 10, 5], 30, 'ประถม', 'Trajectory decline'),
+    ]
+    for sc, ms, edu, note in tests:
+        r = predict(sc, max_score=ms, edu=edu)
+        ok = '\u2705' if 'error' not in r else '\u274c'
+        print(f"  {ok} {note}")
+        print(f"     scores={sc}  max={ms}  cutoff={_cutoff(ms,edu)}")
+        print(f"     result={r['result']}  risk={r['risk_score']}  conf={r['confidence']}%")
+        if r.get('state_path'): print(f"     path: {r['state_path']}")
+        print()

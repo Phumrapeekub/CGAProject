@@ -203,42 +203,69 @@
                   </div>
                   <h4 class="text-xl font-bold text-slate-800">AI วิเคราะห์ความเสี่ยง</h4>
               </div>
-  
+
               {% if ai_result and not ai_result.error %}
               <div class="space-y-5">
                   <div class="p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
                       <p class="text-xs text-indigo-600 font-bold mb-1">ผลประเมิน HMM Model</p>
-                      <div class="text-2xl font-black {{ 'text-green-600' if ai_result.result == 'Non-Dementia' else 'text-red-600' }}">
-                          {{ ai_result.label }}
+                      <div class="text-3xl font-black mb-2" style="color: {{ ai_result.label_color | default('#ef4444') }}">
+                          {{ ai_result.result | default(ai_result.label | default('ไม่ทราบผล')) }}
                       </div>
-                      <p class="text-xs text-slate-500 mt-2">ความมั่นใจ: {{ ai_result.confidence|default('0') }}%</p>
+                      <p class="text-sm text-slate-500 font-medium">ความมั่นใจ AI: {{ ai_result.confidence|default('0') }}%</p>
                   </div>
-  
+
+                  <!-- คำอธิบายความหมายของผลลัพธ์แบบละเอียด -->
+                  <div class="p-5 rounded-2xl" style="background-color: {{ ai_result.label_color | default('#ef4444') }}15; border: 1px solid {{ ai_result.label_color | default('#ef4444') }}40;">
+                      <h5 class="font-bold text-lg mb-2" style="color: {{ ai_result.label_color | default('#ef4444') }}">
+                          ความหมายของผลลัพธ์
+                      </h5>
+                      <p class="text-sm text-slate-700 leading-relaxed font-medium">
+                          {% if ai_result.label_slug == 'normal' %}
+                              <strong>ปกติ (Normal):</strong> ผู้ป่วยมีผลการทดสอบการรู้คิดอยู่ในเกณฑ์ปกติ ไม่พบสัญญาณที่บ่งบอกถึงภาวะสมองเสื่อม แนะนำให้ดูแลสุขภาพและตรวจติดตามผลปีละ 1 ครั้ง
+                          {% elif ai_result.label_slug == 'mci' %}
+                              <strong>เริ่มมีภาวะรู้คิดบกพร่อง (MCI):</strong> ย่อมาจาก Mild Cognitive Impairment หมายถึงผู้ป่วยเริ่มมีความถดถอยของความจำหรือการคิดวิเคราะห์เล็กน้อย อาจสังเกตได้ แต่ยังไม่กระทบกับการใช้ชีวิตประจำวันมากนัก ถือเป็น<span class="text-amber-600 font-bold">ระยะเฝ้าระวัง</span>ที่อาจพัฒนาเป็นสมองเสื่อมได้ แนะนำให้แพทย์ประเมินเชิงลึก
+                          {% elif ai_result.label_slug == 'dementia' %}
+                              <strong>สมองเสื่อม (Dementia):</strong> ผู้ป่วยมีความบกพร่องด้านการรู้คิดและความจำอย่างชัดเจน ซึ่งเริ่มส่งผลกระทบต่อการใช้ชีวิตประจำวัน ควรรีบส่งต่อให้แพทย์ผู้เชี่ยวชาญเพื่อวางแผนการรักษาและดูแลทันที
+                          {% else %}
+                              ผลการประเมินจากแบบจำลอง HMM วิเคราะห์จากคะแนน MMSE ประวัติสุขภาพ และปัจจัยเสี่ยงอื่นๆ
+                          {% endif %}
+                      </p>
+                  </div>
+
+                  {% if ai_result.warning %}
+                  <div class="p-4 bg-rose-50 text-rose-700 rounded-2xl text-base font-bold border-2 border-rose-200 flex gap-3 items-start">
+                      <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      <div>
+                          <span class="block mb-1 underline">ข้อควรระวังสำคัญ:</span>
+                          {{ ai_result.warning }}
+                      </div>
+                  </div>
+                  {% endif %}
+
                   <div>
                       <div class="flex justify-between items-end mb-1">
-                          <span class="text-sm font-medium text-slate-600">ดัชนีความเสี่ยงรวม</span>
-                          <span class="font-bold {{ 'text-green-600' if ai_result.result == 'Non-Dementia' else 'text-red-600' }}">{{ ai_result.risk_score|default(0)|round(1) }}%</span>
+                          <span class="text-sm font-medium text-slate-600">ดัชนีความเสี่ยงรวม (จากแบบประเมินทั้งหมด)</span>
+                          <span class="font-bold text-lg" style="color: {{ ai_result.label_color | default('#ef4444') }}">{{ ai_result.risk_score|default(0)|round(1) }} / 10</span>
                       </div>
-                      <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                          <div class="h-full transition-all {{ 'bg-green-500' if ai_result.result == 'Non-Dementia' else 'bg-red-500' }}" style="width: {{ ai_result.risk_score|default(0) }}%"></div>
+                      <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full transition-all" style="width: {{ (ai_result.risk_score|default(0) * 10) }}%; background-color: {{ ai_result.label_color | default('#ef4444') }}"></div>
                       </div>
                   </div>
-  
+
                   {% if ai_result.factors %}
                   <div class="pt-4 border-t border-slate-100">
-                      <p class="text-sm font-bold text-slate-700 mb-2">ปัจจัยที่พบ:</p>
-                      <ul class="space-y-1">
+                      <p class="text-sm font-bold text-slate-700 mb-2">ปัจจัยเสี่ยงที่ตรวจพบร่วมด้วย:</p>
+                      <ul class="space-y-2">
                           {% for factor in ai_result.factors %}
-                          <li class="text-sm text-slate-600 flex items-center gap-2">
-                              <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> {{ factor }}
+                          <li class="text-sm font-medium text-slate-700 flex items-start gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span> {{ factor }}      
                           </li>
                           {% endfor %}
                       </ul>
                   </div>
                   {% endif %}
               </div>
-              {% else %}
-              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+              {% else %}              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center">
                   <p class="text-sm font-bold text-slate-500">ข้อมูลไม่เพียงพอสำหรับ AI</p>
               </div>
               {% endif %}

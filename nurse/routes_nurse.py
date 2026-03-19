@@ -780,9 +780,13 @@ def assess_mmse_save(header_id: int):
         edu = f.get('edu', '3')
         is_no_edu = (edu == '1')
 
-        cur.execute("INSERT INTO assessment_mmse (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (actual_cga_id,))
-        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id = %s", (actual_cga_id,))
-        mm_id = cur.fetchone()['id']
+        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id = %s ORDER BY id ASC LIMIT 1", (actual_cga_id,))
+        mm_row = cur.fetchone()
+        if mm_row:
+            mm_id = mm_row['id']
+        else:
+            cur.execute("INSERT INTO assessment_mmse (cga_id) VALUES (%s)", (actual_cga_id,))
+            mm_id = cur.lastrowid
         cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id = %s", (mm_id,))
         
         total_score = 0
@@ -921,9 +925,13 @@ def assess_tgds_save(header_id: int):
                 conn.commit()
                 actual_cga_id = cur.lastrowid
 
-        cur.execute("INSERT INTO assessment_tgds (cga_id) VALUES (%s) ON DUPLICATE KEY UPDATE id=id", (actual_cga_id,))
-        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id = %s", (actual_cga_id,))
-        tg_id = cur.fetchone()['id']
+        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id = %s ORDER BY id ASC LIMIT 1", (actual_cga_id,))
+        tg_row = cur.fetchone()
+        if tg_row:
+            tg_id = tg_row['id']
+        else:
+            cur.execute("INSERT INTO assessment_tgds (cga_id) VALUES (%s)", (actual_cga_id,))
+            tg_id = cur.lastrowid
         cur.execute("DELETE FROM assessment_tgds_items WHERE tgds_id = %s", (tg_id,))
         
         sess_id = _get_assess_data(conn, actual_cga_id).get('session_id')
@@ -1214,20 +1222,21 @@ def assess_summary(header_id: int):
             current_app.logger.info(f"DEBUG: Fetched scores from cga_records for encounter {encounter_id}: MMSE={m_score}, TGDS={t_score}")
 
     # หากใน cga_records ยังเป็น 0 ให้ลองดึงจากตารางประเมินโดยตรง (header_id คือ ID ของ cga_headers)
-    if header_id:
+    actual_cga_id = data.get('header_id') or header_id
+    if actual_cga_id:
         if m_score == 0:
-            cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+            cur.execute("SELECT total_score FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_cga_id,))
             m_row = cur.fetchone()
             if m_row: m_score = m_row['total_score'] or 0
             
         if t_score == 0:
-            cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+            cur.execute("SELECT total_score FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_cga_id,))
             t_row = cur.fetchone()
             if t_row: t_score = t_row['total_score'] or 0
 
-    if header_id:
+    if actual_cga_id:
         # 3. ดึงรายละเอียดรายข้อ (ถ้ามี)
-        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+        cur.execute("SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_cga_id,))
         mm_main = cur.fetchone()
         if mm_main:
             cur.execute("SELECT question_no, score FROM assessment_mmse_items WHERE mmse_id = %s", (mm_main['id'],))
@@ -1235,14 +1244,14 @@ def assess_summary(header_id: int):
                 mmse_details[str(r['question_no'])] = r['score']
             
         # 4. ดึงรายละเอียดรายข้อ TGDS
-        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (header_id,))
+        cur.execute("SELECT id FROM assessment_tgds WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_cga_id,))
         tg_main = cur.fetchone()
         if tg_main:
             cur.execute("SELECT question_no, answer FROM assessment_tgds_items WHERE tgds_id = %s", (tg_main['id'],))
             for r in cur.fetchall():
                 tgds_details[str(r['question_no'])] = 'ใช่' if r['answer']==1 else 'ไม่ใช่'
     
-    cur.execute("SELECT status FROM cga_headers WHERE id=%s", (header_id,))
+    cur.execute("SELECT status FROM cga_headers WHERE id=%s", (actual_cga_id,))
     h_row = cur.fetchone()
     h_status = h_row['status'] if h_row else 'completed'
     
@@ -1302,7 +1311,9 @@ def assess_summary(header_id: int):
             "mmse_scores": mmse_history,
             "mmse_score": m_score,
             "tgds_score": t_score,
-            "chronic_count": chronic_count
+            "chronic_count": chronic_count,
+            "education": edu,
+            "max_score": mmse_total
         }
         
         # 3. ให้ Predictor ประมวลผล

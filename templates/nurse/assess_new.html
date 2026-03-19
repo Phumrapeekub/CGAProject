@@ -1,11 +1,11 @@
 {% extends "nurse/base.html" %}
 {% block content %}
 
-<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 py-10">
-  <div class="max-w-4xl mx-auto px-6">
+<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 py-10 flex items-center">
+  <div class="max-w-4xl mx-auto px-6 w-full">
 
     <div class="rounded-[40px] bg-white shadow-2xl overflow-hidden border border-white/60 relative">
-      
+
       <!-- Close Button -->
       <a href="{{ url_for('nurse.dashboard') }}" class="absolute top-6 right-6 z-20 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all shadow-lg border border-white/30">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -17,51 +17,40 @@
           <div class="absolute top-0 left-0 w-full h-full opacity-10">
               <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="p" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="2" fill="#fff"/></pattern></defs><rect width="100%" height="100%" fill="url(#p)"/></svg>
           </div>
-          
+
           <div class="relative z-10 w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-2xl mx-auto mb-6 border border-white/20">
             <svg class="w-10 h-10 text-blue-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <h1 class="relative z-10 text-4xl font-black leading-tight mb-2 tracking-tight">ลงทะเบียนผู้ป่วยใหม่</h1>
-          <p class="relative z-10 text-xl text-blue-200 font-medium">Create New Patient Assessment</p>
+          <p class="relative z-10 text-xl text-blue-200 font-medium">Create New Patient Assessment</p>    
       </div>
 
       <!-- Body -->
       <div class="p-12 text-center space-y-10">
-        
+
         <div class="py-12 px-8 rounded-[32px] bg-slate-50 border border-slate-100 shadow-inner">
-            <p class="text-slate-600 mb-8 text-lg font-medium leading-relaxed">
-                ระบบจะทำการสร้างเลข <span class="font-black text-slate-800">HN (ชั่วคราว)</span> และ <span class="font-black text-slate-800">CGA Queue</span> ให้อัตโนมัติ<br>
+            <p class="text-slate-600 mb-8 text-xl font-bold leading-relaxed">
                 เมื่อกดปุ่ม ท่านจะเข้าสู่หน้ากรอกข้อมูลพื้นฐานทันที
             </p>
-            
-            <form method="post" action="{{ url_for('nurse.assess_create') }}">
+
+            <form method="post" action="{{ url_for('nurse.assess_create') }}" class="mb-6">
                 <button type="submit"
-                        class="w-full md:w-auto px-12 py-5 bg-indigo-600 text-white text-xl font-black rounded-2xl shadow-xl shadow-indigo-200 
+                        class="w-full md:w-auto px-16 py-6 bg-indigo-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-indigo-200
                                hover:bg-indigo-700 hover:-translate-y-1 hover:shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 mx-auto">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   เริ่มการประเมินทันที
                 </button>
             </form>
+
+            <a href="{{ url_for('nurse.dashboard') }}"
+               class="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-500 font-bold border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300 transition-all text-lg shadow-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ยกเลิกและกลับหน้าหลัก
+            </a>
         </div>
 
-        <div class="flex items-center justify-center gap-8 text-slate-400">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>รันเลข HN อัตโนมัติ</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>ป้องกันการกรอกเลขซ้ำ</span>
-            </div>
-        </div>
-
-        <a href="{{ url_for('nurse.dashboard') }}"
-           class="inline-flex items-center gap-2 text-slate-400 font-bold hover:text-indigo-600 transition-colors py-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ยกเลิกและกลับหน้าหลัก
-        </a>
       </div>
     </div>
 
