@@ -15,3 +15,5 @@ hmmlearn
 gunicorn
 
 line-bot-sdk
+
+flask-login
