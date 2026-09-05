@@ -15,7 +15,8 @@ def login():
             flash("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน", "error")
             return redirect(url_for("auth.login"))
 
-        supabase = get_db_connection()
+        from db.db import get_supabase_client
+        supabase = get_supabase_client()
         if not supabase:
             flash("เชื่อมต่อ Supabase API ไม่สำเร็จ", "error")
             return redirect(url_for("auth.login"))

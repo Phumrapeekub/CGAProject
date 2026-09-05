@@ -1,6 +1,6 @@
 from __future__ import annotations
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
-from db.db import get_db_connection
+from db.db import get_supabase_client
 from datetime import date, datetime
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -17,7 +17,7 @@ def dashboard():
     if not _require_admin():
         return redirect(url_for("auth.login"))
 
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     today_obj = date.today()
     
     if not supabase:
@@ -94,7 +94,7 @@ def dashboard():
 @admin_bp.get("/patients")
 def patients_list():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     q = (request.args.get("q") or "").strip()
     page = int(request.args.get("page", 1))
     per_page = 10
@@ -116,7 +116,7 @@ def patients_list():
 @admin_bp.post("/patients/add")
 def add_patient():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     data = {
         "hn": request.form.get("hn"),
         "full_name": request.form.get("full_name"),
@@ -135,7 +135,7 @@ def add_patient():
 @admin_bp.post("/patients/delete/<int:id>")
 def delete_patient(id: int):
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     try:
         supabase.table("patients").delete().eq("id", id).execute()
         flash("ลบข้อมูลผู้ป่วยสำเร็จ", "success")
@@ -147,7 +147,7 @@ def delete_patient(id: int):
 @admin_bp.get("/doctors")
 def doctors_list():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     try:
         resp = supabase.table("users").select("*").eq("role", "doctor").order("full_name").execute()
         return render_template("admin/doctors.html", doctors=resp.data, active_page="doctors")
@@ -158,7 +158,7 @@ def doctors_list():
 @admin_bp.get("/nurses")
 def nurses_list():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     try:
         resp = supabase.table("users").select("*").eq("role", "nurse").order("full_name").execute()
         return render_template("admin/nurses.html", nurses=resp.data, active_page="nurses")
@@ -169,7 +169,7 @@ def nurses_list():
 @admin_bp.get("/appointments")
 def appointments_list():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     try:
         resp = supabase.table("appointments").select("*, patients(hn, full_name)").order("appt_datetime", desc=True).limit(100).execute()
         return render_template("admin/appointments.html", appointments=resp.data, active_page="appointments")
@@ -180,7 +180,7 @@ def appointments_list():
 @admin_bp.get("/assessments")
 def assessments_list():
     if not _require_admin(): return redirect(url_for("auth.login"))
-    supabase = get_db_connection()
+    supabase = get_supabase_client()
     try:
         resp = supabase.table("cga_headers").select("*, encounters(*, patients(hn, full_name))").order("assessment_date", desc=True).limit(100).execute()
         return render_template("admin/assessments.html", assessments=resp.data, active_page="assessments")
