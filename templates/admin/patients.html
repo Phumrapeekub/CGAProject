@@ -1,0 +1,142 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}จัดการผู้ป่วย | CGA Admin{% endblock %}
+
+{% block head_extra %}
+<script>
+  function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('addModal').classList.add('flex');
+  }
+  function closeAddModal() {
+    document.getElementById('addModal').classList.add('hidden');
+    document.getElementById('addModal').classList.remove('flex');
+  }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="soft-card rounded-2xl p-6">
+  <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">จัดการผู้ป่วย</h1>
+      <p class="text-slate-600 text-sm mt-1">ทั้งหมด {{ total_rows }} รายการ</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <form action="{{ url_for('admin.patients_list') }}" method="get" class="relative">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="ค้นหา HN หรือชื่อ..."
+               class="glass w-full md:w-64 pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+        <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
+      </form>
+      
+      <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+        <span>+</span> เพิ่มผู้ป่วยใหม่
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-8 overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
+        <tr>
+          <th class="px-4 py-3">HN</th>
+          <th class="px-4 py-3">ชื่อ-นามสกุล</th>
+          <th class="px-4 py-3">เพศ</th>
+          <th class="px-4 py-3">วันเกิด</th>
+          <th class="px-4 py-3">เบอร์โทรศัพท์</th>
+          <th class="px-4 py-3 text-right">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for p in patients %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-4 py-3 font-semibold text-blue-600">{{ p.hn }}</td>
+          <td class="px-4 py-3 font-medium text-slate-900">{{ p.full_name }}</td>
+          <td class="px-4 py-3 text-slate-600">{{ p.gender }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ p.birth_date }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ p.phone }}</td>
+          <td class="px-4 py-3 text-right">
+            <form action="{{ url_for('admin.delete_patient', id=p.id) }}" method="post" class="inline" onsubmit="return confirm('ยืนยันการลบผู้ป่วยรายนี้?')">
+              <button type="submit" class="text-red-500 hover:text-red-700">ลบ</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลผู้ป่วย</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
+    <div class="text-sm text-slate-500">หน้า {{ page }} จาก {{ total_pages }}</div>
+    <div class="flex gap-2">
+      {% if page > 1 %}
+      <a href="{{ url_for('admin.patients_list', page=page-1, q=q) }}" class="chip px-4 py-2 rounded-xl text-sm">ก่อนหน้า</a>
+      {% endif %}
+      {% if page < total_pages %}
+      <a href="{{ url_for('admin.patients_list', page=page+1, q=q) }}" class="chip px-4 py-2 rounded-xl text-sm">ถัดไป</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="glass w-full max-w-lg rounded-2xl p-6 shadow-2xl">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold text-slate-900">เพิ่มผู้ป่วยใหม่</h2>
+      <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+    </div>
+    
+    <form action="{{ url_for('admin.add_patient') }}" method="post" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">HN</label>
+          <input type="text" name="hn" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อ-นามสกุล</label>
+          <input type="text" name="full_name" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เพศ</label>
+          <select name="gender" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+            <option value="male">ชาย</option>
+            <option value="female">หญิง</option>
+            <option value="other">อื่นๆ</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">วันเกิด</label>
+          <input type="date" name="birth_date" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เบอร์โทรศัพท์</label>
+        <input type="text" name="phone" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+      </div>
+      
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ที่อยู่</label>
+        <textarea name="address" rows="3" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"></textarea>
+      </div>
+      
+      <div class="pt-4 flex gap-3">
+        <button type="button" onclick="closeAddModal()" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">ยกเลิก</button>
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">บันทึกข้อมูล</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
