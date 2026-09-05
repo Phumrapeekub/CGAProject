@@ -15,9 +15,9 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
 
 # ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=False, # Set to False for local HTTP testing
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SAMESITE='Lax', # Changed to Lax for local dev
 )
 
 app.register_blueprint(auth_bp)
