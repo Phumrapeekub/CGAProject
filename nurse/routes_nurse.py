@@ -296,11 +296,11 @@ def dashboard():
     recent_patients = []
     try:
         # 🟢 เปลี่ยนมาใช้ cga_records เพื่อให้ตัวเลขตรงกับหน้ารายงาน
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
         kpis["today"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
         kpis["week"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
         kpis["month"] = cur.fetchone()["c"]
         cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
         kpis["total"] = cur.fetchone()["c"]
@@ -346,11 +346,11 @@ def api_kpis():
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
         # 🟢 อัปเดตให้ดึงจาก cga_records
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
         today = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
         week = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress' cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
+        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
         month = cur.fetchone()["c"]
         cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
         total = cur.fetchone()["c"]
