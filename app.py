@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
 
 # ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face
