@@ -13,3 +13,5 @@ joblib
 scikit-learn
 hmmlearn
 gunicorn
+
+line-bot-sdk
