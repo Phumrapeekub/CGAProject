@@ -667,7 +667,7 @@ def patients():
 
                 # Fetch latest consultation (include more fields for better risk detection)
                 res_cons = supabase.table("consultations") \
-                    .select("hn, note_from_nurse, mmse_score, tgds_score, suicide_risk, created_at") \
+                    .select("hn, note_from_nurse, mmse_score, tgds_score, depression_2q, created_at") \
                     .in_("hn", hns) \
                     .order("created_at", desc=True) \
                     .execute()
@@ -719,7 +719,7 @@ def patients():
             # Risk Logic based on cga_records
             sra_val = 0
             try:
-                s_raw = cga.get("suicide_risk") or cons.get("suicide_risk")
+                s_raw = cga.get("suicide_risk") or cons.get("depression_2q")
                 if s_raw:
                     if str(s_raw).lower() in ['มี', 'yes', 'true']: sra_val = 17
                     elif str(s_raw).lower() in ['ไม่มี', 'no', 'none', 'false']: sra_val = 0
