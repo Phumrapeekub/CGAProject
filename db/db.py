@@ -33,3 +33,5 @@ def get_supabase_client() -> Client:
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_KEY")
     return create_client(url, key)
+
+get_db_client = get_supabase_client
