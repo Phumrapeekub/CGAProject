@@ -65,9 +65,7 @@ def address_search():
         # à¸„à¹‰à¸™à¸«à¸²à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ˆà¸²à¸ Supabase à¹‚à¸”à¸¢à¹€à¸™à¹‰à¸™à¸„à¹‰à¸™à¸ˆà¸²à¸ à¸•à¸³à¸šà¸¥ à¹à¸¥à¸° à¸­à¸³à¹€à¸ à¸­
 
         res = supabase.table("thai_address").select("*") \
-
             .or_(f"{sub_col}.ilike.%{q}%,{dist_col}.ilike.%{q}%") \
-
             .limit(20).execute()
 
 
