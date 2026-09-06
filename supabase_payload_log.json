@@ -3385,5 +3385,152 @@
       "smoke": "เลิกแล้ว",
       "alcohol": "ดื่มทุกวัน"
     }
+  },
+  {
+    "timestamp": "2026-09-07T00:32:14.414682",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN081",
+      "gcn": "002",
+      "full_name": "รามาน เกดดี",
+      "phone": "0236547864",
+      "address": "เลขที่ 646 หมู่ 1 ต. มงคลธรรมนิมิต อ. สามโก้ จ. อ่างทอง 14160",
+      "gender": "female",
+      "birth_date": "1957-09-06",
+      "emergency_phone": "0268744546",
+      "caregiver_name": "รชต",
+      "caregiver_relation": "บรม"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:32:15.371643",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 194,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:32:16.742228",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 194,
+      "patient_id": 182,
+      "hn": "HN081",
+      "full_name": "รามาน เกดดี",
+      "assessed_date": "2026-09-07",
+      "age": 69,
+      "education": "ประถม",
+      "caregiver_name": "รชต",
+      "mmse_score": 18,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 20,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "กลั้นไม่อยู่",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "height": null,
+      "waist": null,
+      "living_status": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:33:29.304913",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN081",
+      "gcn": "002",
+      "full_name": "รามาน เกดดี",
+      "phone": "0236547864",
+      "address": "เลขที่ 646 หมู่ 1 ต. มงคลธรรมนิมิต อ. สามโก้ จ. อ่างทอง 14160",
+      "gender": "female",
+      "birth_date": "1957-09-06",
+      "emergency_phone": "0268744546",
+      "caregiver_name": "รชต",
+      "caregiver_relation": "บรม"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:33:31.306514",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 194,
+      "patient_id": 182,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:33:31.990960",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN081",
+      "patient_name": "รามาน เกดดี",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 18,
+      "tgds_score": 6,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:33:32.756428",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 194,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T00:33:34.232416",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 194,
+      "patient_id": 182,
+      "hn": "HN081",
+      "full_name": "รามาน เกดดี",
+      "assessed_date": "2026-09-07",
+      "age": 69,
+      "education": "ประถม",
+      "caregiver_name": "รชต",
+      "mmse_score": 18,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 20,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "กลั้นไม่อยู่",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง",
+      "height": null,
+      "waist": null,
+      "living_status": null
+    }
   }
 ]

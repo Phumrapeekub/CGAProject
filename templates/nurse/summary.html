@@ -80,11 +80,17 @@
                   <span class="text-sm font-bold {{ 'text-red-600' if dep_2q != 'ไม่มี, ไม่มี' else 'text-slate-800' }}">{{ dep_2q|default('ปกติ') }}</span>
               </div>
               <div class="space-y-1 p-3 bg-slate-50 rounded-xl mb-4 border border-slate-100 max-h-32 overflow-y-auto">
+                  {% set tgds_labels = [
+                      "1. พอใจกับชีวิต", "2. เลิกทำสิ่งที่สนใจ", "3. รู้สึกชีวิตว่างเปล่า", "4. รู้สึกเบื่อหน่าย",
+                      "5. หวังว่าจะมีสิ่งที่ดี", "6. มีเรื่องกังวลตลอด", "7. มีความสุขส่วนใหญ่", "8. รู้สึกไม่มีที่พึ่ง",
+                      "9. ชอบอยู่บ้านมากกว่า", "10. ความจำแย่กว่าคนอื่น", "11. การมีชีวิตเป็นเรื่องดี",
+                      "12. รู้สึกไร้ค่า", "13. รู้สึกกระตือรือร้น", "14. สิ้นหวัง", "15. คนอื่นดีกว่าตนเอง"
+                  ] %}
                   {% for i in range(1, 16) %}
                   {% set ans = tgds_details.get(i|string, '-') %}
-                  <div class="flex justify-between items-center text-xs">
-                      <span class="text-slate-500">ข้อ {{ i }}</span>
-                      <span class="text-slate-800 font-bold {{ 'text-red-600' if ans == 'ใช่' else '' }}">{{ ans }}</span>
+                  <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                      <span class="text-slate-500 truncate mr-2" title="{{ tgds_labels[i-1] }}">{{ tgds_labels[i-1] }}</span>
+                      <span class="text-slate-800 font-bold whitespace-nowrap {{ 'text-red-600' if ans == 'ใช่' else '' }}">{{ ans }}</span>
                   </div>
                   {% endfor %}
               </div>
@@ -106,11 +112,15 @@
                   <span class="text-lg text-slate-400 font-medium">คะแนน</span>
               </div>
               <div class="space-y-1 p-3 bg-slate-50 rounded-xl mb-4 border border-slate-100 max-h-32 overflow-y-auto">
-                  {% for i in range(1, 9) %}
+                  {% set q8_labels = [
+                      "1. คิดทำร้ายตัวเอง", "2. คิดอยากตาย", "3. ควบคุมความอยากตายได้", "4. มีแผนการทำร้ายตัวเอง",
+                      "5. เตรียมการทำร้ายตัวเอง", "6. ทำร้ายตัวเอง(1เดือน)", "7. ทำร้ายตัวเอง(2เดือน)", "8. ทำร้ายตัวเอง(1ปี)", "9. เคยพยายามฆ่าตัวตาย"
+                  ] %}
+                  {% for i in range(1, 10) %}
                   {% set ans = q8_details.get(i|string, '-') if q8_details else '-' %}
-                  <div class="flex justify-between items-center text-xs">
-                      <span class="text-slate-500">ข้อ {{ i }}</span>
-                      <span class="text-slate-800 font-bold {{ 'text-red-600' if ans == 'มี' else '' }}">{{ ans }}</span>
+                  <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                      <span class="text-slate-500 truncate mr-2" title="{{ q8_labels[i-1] }}">{{ q8_labels[i-1] }}</span>
+                      <span class="text-slate-800 font-bold whitespace-nowrap {{ 'text-red-600' if ans == 'มี' else '' }}">{{ ans }}</span>
                   </div>
                   {% endfor %}
               </div>

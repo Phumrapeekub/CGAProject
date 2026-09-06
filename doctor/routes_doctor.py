@@ -1115,7 +1115,10 @@ def patient_detail(hn):
                 else:
                     overall_label = "ปกติ/เสี่ยงต่ำ"
                 
-                desc = f"ตรวจพบ: {', '.join(findings)}" if findings else "ไม่พบความเสี่ยงที่ผิดปกติ"
+                if findings:
+                    desc = "จากการวิเคราะห์ข้อมูลด้วยโมเดล AI (HMM) พบความเชื่อมโยงของปัจจัยเสี่ยงดังนี้: ผู้ป่วยมีแนวโน้ม" + " และ".join(findings) + " แนะนำให้แพทย์พิจารณาติดตามอาการอย่างใกล้ชิด"
+                else:
+                    desc = "จากการวิเคราะห์ข้อมูลด้วยโมเดล AI (HMM) ปัจจุบันยังไม่พบแนวโน้มความเสี่ยงทางด้านสมองและจิตใจที่อยู่ในเกณฑ์อันตราย แต่อย่างไรก็ตาม แนะนำให้ประเมิน CGA ซ้ำตามรอบปกติเพื่อเฝ้าระวัง"
 
                 # Progress percentages (based on 5.0 max)
                 mmse_pct = int((clinical_dementia_score / 5) * 100)
@@ -1267,7 +1270,42 @@ def patient_detail(hn):
                             elif val.startswith("waist:"):
                                 basic_extras["waist"] = val.split(":", 1)[1]
 
-                # B) Formal scores from assessment_scores table
+
+        # Inject MMSE details from assessment_mmse tables
+                try:
+                    conn = get_db_connection()
+                    cur = conn.cursor(dictionary=True)
+                    if encounter_id:
+                        cur.execute("SELECT id FROM cga_headers WHERE encounter_id=%s ORDER BY id DESC LIMIT 1", (encounter_id,))
+                        header_row = cur.fetchone()
+                        if header_row:
+                            cga_id = header_row['id']
+                            cur.execute("SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (cga_id,))
+                            mmse_row = cur.fetchone()
+                            if mmse_row:
+                                mmse_id = mmse_row['id']
+                                cur.execute("SELECT question_no, score FROM assessment_mmse_items WHERE mmse_id=%s", (mmse_id,))
+                                q1_sum, q2_sum = 0, 0
+                                for r in cur.fetchall():
+                                    qno = str(r['question_no'])
+                                    sc = int(r['score'] or 0)
+                                    if qno.startswith('1.'): q1_sum += sc
+                                    elif qno.startswith('2.'): q2_sum += sc
+                                    elif qno == '3': mmse_details['q3_registration_score'] = sc
+                                    elif qno == '4.1': mmse_details['q4_attention_calc_score'] = sc
+                                    elif qno == '5': mmse_details['q5_recall_score'] = sc
+                                    elif qno == '6': mmse_details['q6_naming_score'] = sc
+                                    elif qno == '7': mmse_details['q7_repetition_score'] = sc
+                                    elif qno == '8': mmse_details['q8_verbal_command_score'] = sc
+                                    elif qno == '9': mmse_details['q9_written_command_score'] = sc
+                                    elif qno == '10': mmse_details['q10_writing_score'] = sc
+                                    elif qno == '11': mmse_details['q11_visuoconstruction_score'] = sc
+                                mmse_details['q1_time_score'] = q1_sum
+                                mmse_details['q2_place_score'] = q2_sum
+                    conn.close()
+                except Exception as e:
+                    print(f"DEBUG: Error fetching MMSE items: {e}")
+                        # B) Formal scores from assessment_scores table
                 res_scores = supabase.table("assessment_scores").select("*").eq("session_id", latest_session_id).execute()
                 for s in (res_scores.data or []):
                     inst = str(s.get("instrument") or "").lower()
