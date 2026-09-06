@@ -199,7 +199,7 @@
                 <div class="flex items-center justify-center gap-3">
 
                   <!-- 🔵 ดูข้อมูล (แก้ไข: เพิ่ม gcn=p.gcn) -->
-                  <a href="{{ url_for('doctor_patient_detail', hn=p.hn, gcn=p.gcn) }}"
+                  <a href="{{ url_for('doctor.patient_detail', hn=p.hn, gcn=p.gcn) }}"
                      class="inline-flex items-center justify-center rounded-full p-2
                             bg-blue-50 hover:bg-blue-100 transition"
                      title="ดูข้อมูล">
@@ -211,7 +211,7 @@
 
                   <!-- 🔴 ลบ (คงไว้) -->
                   <form method="POST"
-                        action="{{ url_for('doctor_patients_delete', hn=p.hn) }}"
+                        action="{{ url_for('doctor.patients_delete', hn=p.hn) }}"
                         onsubmit="return confirm('ยืนยันลบข้อมูลผู้ป่วย HN {{ p.hn }} ?');">
                     <button type="submit"
                             class="inline-flex items-center justify-center rounded-full p-2

@@ -798,6 +798,7 @@ def patients():
                 "last_assessed_date": last_date,
                 "mmse": mmse,
                 "tgds": tgds,
+                "sra": sra_val,
                 "risk_slug": risk_slug
             })
 
