@@ -1494,10 +1494,7 @@ def _sync_to_cga_records(header_id, conn, cur):
             "incontinence": data_map['incontinence_detail'] if data_map['incontinence']=='abnormal' else 'ปกติ',
             "sleep_problem": data_map['sleep_problem_detail'] if data_map['sleep_problem']=='abnormal' else 'ปกติ',
             "smoke": {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(data_map['smoke'], 'ไม่ระบุ'),
-            "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ'),
-            "height": data_map.get('height'),
-            "waist": data_map.get('waist'),
-            "living_status": data_map.get('live')
+            "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ')
         }
 
         # 6. Local Update (ใช้วิธี DELETE แล้ว INSERT เพื่อความแน่นอน 100% บนทุก Engine)
