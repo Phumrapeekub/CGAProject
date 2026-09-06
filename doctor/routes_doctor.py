@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash
-from db.db import get_db_client
+from db.db import get_db_client, get_db_connection
 from datetime import datetime, date, timedelta
 from ml.hmm_predictor import predictor # ✅ Import real AI model
 from linebot import LineBotApi
@@ -92,7 +92,7 @@ def update_line_id(hn):
         
     line_user_id = (request.form.get("line_user_id") or "").strip()
     
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         supabase.table("patients").update({"line_user_id": line_user_id if line_user_id else None}).eq("hn", hn).execute()
@@ -123,7 +123,7 @@ def login():
             session["role"] = "doctor"
             return redirect(url_for("doctor.dashboard"))
 
-        from db.db import get_db_client
+        from db.db import get_db_client, get_db_connection
         supabase = get_db_client()
         if not supabase:
             flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -186,7 +186,7 @@ def profile():
         return redirect(url_for("auth.login"))
 
     user_id = session.get("user_id")
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -214,7 +214,7 @@ def dashboard():
     if not _guard_doctor():
         return redirect(url_for("auth.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     
     # รับพารามิเตอร์การกรองวันที่
@@ -598,7 +598,7 @@ def patients():
     start_q = (request.args.get("start_date") or "").strip()
     end_q = (request.args.get("end_date") or "").strip()
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -639,6 +639,51 @@ def patients():
 
         # 2. Fetch Latest CGA Records for these patients (The source of truth)
         cga_map = {}
+        disease_map = {}
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True)
+            if hns:
+                format_strings = ','.join(['%s'] * len(hns))
+                query_sql = f'''
+                    SELECT p.hn, a.answer_text
+                    FROM patients p
+                    JOIN encounters e ON p.id = e.patient_id
+                    JOIN cga_headers c ON e.id = c.encounter_id
+                    JOIN assessment_answers a ON c.session_id = a.session_id
+                    WHERE p.hn IN ({format_strings})
+                      AND a.instrument = 'basic' 
+                      AND (a.answer_text LIKE 'chronicDiseases:%' OR a.answer_text LIKE 'otherDisease:%')
+                '''
+                cur.execute(query_sql, tuple(hns))
+                for mr in cur.fetchall():
+                    mhn = mr['hn']
+                    ans = mr['answer_text']
+                    if ':' in ans:
+                        _, v = ans.split(':', 1)
+                        if v.strip() and v.strip() != '-':
+
+                            if mhn not in disease_map:
+                                disease_map[mhn] = []
+                            # Translate common diseases to Thai
+                            raw_ds = v.strip().split(',')
+                            for rd in raw_ds:
+                                clean_rd = rd.strip().lower()
+                                th_d = clean_rd
+                                if clean_rd == 'diabetes': th_d = 'เบาหวาน'
+                                elif clean_rd == 'hypertension': th_d = 'ความดันโลหิตสูง'
+                                elif clean_rd == 'heart': th_d = 'โรคหัวใจ'
+                                elif clean_rd == 'kidney': th_d = 'โรคไต'
+                                elif clean_rd == 'cancer': th_d = 'มะเร็ง'
+                                else: th_d = rd.strip()
+                                disease_map[mhn].append(th_d)
+
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"DEBUG: MySQL disease fetch error: {e}")
+
         history_map = {}  # ✅ Group history to pass to AI
         consult_map = {}
         try:
@@ -705,8 +750,14 @@ def patients():
             cga = cga_map.get(curr_hn, {})
             cons = consult_map.get(curr_hn, {})
 
-            # Map Columns: Fallback between cga_records and consultations
-            disease = r.get("chronic_disease") or cons.get("note_from_nurse") or "-"
+
+            # Map Columns: Fallback between cga_records, MySQL, and consultations
+            d_list = disease_map.get(curr_hn)
+            if d_list:
+                disease = ", ".join(d_list)
+            else:
+                disease = cons.get("note_from_nurse") or "-"
+
             
             # Scores (Fallback)
             mmse = cga.get("mmse_score") if cga.get("mmse_score") is not None else cons.get("mmse_score")
@@ -824,7 +875,7 @@ def patient_detail(hn):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -1359,7 +1410,7 @@ def visit_create(hn):
     encounter_type = (request.form.get("encounter_type") or "cga").strip().lower()
     doctor_id = session.get("user_id")
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         res_p = supabase.table("patients").select("id").eq("hn", hn).limit(1).execute()
@@ -1412,7 +1463,7 @@ def appointment_create(hn):
     location = (request.form.get("location") or "ชั้น 2 คลินิกผู้สูงอายุ").strip()
     doctor_id = session.get("user_id")
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         res_p = supabase.table("patients").select("id").eq("hn", hn).limit(1).execute()
@@ -1479,7 +1530,7 @@ def patient_consultations(hn):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -1551,7 +1602,7 @@ def patients_delete(hn):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         supabase.table("patients").delete().eq("hn", hn).execute()
@@ -1567,7 +1618,7 @@ def encounter_detail(encounter_id):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         # Use .execute() instead of .single() to prevent crash if record is missing
@@ -1687,7 +1738,7 @@ def patient_summary(id):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         # 1) Try to find by encounter_id first, fallback to cga_records id
@@ -1804,7 +1855,7 @@ def doctor_duty_events():
         return jsonify([]), 401
 
     doctor_id = session.get("user_id")
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         res = supabase.table("doctor_duty_events").select("id, title, note, start_datetime, end_datetime")\
@@ -1879,7 +1930,7 @@ def doctor_duty_create():
             except: end_dt = None
         if not end_dt: end_dt = start_dt
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         data_ins = {
@@ -1906,7 +1957,7 @@ def doctor_duty_delete():
     if not shift_id.isdigit():
         return jsonify({"ok": False, "msg": "shift_id ไม่ถูกต้อง"}), 400
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         supabase.table("doctor_duty_events").delete()\
@@ -1927,7 +1978,7 @@ def doctor_duty_note_save():
     if not shift_id.isdigit():
         return jsonify({"ok": False, "msg": "shift_id ไม่ถูกต้อง"}), 400
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         supabase.table("doctor_duty_events").update({"note": note})\
@@ -1945,7 +1996,7 @@ def reports():
     if not _guard_doctor():
         return redirect(url_for("auth.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -2071,7 +2122,7 @@ def reports_create():
     hn_q = (request.args.get("hn") or "").strip()
     name_q = (request.args.get("name") or "").strip()
     
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     if not supabase:
         flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -2143,7 +2194,7 @@ def assessments():
 def diagnosis_notes(encounter_id):
     if not session.get("user_id"): return redirect(url_for("doctor.login"))
     doctor_id = session.get("user_id")
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
 
     if request.method == "POST":
@@ -2164,7 +2215,7 @@ def diagnosis_notes(encounter_id):
 @doctor_bp.get("/appointment/<int:appt_id>", endpoint="appointment_detail")
 def appointment_detail(appt_id):
     if not _guard_doctor(): return redirect(url_for("doctor.login"))
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
     try:
         # Simple join with users since only one relationship exists
@@ -2201,7 +2252,7 @@ def cga_history_detail(cga_id):
     if not _guard_doctor():
         return redirect(url_for("doctor.login"))
 
-    from db.db import get_db_client
+    from db.db import get_db_client, get_db_connection
     supabase = get_db_client()
 
     try:
