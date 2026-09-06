@@ -117,10 +117,7 @@
 
         <tbody class="divide-y divide-gray-100">
           {% for p in patients %}
-            {% set risk_slug =
-              'high' if (p.sra|int >= 9 or p.tgds|int >= 6 or p.mmse|int <= 21)
-              else ('medium' if (p.sra|int > 0 or p.tgds|int >= 4 or p.mmse|int < 26)
-              else 'low')
+            {% set risk_slug = p.risk_slug %}
             %}
             <tr class="patients-row hover:bg-blue-50/60 transition-colors"
                 data-name="{{ (p.name or '')|lower }}"

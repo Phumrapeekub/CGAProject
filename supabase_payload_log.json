@@ -3532,5 +3532,152 @@
       "waist": null,
       "living_status": null
     }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:11.644117",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN082",
+      "gcn": "003",
+      "full_name": "ลิขิต ทำดี",
+      "phone": "0235896454",
+      "address": "เลขที่ 68 หมู่ 4 ต. เชียงรากน้อย อ. สามโคก จ. ปทุมธานี 12160",
+      "gender": "female",
+      "birth_date": "1957-06-18",
+      "emergency_phone": "0365478965",
+      "caregiver_name": "นาบง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:12.622765",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 195,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:14.019593",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 195,
+      "patient_id": 184,
+      "hn": "HN082",
+      "full_name": "ลิขิต ทำดี",
+      "assessed_date": "2026-09-07",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "นาบง",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 24,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มบางครั้ง",
+      "height": null,
+      "waist": null,
+      "living_status": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:33.220111",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN082",
+      "gcn": "003",
+      "full_name": "ลิขิต ทำดี",
+      "phone": "0235896454",
+      "address": "เลขที่ 68 หมู่ 4 ต. เชียงรากน้อย อ. สามโคก จ. ปทุมธานี 12160",
+      "gender": "female",
+      "birth_date": "1957-06-18",
+      "emergency_phone": "0365478965",
+      "caregiver_name": "นาบง",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:34.661382",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 195,
+      "patient_id": 184,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:35.363651",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN082",
+      "patient_name": "ลิขิต ทำดี",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 12,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:36.210093",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 195,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:07:37.654246",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 195,
+      "patient_id": 184,
+      "hn": "HN082",
+      "full_name": "ลิขิต ทำดี",
+      "assessed_date": "2026-09-07",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "นาบง",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 24,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มบางครั้ง",
+      "height": null,
+      "waist": null,
+      "living_status": null
+    }
   }
 ]

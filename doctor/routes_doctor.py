@@ -1246,9 +1246,9 @@ def patient_detail(hn):
                         if "_" in txt: 
                             mmse_details[txt] = row.get("score")
                             print(f"DEBUG: Mapped MMSE answer {txt}={row.get('score')}")
-                    elif inst == "tgds":
+                    elif inst in ["tgds", "tgds15answers"]:
                         tgds_details[f"tgds_{q_no}"] = "yes" if val in [1, "1", "yes"] else "no"
-                    elif inst == "8q":
+                    elif inst in ["8q", "depression8q"]:
                         q8_details[f"q8_{q_no}"] = val
                         # Capture sub-question/remarks for Q3
                         if q_no == 3:
@@ -1269,6 +1269,12 @@ def patient_detail(hn):
                                 basic_extras["height"] = val.split(":", 1)[1]
                             elif val.startswith("waist:"):
                                 basic_extras["waist"] = val.split(":", 1)[1]
+                            elif val.startswith("caregiver_name:"):
+                                basic_extras["caregiver_name"] = val.split(":", 1)[1]
+                            elif val.startswith("caregiver_relation:"):
+                                basic_extras["caregiver_relation"] = val.split(":", 1)[1]
+                            elif val.startswith("emergency_phone:"):
+                                basic_extras["caregiver_phone"] = val.split(":", 1)[1]
 
 
         # Inject MMSE details from assessment_mmse tables
@@ -1312,10 +1318,10 @@ def patient_detail(hn):
                     if inst == "mmse":
                         mmse_details["score_total"] = s.get("total_score")
                         mmse_details["interpretation"] = s.get("risk_level") or s.get("interpretation")
-                    elif inst == "tgds":
+                    elif inst in ["tgds", "tgds15answers"]:
                         tgds_details["total_score"] = s.get("total_score")
                         tgds_details["interpretation"] = s.get("risk_level") or s.get("interpretation")
-                    elif inst == "8q":
+                    elif inst in ["8q", "depression8q"]:
                         q8_details["total_score"] = s.get("total_score")
                         q8_details["risk_level"] = s.get("risk_level") or s.get("interpretation")
 
@@ -1463,6 +1469,12 @@ def patient_detail(hn):
             cga_general["height"] = basic_extras["height"]
         if "waist" in basic_extras:
             cga_general["waist"] = basic_extras["waist"]
+        if "caregiver_name" in basic_extras and basic_extras["caregiver_name"]:
+            cga_general["caregiver_name"] = basic_extras["caregiver_name"]
+        if "caregiver_relation" in basic_extras and basic_extras["caregiver_relation"]:
+            cga_general["caregiver_relation"] = basic_extras["caregiver_relation"]
+        if "caregiver_phone" in basic_extras and basic_extras["caregiver_phone"]:
+            cga_general["caregiver_phone"] = basic_extras["caregiver_phone"]
 
         return render_template(
             "doctor/medical_patients_detail.html",
@@ -2388,11 +2400,11 @@ def cga_history_detail(cga_id):
                     elif q_no == 2: mmse_details["q2_place_score"] = score
                     # Map individual checkmarks (q1_1, q1_2, etc.)
                     if "_" in txt: mmse_details[txt] = score
-                elif inst == "tgds":
+                elif inst in ["tgds", "tgds15answers"]:
                     tgds_details[f"tgds_{q_no}"] = "yes" if (ans_int == 1 or txt == "yes") else "no"
                 elif inst == "8q" or inst == "sra":
                     q8_details[f"q8_{q_no}"] = ans_int or txt
-                elif inst == "2q":
+                elif inst in ["2q", "depression2q"]:
                     twoq_details[f"q{q_no}"] = "yes" if (ans_int == 1 or txt == "yes") else "no"
                 elif inst == "basic":
                     if val and isinstance(val, str):
