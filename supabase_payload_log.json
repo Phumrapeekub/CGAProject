@@ -3735,5 +3735,90 @@
       "smoke": "สูบ",
       "alcohol": "ดื่มบางครั้ง"
     }
+  },
+  {
+    "timestamp": "2026-09-07T02:01:30.418965",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN083",
+      "gcn": "004",
+      "full_name": "สายไหม หวานดี",
+      "phone": "0236514796",
+      "address": "เลขที่ 66 หมู่ 5 ต. ช่องนนทรี อ. ยานนาวา จ. กรุงเทพมหานคร 10120",
+      "gender": "female",
+      "birth_date": "1955-09-11",
+      "emergency_phone": "0266589664",
+      "caregiver_name": "อัพ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T02:01:32.800541",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 196,
+      "patient_id": 186,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T02:01:33.567251",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN083",
+      "patient_name": "สายไหม หวานดี",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 12,
+      "tgds_score": 10,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 70,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T02:01:34.375952",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 196,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T02:01:35.873112",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 196,
+      "patient_id": 186,
+      "hn": "HN083",
+      "full_name": "สายไหม หวานดี",
+      "assessed_date": "2026-09-07",
+      "age": 70,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "อัพ",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 20,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ฉี่ราด",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
   }
 ]

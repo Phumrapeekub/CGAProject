@@ -118,7 +118,6 @@
         <tbody class="divide-y divide-gray-100">
           {% for p in patients %}
             {% set risk_slug = p.risk_slug %}
-            %}
             <tr class="patients-row hover:bg-blue-50/60 transition-colors"
                 data-name="{{ (p.name or '')|lower }}"
                 data-hn="{{ (p.hn or '')|lower }}"
