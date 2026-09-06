@@ -1046,7 +1046,7 @@ def assess_tgds_save(header_id: int):
         try:
             # 1. Sync Patients
             cur.execute("SELECT * FROM patients WHERE id = %s", (p_id,))
-            p_latest = cur.fetchone(); sex_map = {'male': 'ชาย', 'female': 'หญิง'}
+            p_latest = cur.fetchone(); 
             cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (h_data['session_id'],))
             ans_rows = cur.fetchall()
             caregiver_info = {}
@@ -1060,7 +1060,7 @@ def assess_tgds_save(header_id: int):
             sb_p = {
                 "hn": p_latest['hn'], "gcn": str(p_latest['gcn']).zfill(3), 
                 "full_name": p_latest['full_name'], "phone": p_latest['phone'], 
-                "address": p_latest['address'], "gender": sex_map.get(p_latest['gender'], p_latest['gender']), 
+                "address": p_latest['address'], "gender": p_latest['gender'], 
                 "birth_date": str(p_latest['birth_date']) if p_latest['birth_date'] else None,
                 **caregiver_info 
             }
@@ -1588,7 +1588,7 @@ def send_to_doctor(header_id: int):
             conn.commit()
 
         supabase = get_supabase_client()
-        sex_map = {'male': 'ชาย', 'female': 'หญิง'}
+        
 
         # ดึงข้อมูลผู้ดูแลจาก Local Answers
         cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (h_data['session_id'],))
@@ -1607,7 +1607,7 @@ def send_to_doctor(header_id: int):
             "full_name": p_raw['full_name'], 
             "phone": p_raw['phone'], 
             "address": p_raw['address'], 
-            "gender": sex_map.get(p_raw['gender'], p_raw['gender']), 
+            "gender": p_raw['gender'], 
             "birth_date": str(p_raw['birth_date']) if p_raw['birth_date'] else None,
             **caregiver_info # รวมข้อมูลผู้ดูแล
         }
@@ -1755,7 +1755,7 @@ def assess_finalize(header_id: int):
         p_row = cur.fetchone()
         
         # เตรียมข้อมูลสำหรับ Sync
-        sex_map = {'male': 'ชาย', 'female': 'หญิง'}
+        
         
         # ดึงข้อมูลผู้ดูแล
         cur.execute("SELECT answer_text FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (h_data['session_id'],))
@@ -1774,7 +1774,7 @@ def assess_finalize(header_id: int):
             "full_name": p_row['full_name'], 
             "phone": p_row['phone'], 
             "address": p_row['address'], 
-            "gender": sex_map.get(p_row['gender'], p_row['gender']), 
+            "gender": p_row['gender'], 
             "birth_date": str(p_row['birth_date']) if p_row['birth_date'] else None,
             **caregiver_info
         }
