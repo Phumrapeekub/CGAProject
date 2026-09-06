@@ -3679,5 +3679,61 @@
       "waist": null,
       "living_status": null
     }
+  },
+  {
+    "timestamp": "2026-09-07T01:52:58.911394",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN083",
+      "gcn": "004",
+      "full_name": "สายไหม หวานดี",
+      "phone": "0236514796",
+      "address": "เลขที่ 66 หมู่ 5 ต. ช่องนนทรี อ. ยานนาวา จ. กรุงเทพมหานคร 10120",
+      "gender": "female",
+      "birth_date": "1955-09-11",
+      "emergency_phone": "0266589664",
+      "caregiver_name": "อัพ",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:52:59.974041",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 196,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T01:53:01.468278",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 196,
+      "patient_id": 186,
+      "hn": "HN083",
+      "full_name": "สายไหม หวานดี",
+      "assessed_date": "2026-09-07",
+      "age": 70,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "อัพ",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 10,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 20,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ฉี่ราด",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
   }
 ]

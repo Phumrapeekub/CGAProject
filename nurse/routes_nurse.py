@@ -1111,29 +1111,29 @@ def assess_summary(header_id: int):
             cur.execute("SELECT q8_score FROM cga_records WHERE encounter_id=%s", (encounter_id,))
             q8_row = cur.fetchone()
             if q8_row and q8_row['q8_score'] and q8_row['q8_score'] > 0:
-                q8_val = q8_row['q8_score']
+                q8_val = q8_row['q8_score']        
+        # 2. Fallback: คำนวณสดจาก assessment_answers (รวม followup ข้อ 3)
+        cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s AND (instrument='depression8Q' OR instrument='depression8Q_sub')", (data.get('session_id'),))
+        ans8q = cur.fetchall()
+        q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
+        q3_v = 'no'; q3_s = 'no'
+        temp_score = 0
+        for r in ans8q:
+            if r['instrument'] == 'depression8Q':
+                try:
+                    q_idx = int(r['question_no'])
+                    q8_details[str(q_idx)] = 'มี' if r['answer_text'] == 'yes' else 'ไม่มี'
+                    if r['answer_text'] == 'yes':
+                        temp_score += q8_weights.get(q_idx, 0)
+                        if q_idx == 3: q3_v = 'yes'
+                except: pass
+            elif r['instrument'] == 'depression8Q_sub':
+                q3_s = r['answer_text']
         
+        if q3_v == 'yes' and q3_s == 'yes':
+            temp_score += 10
+    
         if q8_val == 0:
-            # 2. Fallback: คำนวณสดจาก assessment_answers (รวม followup ข้อ 3)
-            cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s AND (instrument='depression8Q' OR instrument='depression8Q_sub')", (data.get('session_id'),))
-            ans8q = cur.fetchall()
-            q8_weights = {1:1, 2:2, 3:4, 4:6, 5:8, 6:9, 7:9, 8:4}
-            q3_v = 'no'; q3_s = 'no'
-            temp_score = 0
-            for r in ans8q:
-                if r['instrument'] == 'depression8Q':
-                    try:
-                        q_idx = int(r['question_no'])
-                        q8_details[str(q_idx)] = 'มี' if r['answer_text'] == 'yes' else 'ไม่มี'
-                        if r['answer_text'] == 'yes':
-                            temp_score += q8_weights.get(q_idx, 0)
-                            if q_idx == 3: q3_v = 'yes'
-                    except: pass
-                elif r['instrument'] == 'depression8Q_sub':
-                    q3_s = r['answer_text']
-            
-            if q3_v == 'yes' and q3_s == 'yes':
-                temp_score += 10
             q8_val = temp_score
     except Exception as e:
         current_app.logger.error(f"Summary 8Q Error: {e}")
