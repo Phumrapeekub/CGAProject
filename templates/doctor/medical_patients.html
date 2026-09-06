@@ -310,28 +310,6 @@ function exportExcel() {
 }
 
 
-// [Real-time Update] ดึงข้อมูลใหม่มาแทรกในตารางทุกๆ 10 วินาที โดยไม่ต้องรีเฟรชหน้า
-setInterval(() => {
-  fetch(window.location.href)
-    .then(res => res.text())
-    .then(html => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      
-      const newTbody = doc.querySelector('tbody');
-      const currentTbody = document.querySelector('tbody');
-      
-      if (newTbody && currentTbody) {
-        // หากข้อมูลมีการเปลี่ยนแปลง ค่อยอัปเดตเพื่อไม่ให้กระตุก
-        if (currentTbody.innerHTML !== newTbody.innerHTML) {
-          currentTbody.innerHTML = newTbody.innerHTML;
-          // รันฟิลเตอร์อีกรอบ เผื่อแพทย์พิมพ์ค้นหาค้างไว้
-          filterpatients(); 
-        }
-      }
-    })
-    .catch(err => console.log("Realtime Update Error:", err));
-}, 10000); // 10000 ms = 10 วินาที
 </script>
 
 {% endblock %}
