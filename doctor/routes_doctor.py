@@ -682,8 +682,14 @@ def patients():
 
         today = date.today()
         out = []
+
         for r in rows:
+            curr_hn = str(r.get("hn") or "").strip()
+            if curr_hn.upper().startswith("TMP"):
+                continue
+
             # Calculate Age
+
             bd_str = r.get("birth_date")
             age = "-"
             if bd_str:
@@ -789,6 +795,7 @@ def patients():
                 "hn": curr_hn,
                 "gcn": r.get("gcn"),
                 "full_name": (r.get("full_name") or "-").strip() or "-",
+                "name": (r.get("full_name") or "-").strip() or "-",
                 "gender": r.get("gender"),
                 "age": age,
                 "phone": r.get("phone"),
