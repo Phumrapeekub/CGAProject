@@ -893,6 +893,26 @@ def patient_detail(hn):
         patient_id = patient.get("id")
         print(f"DEBUG: patient_id={patient_id}, hn={hn}")
 
+        # --- Inject Age and Gender mapping for template ---
+        today = date.today()
+        bd_str = patient.get("birth_date")
+        age = None
+        if bd_str:
+            try:
+                bd_dt = datetime.strptime(str(bd_str)[:10], "%Y-%m-%d").date()
+                b_year = bd_dt.year
+                if b_year > 2400: b_year -= 543
+                age_val = today.year - b_year - ((today.month, today.day) < (bd_dt.month, bd_dt.day))
+                age = max(0, age_val)
+            except: pass
+        patient["age"] = age
+        
+        g = str(patient.get("gender") or "").lower()
+        if g == "male" or g == "m": patient["gender_th"] = "ชาย"
+        elif g == "female" or g == "f": patient["gender_th"] = "หญิง"
+        else: patient["gender_th"] = g
+        # --------------------------------------------------
+
         # 2) consultations
         try:
             res_cons = supabase.table("consultations").select("*").eq("hn", hn).order("id", desc=True).execute()
