@@ -1,6 +1,40 @@
 {% extends "doctor/medical_base.html" %}
 
-{% block title %}Dashboard แพทย์{% endblock %}
+{% block title %}Dashboard แพทย์
+
+// --- Auto-Refresh System (AJAX Polling) ---
+let isPolling = false;
+async function fetchLatestDashboard() {
+  if (isPolling) return;
+  isPolling = true;
+  try {
+    const res = await fetch(window.location.href);
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const newContainer = doc.getElementById("dashboardContainer");
+      const currentContainer = document.getElementById("dashboardContainer");
+      
+      if (newContainer && currentContainer) {
+        if (currentContainer.innerHTML !== newContainer.innerHTML) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Auto-refresh failed:", error);
+  } finally {
+    isPolling = false;
+  }
+}
+
+// Poll every 5 seconds
+setInterval(fetchLatestDashboard, 5000);
+// ------------------------------------------
+
+
+{% endblock %}
 
 {% block content %}
 
@@ -29,7 +63,7 @@
   }
 </style>
 
-<div class="space-y-8">
+<div class="space-y-8" id="dashboardContainer">
 
   <!-- Header -->
   <div>
@@ -694,5 +728,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
+
+
+
+// --- Auto-Refresh System (AJAX Polling) ---
+let isPolling = false;
+async function fetchLatestDashboard() {
+  if (isPolling) return;
+  isPolling = true;
+  try {
+    const res = await fetch(window.location.href);
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const newContainer = doc.getElementById("dashboardContainer");
+      const currentContainer = document.getElementById("dashboardContainer");
+      
+      if (newContainer && currentContainer) {
+        if (currentContainer.innerHTML !== newContainer.innerHTML) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Auto-refresh failed:", error);
+  } finally {
+    isPolling = false;
+  }
+}
+
+// Poll every 5 seconds
+setInterval(fetchLatestDashboard, 5000);
+// ------------------------------------------
+
 
 {% endblock %}

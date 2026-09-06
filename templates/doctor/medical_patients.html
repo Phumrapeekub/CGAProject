@@ -310,6 +310,45 @@ function exportExcel() {
 }
 
 
+
+
+// --- Auto-Refresh System (AJAX Polling) ---
+let isPolling = false;
+async function fetchLatestPatients() {
+  if (isPolling) return;
+  isPolling = true;
+  try {
+    const res = await fetch(window.location.href);
+    if (res.ok) {
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+      const newContainer = doc.getElementById("patientsTableContainer");
+      const currentContainer = document.getElementById("patientsTableContainer");
+      
+      if (newContainer && currentContainer) {
+        // Compare HTML to see if there's an actual change
+        if (currentContainer.innerHTML !== newContainer.innerHTML) {
+          currentContainer.innerHTML = newContainer.innerHTML;
+          // Re-apply search filters if user is typing
+          if (typeof filterpatients === 'function') {
+            filterpatients();
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Auto-refresh failed:", error);
+  } finally {
+    isPolling = false;
+  }
+}
+
+// Poll every 5 seconds
+setInterval(fetchLatestPatients, 5000);
+// ------------------------------------------
+
+
 </script>
 
 {% endblock %}
