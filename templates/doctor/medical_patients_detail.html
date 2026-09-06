@@ -185,11 +185,11 @@
             <div class="text-sm font-extrabold text-slate-900 mb-2">1. การสูบบุหรี่</div>
             {% set smoke = g.get('smoking_status') %}
             <div class="flex flex-wrap gap-2">
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='yes' %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">สูบ</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='no' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่สูบ</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke=='quit' %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">เคยสูบ/เลิกแล้ว</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['yes', 'สูบ'] %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">สูบ</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['no', 'ไม่สูบ'] %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่สูบ</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['quit', 'เลิกแล้ว'] %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">เคยสูบ/เลิกแล้ว</span>
             </div>
-            {% if smoke=='yes' %}
+            {% if smoke in ['yes', 'สูบ'] %}
               <div class="mt-2 text-sm text-slate-600">จำนวน: <span class="font-extrabold">{{ g.get('smoking_per_day') or '-' }}</span> มวน/วัน</div>
             {% endif %}
           </div>
@@ -198,9 +198,9 @@
             <div class="text-sm font-extrabold text-slate-900 mb-2">2. ดื่มแอลกอฮอล์</div>
             {% set alc = g.get('alcohol_level') %}
             <div class="flex flex-wrap gap-2">
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='never' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่เคยดื่ม</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='sometimes' %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มบางครั้ง</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc=='daily' %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มทุกวัน</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc in ['never', 'none', 'no', 'ไม่ดื่ม'] %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่เคยดื่ม</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc in ['sometimes', 'social', 'ดื่มบางครั้ง'] %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มบางครั้ง</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if alc in ['daily', 'ดื่มทุกวัน'] %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ดื่มทุกวัน</span>
             </div>
           </div>
 

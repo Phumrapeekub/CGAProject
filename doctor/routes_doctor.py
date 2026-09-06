@@ -1193,16 +1193,32 @@ def patient_detail(hn):
         mmse_details = {}
         tgds_details = {}
         q8_details = {}
+        twoq_details = {}
+        basic_extras = {}
         
-        latest_session_id = latest_cga.get("session_id") or latest_c.get("session_id")
+        # Fetch session_id from Local DB
+        latest_session_id = None
+        ans_rows = []
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True)
+            if encounter_id:
+                cur.execute("SELECT id FROM assessment_sessions WHERE encounter_id=%s ORDER BY id DESC LIMIT 1", (encounter_id,))
+                sess_row = cur.fetchone()
+                if sess_row:
+                    latest_session_id = sess_row['id']
+                    cur.execute("SELECT * FROM assessment_answers WHERE session_id=%s", (latest_session_id,))
+                    ans_rows = cur.fetchall()
+            conn.close()
+        except:
+            pass
+
         print(f"DEBUG: patient_detail HN={hn} latest_session_id={latest_session_id}")
         
-        if latest_session_id:
+        if latest_session_id and ans_rows:
             try:
-                # A) Detailed answers
-                res_ans = supabase.table("assessment_answers").select("*").eq("session_id", latest_session_id).execute()
-                print(f"DEBUG: Fetched {len(res_ans.data or [])} answers for session {latest_session_id}")
-                for row in (res_ans.data or []):
+                print(f"DEBUG: Fetched {len(ans_rows)} answers for session {latest_session_id} from Local DB")
+                for row in ans_rows:
                     inst = str(row.get("instrument") or "").lower()
                     q_no = row.get("question_no")
                     val = row.get("answer_int") if row.get("answer_int") is not None else row.get("answer_text")
@@ -1241,6 +1257,15 @@ def patient_detail(hn):
                                 q8_details["q3_sub"] = 1
                             elif row.get("answer_text") == "can_control":
                                 q8_details["q3_sub"] = 0
+                    elif inst == "basic":
+                        if val and isinstance(val, str):
+                            if val.startswith("live:"):
+                                l = val.split(":", 1)[1]
+                                basic_extras["living_status"] = "alone" if l == "alone" else "family" if l == "caregiver" else l
+                            elif val.startswith("height:"):
+                                basic_extras["height"] = val.split(":", 1)[1]
+                            elif val.startswith("waist:"):
+                                basic_extras["waist"] = val.split(":", 1)[1]
 
                 # B) Formal scores from assessment_scores table
                 res_scores = supabase.table("assessment_scores").select("*").eq("session_id", latest_session_id).execute()
@@ -1374,7 +1399,7 @@ def patient_detail(hn):
         # General info: prefer latest_cga, then latest_c
         cga_general = {
             "caregiver_name": latest_cga.get("caregiver_name") or latest_c.get("caregiver_name") or "-", 
-            "caregiver_phone": latest_cga.get("phone") or latest_c.get("caregiver_phone") or "-",
+            "caregiver_phone": latest_cga.get("emergency_phone") or latest_c.get("caregiver_phone") or "-",
             "caregiver_relation": latest_c.get("caregiver_relation") or "-",
             "disease": latest_cga.get("comorbidity_detail") or latest_c.get("note_from_nurse"),
             "smoking_status": latest_cga.get("smoke") or latest_c.get("smoke"),
@@ -1393,6 +1418,13 @@ def patient_detail(hn):
             "district": latest_cga.get("district"),
             "province": latest_cga.get("province"),
         }
+
+        if "living_status" in basic_extras:
+            cga_general["living_status"] = basic_extras["living_status"]
+        if "height" in basic_extras:
+            cga_general["height"] = basic_extras["height"]
+        if "waist" in basic_extras:
+            cga_general["waist"] = basic_extras["waist"]
 
         return render_template(
             "doctor/medical_patients_detail.html",
@@ -2300,6 +2332,8 @@ def cga_history_detail(cga_id):
         tgds_details = {}
         q8_details = {}
         twoq_details = {}
+        basic_extras = {}
+        twoq_details = {}
         
         if session_id:
             res_ans = supabase.table("assessment_answers").select("*").eq("session_id", session_id).execute()
@@ -2322,6 +2356,15 @@ def cga_history_detail(cga_id):
                     q8_details[f"q8_{q_no}"] = ans_int or txt
                 elif inst == "2q":
                     twoq_details[f"q{q_no}"] = "yes" if (ans_int == 1 or txt == "yes") else "no"
+                elif inst == "basic":
+                    if val and isinstance(val, str):
+                        if val.startswith("live:"):
+                            l = val.split(":", 1)[1]
+                            basic_extras["living_status"] = "alone" if l == "alone" else "family" if l == "caregiver" else l
+                        elif val.startswith("height:"):
+                            basic_extras["height"] = val.split(":", 1)[1]
+                        elif val.startswith("waist:"):
+                            basic_extras["waist"] = val.split(":", 1)[1]
 
         # 3) Prepare Score Objects for Template
         mmse_obj = mmse_details

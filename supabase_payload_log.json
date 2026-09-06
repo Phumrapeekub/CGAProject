@@ -2326,5 +2326,1064 @@
       "smoke": "ไม่ระบุ",
       "alcohol": "ไม่ดื่ม"
     }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:23.572520",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN074",
+      "gcn": "002",
+      "full_name": "วิเศษ นิยม",
+      "phone": "0214578888",
+      "address": "เลขที่ 68 หมู่ 3 ต. สีลม อ. บางรัก จ. กรุงเทพมหานคร 10500",
+      "sex": "ชาย",
+      "birth_date": "1932-03-17"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:24.578005",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 183,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-12",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:26.176634",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 183,
+      "patient_id": 159,
+      "hn": "HN074",
+      "full_name": "วิเศษ นิยม",
+      "assessed_date": "2026-03-12",
+      "age": 93,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 13,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:44.044904",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN074",
+      "gcn": "002",
+      "full_name": "วิเศษ นิยม",
+      "phone": "0214578888",
+      "address": "เลขที่ 68 หมู่ 3 ต. สีลม อ. บางรัก จ. กรุงเทพมหานคร 10500",
+      "sex": "ชาย",
+      "birth_date": "1932-03-17"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:45.367964",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 183,
+      "patient_id": 159,
+      "encounter_date": "2026-03-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:46.132280",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN074",
+      "patient_name": "วิเศษ นิยม",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 17,
+      "tgds_score": 9,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 93,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:47.023905",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 183,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T00:43:48.596339",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 183,
+      "patient_id": 159,
+      "hn": "HN074",
+      "full_name": "วิเศษ นิยม",
+      "assessed_date": "2026-03-12",
+      "age": 93,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 13,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:02.568267",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN075",
+      "gcn": "003",
+      "full_name": "พิมมี่ วาโล",
+      "phone": "0124578955",
+      "address": "เลขที่ 96 หมู่ 6 ต. น้ำสุด อ. พัฒนานิคม จ. ลพบุรี 15140",
+      "sex": "หญิง",
+      "birth_date": "1933-03-22"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:03.538653",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 184,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-12",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:05.264909",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 184,
+      "patient_id": 161,
+      "hn": "HN075",
+      "full_name": "พิมมี่ วาโล",
+      "assessed_date": "2026-03-12",
+      "age": 92,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 3,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:18.670191",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN075",
+      "gcn": "003",
+      "full_name": "พิมมี่ วาโล",
+      "phone": "0124578955",
+      "address": "เลขที่ 96 หมู่ 6 ต. น้ำสุด อ. พัฒนานิคม จ. ลพบุรี 15140",
+      "sex": "หญิง",
+      "birth_date": "1933-03-22"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:20.035159",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 184,
+      "patient_id": 161,
+      "encounter_date": "2026-03-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:20.873424",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN075",
+      "patient_name": "พิมมี่ วาโล",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 30,
+      "tgds_score": 3,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 92,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:21.881110",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 184,
+      "status": "sent_to_doctor",
+      "overall_risk": "low",
+      "risk_level": "low"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T01:05:23.574214",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 184,
+      "patient_id": 161,
+      "hn": "HN075",
+      "full_name": "พิมมี่ วาโล",
+      "assessed_date": "2026-03-12",
+      "age": 92,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 30,
+      "mmse_result": "ปกติ",
+      "tgds_score": 3,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:48:14.423291",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN076",
+      "gcn": "004",
+      "full_name": "เทส เทส",
+      "phone": "0145236697",
+      "address": "เลขที่ 78 หมู่ 5 ต. บางจาก อ. พระประแดง จ. สมุทรปราการ 10130",
+      "sex": "หญิง",
+      "birth_date": "1942-03-14"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:48:15.226670",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:48:16.707847",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "patient_id": 163,
+      "hn": "HN076",
+      "full_name": "เทส เทส",
+      "assessed_date": "2026-03-12",
+      "age": 83,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 19,
+      "mmse_result": "ปกติ",
+      "tgds_score": 8,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:51:04.300008",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN076",
+      "gcn": "004",
+      "full_name": "เทส เทส",
+      "phone": "0145236697",
+      "address": "เลขที่ 78 หมู่ 5 ต. บางจาก อ. พระประแดง จ. สมุทรปราการ 10130",
+      "sex": "หญิง",
+      "birth_date": "1942-03-14"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:51:05.890568",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "assessed_by": 3,
+      "assessment_date": "2026-03-12",
+      "risk_level": "medium",
+      "overall_risk": "medium",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:51:07.315561",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "patient_id": 163,
+      "hn": "HN076",
+      "full_name": "เทส เทส",
+      "assessed_date": "2026-03-12",
+      "age": 83,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 19,
+      "mmse_result": "ปกติ",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:56:31.469942",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN076",
+      "gcn": "004",
+      "full_name": "เทส เทส",
+      "phone": "0145236697",
+      "address": "เลขที่ 78 หมู่ 5 ต. บางจาก อ. พระประแดง จ. สมุทรปราการ 10130",
+      "sex": "หญิง",
+      "birth_date": "1942-03-14"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:56:33.090718",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 185,
+      "patient_id": 163,
+      "encounter_date": "2026-03-12",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:56:33.882182",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN076",
+      "patient_name": "เทส เทส",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 19,
+      "tgds_score": 8,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 83,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:56:34.665943",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "status": "sent_to_doctor",
+      "overall_risk": "medium",
+      "risk_level": "medium"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T03:56:36.134882",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 185,
+      "patient_id": 163,
+      "hn": "HN076",
+      "full_name": "เทส เทส",
+      "assessed_date": "2026-03-12",
+      "age": 83,
+      "education": "ประถม",
+      "caregiver_name": "",
+      "mmse_score": 19,
+      "mmse_result": "ปกติ",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-03-12T04:04:47.031718",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 186,
+      "patient_id": 121,
+      "hn": "HN061",
+      "full_name": "มานี มาโน",
+      "assessed_date": "2026-03-12",
+      "age": 69,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:50:25.750164",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN077",
+      "gcn": "002",
+      "full_name": "ฮูโก้ ยอริส",
+      "phone": "0322559854",
+      "address": "เลขที่ 55 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1957-09-16"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:50:26.644430",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 190,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-06",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:50:28.122271",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 190,
+      "patient_id": 173,
+      "hn": "HN077",
+      "full_name": "ฮูโก้ ยอริส",
+      "assessed_date": "2026-09-06",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 16,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 1,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:51:22.828693",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN077",
+      "gcn": "002",
+      "full_name": "ฮูโก้ ยอริส",
+      "phone": "0322559854",
+      "address": "เลขที่ 55 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "sex": "ชาย",
+      "birth_date": "1957-09-16"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:51:24.387003",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 190,
+      "patient_id": 173,
+      "encounter_date": "2026-09-06",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:51:25.094802",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN077",
+      "patient_name": "ฮูโก้ ยอริส",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 16,
+      "tgds_score": 6,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 68,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:quit, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:51:25.857003",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 190,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T00:51:27.230078",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 190,
+      "patient_id": 173,
+      "hn": "HN077",
+      "full_name": "ฮูโก้ ยอริส",
+      "assessed_date": "2026-09-06",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 16,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 1,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:35:55.940772",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN078",
+      "gcn": "003",
+      "full_name": "วิค ดิน",
+      "phone": "0236447859",
+      "address": "เลขที่ 56 หมู่ 8 ต. แม่เจดีย์ใหม่ อ. เวียงป่าเป้า จ. เชียงราย 57260",
+      "gender": "หญิง",
+      "birth_date": "1955-09-27",
+      "emergency_phone": "0145785632",
+      "caregiver_name": "สรราม",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:35:57.019103",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 191,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-06",
+      "risk_level": "low",
+      "overall_risk": "low",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:36:39.370254",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN078",
+      "gcn": "003",
+      "full_name": "วิค ดิน",
+      "phone": "0236447859",
+      "address": "เลขที่ 56 หมู่ 8 ต. แม่เจดีย์ใหม่ อ. เวียงป่าเป้า จ. เชียงราย 57260",
+      "gender": "หญิง",
+      "birth_date": "1955-09-27",
+      "emergency_phone": "0145785632",
+      "caregiver_name": "สรราม",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:36:40.891738",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN078",
+      "patient_name": "วิค ดิน",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 24,
+      "tgds_score": 6,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 70,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:yes, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:36:41.787584",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 191,
+      "status": "sent_to_doctor",
+      "overall_risk": "low",
+      "risk_level": "low"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:49:59.145421",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN078",
+      "gcn": "003",
+      "full_name": "วิค ดิน",
+      "phone": "0236447859",
+      "address": "เลขที่ 56 หมู่ 8 ต. แม่เจดีย์ใหม่ อ. เวียงป่าเป้า จ. เชียงราย 57260",
+      "gender": "female",
+      "birth_date": "1955-09-27",
+      "emergency_phone": "0145785632",
+      "caregiver_name": "สรราม",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:50:01.323950",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 191,
+      "patient_id": 177,
+      "encounter_date": "2026-09-06",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:50:01.931080",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN078",
+      "patient_name": "วิค ดิน",
+      "nurse_name": "nurse1",
+      "mmse_score": 24,
+      "tgds_score": 6,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 70,
+      "cognition_status": "ปกติ",
+      "health_behavior": "smoke:yes, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:50:02.565831",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 191,
+      "status": "sent_to_doctor",
+      "overall_risk": "low",
+      "risk_level": "low"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T18:50:03.667030",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 191,
+      "patient_id": 177,
+      "hn": "HN078",
+      "full_name": "วิค ดิน",
+      "assessed_date": "2026-09-06",
+      "age": 70,
+      "education": "ประถม",
+      "caregiver_name": "สรราม",
+      "mmse_score": 24,
+      "mmse_result": "ปกติ",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:00:58.969117",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN079",
+      "gcn": "004",
+      "full_name": "มากมี สาย",
+      "phone": "0322156898",
+      "address": "เลขที่ 99 หมู่ 5 ต. ริม อ. ท่าวังผา จ. น่าน 55140",
+      "gender": "male",
+      "birth_date": "1956-09-29"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:00:59.554348",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 192,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-06",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:00.672682",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 192,
+      "patient_id": 178,
+      "hn": "HN079",
+      "full_name": "มากมี สาย",
+      "assessed_date": "2026-09-06",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 14,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 14,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:24.671834",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN079",
+      "gcn": "004",
+      "full_name": "มากมี สาย",
+      "phone": "0322156898",
+      "address": "เลขที่ 99 หมู่ 5 ต. ริม อ. ท่าวังผา จ. น่าน 55140",
+      "gender": "male",
+      "birth_date": "1956-09-29"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:25.637802",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 192,
+      "patient_id": 178,
+      "encounter_date": "2026-09-06",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:26.220729",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN079",
+      "patient_name": "มากมี สาย",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 14,
+      "tgds_score": 9,
+      "priority": "urgent",
+      "note_from_nurse": "เสี่ยง",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:none, alcohol:none",
+      "incontinence": "normal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:no, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:26.924625",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 192,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T19:01:28.211970",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 192,
+      "patient_id": 178,
+      "hn": "HN079",
+      "full_name": "มากมี สาย",
+      "assessed_date": "2026-09-06",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 14,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 14,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่ระบุ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:15:03.152458",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN080",
+      "gcn": "005",
+      "full_name": "พน นา",
+      "phone": "0123555488",
+      "address": "เลขที่ 64 หมู่ 6 ต. มักกะสัน อ. ราชเทวี จ. กรุงเทพมหานคร 10400",
+      "gender": "female",
+      "birth_date": "1957-09-20",
+      "emergency_phone": "0254687555",
+      "caregiver_name": "สมนึก",
+      "caregiver_relation": "น้อง"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:15:04.229344",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 193,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-06",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:15:05.834333",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 193,
+      "patient_id": 180,
+      "hn": "HN080",
+      "full_name": "พน นา",
+      "assessed_date": "2026-09-06",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "สมนึก",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 36,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปวดฉี่ไม่รู้ตัว",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:16:55.224603",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN080",
+      "gcn": "005",
+      "full_name": "พน นา",
+      "phone": "0123555488",
+      "address": "เลขที่ 64 หมู่ 6 ต. มักกะสัน อ. ราชเทวี จ. กรุงเทพมหานคร 10400",
+      "gender": "female",
+      "birth_date": "1957-09-20",
+      "emergency_phone": "0254687555",
+      "caregiver_name": "สมนึก",
+      "caregiver_relation": "น้อง"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:16:57.318882",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 193,
+      "patient_id": 180,
+      "encounter_date": "2026-09-06",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:16:58.098111",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN080",
+      "patient_name": "พน นา",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 8,
+      "tgds_score": 6,
+      "priority": "urgent",
+      "note_from_nurse": "ภาวะสมองเสื่อม",
+      "status": "pending",
+      "age": 68,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:daily",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:16:59.154652",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 193,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T21:17:00.753582",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 193,
+      "patient_id": 180,
+      "hn": "HN080",
+      "full_name": "พน นา",
+      "assessed_date": "2026-09-06",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "สมนึก",
+      "mmse_score": 8,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 6,
+      "tgds_result": "ปกติ",
+      "q8_score": 36,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปวดฉี่ไม่รู้ตัว",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
   }
 ]

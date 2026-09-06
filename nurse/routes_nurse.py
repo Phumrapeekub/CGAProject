@@ -1104,6 +1104,7 @@ def assess_summary(header_id: int):
     
     # ดึงคะแนน 8Q (q8_score)
     q8_val = 0
+    q8_details = {}
     try:
         # 1. ลองดึงจาก cga_records ก่อน
         if encounter_id:
@@ -1123,6 +1124,7 @@ def assess_summary(header_id: int):
                 if r['instrument'] == 'depression8Q':
                     try:
                         q_idx = int(r['question_no'])
+                        q8_details[str(q_idx)] = 'มี' if r['answer_text'] == 'yes' else 'ไม่มี'
                         if r['answer_text'] == 'yes':
                             temp_score += q8_weights.get(q_idx, 0)
                             if q_idx == 3: q3_v = 'yes'
@@ -1360,7 +1362,7 @@ def assess_summary(header_id: int):
     
     cur.close()
     conn.close()
-    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, full_info=full_info, ai_result=ai_result)
+    return render_template('nurse/summary.html', header_id=header_id, hn=fresh_p['hn'], gcn=fresh_p['gcn'], patient=data, date=date.today().strftime('%d/%m/%Y'), mmse_score=m_score, mmse_total=mmse_total, mmse_risk=mmse_risk_status, mmse_threshold=mmse_threshold, tgds_score=t_score, tgds_risk=('normal' if t_score < 7 else 'suspected'), tgds_risk_label=('ปกติ' if t_score < 7 else 'มีภาวะซึมเศร้า'), suicide_risk=sr_val, incontinence=inc_val, sleep=sl_val, status=h_status, dep_2q=dep_2q_display, mmse_details=mmse_details, tgds_details=tgds_details, q8_score=q8_val, q8_details=q8_details, full_info=full_info, ai_result=ai_result)
 
 # Helper function to sync data to cga_records (Flat Table)
 def _sync_to_cga_records(header_id, conn, cur):
@@ -1492,7 +1494,10 @@ def _sync_to_cga_records(header_id, conn, cur):
             "incontinence": data_map['incontinence_detail'] if data_map['incontinence']=='abnormal' else 'ปกติ',
             "sleep_problem": data_map['sleep_problem_detail'] if data_map['sleep_problem']=='abnormal' else 'ปกติ',
             "smoke": {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(data_map['smoke'], 'ไม่ระบุ'),
-            "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ')
+            "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ'),
+            "height": data_map.get('height'),
+            "waist": data_map.get('waist'),
+            "living_status": data_map.get('live')
         }
 
         # 6. Local Update (ใช้วิธี DELETE แล้ว INSERT เพื่อความแน่นอน 100% บนทุก Engine)
