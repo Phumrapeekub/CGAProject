@@ -1375,7 +1375,7 @@ def patient_detail(hn):
         }
 
         return render_template(
-            "doctor/medical_patient_detail.html",
+            "doctor/medical_patients_detail.html",
             patients=patient,
             cga_general=cga_general,
             scores=scores,

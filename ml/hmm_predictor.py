@@ -114,7 +114,7 @@ class _Predictor:
         if not scores and self._db and p_data.get('patient_id'):
             try:
                 res = (self._db.table('cga_records')
-                       .select('mmse_score,max_score,education,assessed_date')
+                       .select('mmse_score,education,assessed_date')
                        .eq('patient_id', p_data['patient_id'])
                        .order('assessed_date').execute())
                 for row in (res.data or []):
