@@ -1116,9 +1116,27 @@ def patient_detail(hn):
                     overall_label = "ปกติ/เสี่ยงต่ำ"
                 
                 if findings:
-                    desc = "จากการวิเคราะห์ข้อมูลด้วยโมเดล AI (HMM) พบความเชื่อมโยงของปัจจัยเสี่ยงดังนี้: ผู้ป่วยมีแนวโน้ม" + " และ".join(findings) + " แนะนำให้แพทย์พิจารณาติดตามอาการอย่างใกล้ชิด"
+                    findings_html = "".join([f"<li><span class='text-rose-300 mr-2'>▶</span>{f}</li>" for f in findings])
+                    desc = f"""
+                        <div class='mb-2 opacity-90'>ระบบทำการวิเคราะห์ความสัมพันธ์ของข้อมูลสุขภาพด้วยโมเดล <strong>AI (HMM)</strong> พบความเสี่ยงดังนี้:</div>
+                        <ul class='space-y-1 mb-3 ml-1'>
+                            {findings_html}
+                        </ul>
+                        <div class='text-indigo-100 text-xs leading-relaxed bg-white/5 p-2.5 rounded-xl border border-white/10'>
+                            <span class='font-bold text-amber-200'>💡 AI Suggestion:</span> ควรพิจารณาติดตามอาการอย่างใกล้ชิด และอาจพิจารณาส่งต่อคลินิกเฉพาะทางตามความเหมาะสม
+                        </div>
+                    """
                 else:
-                    desc = "จากการวิเคราะห์ข้อมูลด้วยโมเดล AI (HMM) ปัจจุบันยังไม่พบแนวโน้มความเสี่ยงทางด้านสมองและจิตใจที่อยู่ในเกณฑ์อันตราย แต่อย่างไรก็ตาม แนะนำให้ประเมิน CGA ซ้ำตามรอบปกติเพื่อเฝ้าระวัง"
+                    desc = f"""
+                        <div class='mb-2 opacity-90'>ระบบทำการวิเคราะห์ความสัมพันธ์ของข้อมูลสุขภาพด้วยโมเดล <strong>AI (HMM)</strong>:</div>
+                        <div class='flex items-center gap-2 text-emerald-300 bg-white/5 p-2.5 rounded-xl border border-emerald-400/20 mb-2 font-medium'>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                            ไม่พบแนวโน้มความเสี่ยงทางด้านสมองและจิตใจในระดับอันตราย
+                        </div>
+                        <div class='text-white/60 text-xs italic ml-1'>
+                            * แนะนำให้ประเมิน CGA ซ้ำตามรอบปกติเพื่อเฝ้าระวัง
+                        </div>
+                    """
 
                 # Progress percentages (based on 5.0 max)
                 mmse_pct = int((clinical_dementia_score / 5) * 100)
@@ -1249,7 +1267,7 @@ def patient_detail(hn):
                     elif inst in ["tgds", "tgds15answers"]:
                         tgds_details[f"tgds_{q_no}"] = "yes" if val in [1, "1", "yes"] else "no"
                     elif inst in ["8q", "depression8q"]:
-                        q8_details[f"q8_{q_no}"] = val
+                        q8_details[f"q{q_no}"] = val
                         # Capture sub-question/remarks for Q3
                         if q_no == 3:
                             remarks = row.get("remarks")
