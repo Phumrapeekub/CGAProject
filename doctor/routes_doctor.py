@@ -1350,8 +1350,23 @@ def patient_detail(hn):
                 if "total_score" not in tgds_details:
                     tgds_details["total_score"] = latest_cga.get("tgds_score")
                     tgds_details["interpretation"] = latest_cga.get("tgds_result")
-                if "total_score" not in q8_details:
-                    q8_details["total_score"] = latest_cga.get("q8_score") or latest_c.get("q8_score")
+                if "total_score" not in q8_details or q8_details["total_score"] is None:
+                    # Calculate it manually from raw answers if DB doesn't have it
+                    calc_8q = 0
+                    q8_weights = {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 9}
+                    q3a = 1 if str(q8_details.get("q3")).lower() == "yes" else 0
+                    q3b = q8_details.get("q3_sub") or 0
+                    
+                    for i in range(1, 7):
+                        if i == 3:
+                            if q3a == 1 and q3b == 1:
+                                calc_8q += q8_weights[3]
+                        else:
+                            if str(q8_details.get(f"q{i}")).lower() == "yes" or str(q8_details.get(f"q{i}")) == "1":
+                                calc_8q += q8_weights[i]
+                                
+                    db_score = latest_cga.get("q8_score") or latest_c.get("q8_score")
+                    q8_details["total_score"] = db_score if db_score is not None else calc_8q
                     q8_details["risk_level"] = latest_cga.get("suicide_risk_level") or latest_c.get("suicide_risk_level")
 
             except Exception as e:
