@@ -310,8 +310,8 @@
               <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-extrabold text-slate-800">8Q (SRA)</span>
-                  <span class="text-sm font-extrabold {% if sra > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
-                    {{ sra }} / 24
+                  <span class="text-sm font-extrabold {% if q8.total_score|default(0)|int > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                    {{ q8.total_score|default(0) }} / 24
                   </span>
                 </div>
 
@@ -351,8 +351,18 @@
             </div>
           </div>
 
-          <div class="mt-4 rounded-2xl bg-white/10 border border-white/10 p-4">
-            <div class="text-sm text-white/90 leading-relaxed">
+          <div class="mt-4 rounded-2xl bg-white/10 border border-white/10 p-4 relative min-h-[120px] overflow-hidden">
+            <!-- AI Loader -->
+            <div id="ai-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 rounded-2xl z-10 backdrop-blur-md transition-opacity duration-500">
+                <svg class="w-8 h-8 text-indigo-400 animate-spin mb-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div class="text-[11px] text-indigo-200 font-extrabold tracking-wider uppercase animate-pulse">Running HMM Analysis...</div>
+            </div>
+
+            <!-- AI Content -->
+            <div id="ai-content" class="text-sm text-white/90 leading-relaxed opacity-0 transition-opacity duration-1000">
               {{ ai_analysis.overall_desc|safe }}
             </div>
 
@@ -561,3 +571,18 @@
 </script>
 
 {% endblock %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // AI Loader Effect
+    setTimeout(() => {
+      const loader = document.getElementById('ai-loader');
+      const content = document.getElementById('ai-content');
+      if (loader && content) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 500);
+        content.classList.remove('opacity-0');
+      }
+    }, 1200);
+  });
+</script>
