@@ -72,7 +72,7 @@
 {% set hn  = (p.get('hn') if p is mapping else (p.hn if p.hn is defined else '')) %}
 {% set gcn = (p.get('gcn') if p is mapping else (p.gcn if p.gcn is defined else '')) %}
 
-{% set p_name = (p.get('name') if p is mapping else (p.name if p.name is defined else '')) %}
+{% set p_name = p.get('full_name') or p.get('name') or '' %}
 {% if not p_name %}
   {% set _fn = p.get('first_name','') if p is mapping else (p.first_name if p.first_name is defined else '') %}
   {% set _ln = p.get('last_name','') if p is mapping else (p.last_name if p.last_name is defined else '') %}
@@ -360,7 +360,7 @@
             <div class="mt-4 grid grid-cols-2 gap-3">
               <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
                 <div class="text-[11px] text-white/70 font-extrabold">MMSE</div>
-                <div class="text-2xl font-extrabold mt-1">{{ mmse }}/30</div>
+                <div class="text-2xl font-extrabold mt-1">{{ mmse_val }}/30</div>
               </div>
               <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
                 <div class="text-[11px] text-white/70 font-extrabold">TGDS</div>
