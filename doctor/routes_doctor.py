@@ -296,47 +296,34 @@ def dashboard():
         # =========================
         # 1) KPIs
         # =========================
-        def get_count(table, filter_col=None, filter_val=None):
-            try:
-                q = supabase.table(table).select("*", count="exact")
-                if filter_col:
-                    q = q.eq(filter_col, filter_val)
-                res = q.limit(0).execute()
-                return res.count or 0
-            except:
-                return 0
+        local_conn = get_db_connection()
+        local_cur = local_conn.cursor(dictionary=True)
+        try:
+            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+            total_patients = local_cur.fetchone()["c"]
 
-        total_patients = get_count("patients")
+            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (start_str, end_str))
+            date_patient_count = local_cur.fetchone()["c"]
+            
+            date_label_th = "วันนี้"
+            if filter_type == "week": date_label_th = "สัปดาห์นี้"
+            elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
+            elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
+            
+            today_patients = date_patient_count
 
-        # คำนวณจำนวนผู้ป่วยตามช่วงที่เลือก (สำหรับ Card วันนี้/สัปดาห์/เลือกเอง)
-        res_range = supabase.table("encounters") \
-            .select("patient_id") \
-            .gte("encounter_date", start_str) \
-            .lte("encounter_date", end_str) \
-            .execute()
-        date_patient_count = len(set(r["patient_id"] for r in (res_range.data or [])))
-        
-        date_label_th = "วันนี้"
-        if filter_type == "week": date_label_th = "สัปดาห์นี้"
-        elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
-        elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
+            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (m_start_current, m_end_current))
+            month_patients = local_cur.fetchone()["c"]
 
-        today_patients = date_patient_count
-
-        # ผู้ป่วยเดือนนี้ (สำหรับ Card เดือนนี้)
-        res_month = supabase.table("encounters") \
-            .select("patient_id") \
-            .gte("encounter_date", m_start_current) \
-            .lte("encounter_date", m_end_current) \
-            .execute()
-        month_patients = len(set(r["patient_id"] for r in (res_month.data or [])))
-
-        # High risk
-        res_hr = supabase.table("assessment_scores") \
-            .select("*", count="exact") \
-            .ilike("risk_level", "%สูง%") \
-            .execute()
-        high_risk = res_hr.count or 0
+            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE (cr.mmse_score <= 15 OR cr.tgds_score >= 10 OR cr.suicide_risk = 'yes') AND ch.status != 'in_progress'")
+            high_risk = local_cur.fetchone()["c"]
+        except Exception as e:
+            print("Local DB KPI Error:", e)
+            total_patients = today_patients = month_patients = high_risk = 0
+            date_label_th = "วันนี้"
+        finally:
+            local_cur.close()
+            local_conn.close()
 
         # นัดหมายวันนี้
         res_appts_count = supabase.table("appointments") \
