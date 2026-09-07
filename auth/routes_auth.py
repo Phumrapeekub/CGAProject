@@ -99,3 +99,8 @@ def login():
         page_title="CGA System Login",
         page_desc="ระบบประเมินสุขภาพผู้สูงอายุ โรงพยาบาลพะเยา"
     )
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    flash("ออกจากระบบเรียบร้อยแล้ว", "success")
+    return redirect(url_for("auth.login"))

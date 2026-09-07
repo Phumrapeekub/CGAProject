@@ -53,6 +53,11 @@ def dashboard():
         conn = get_db_connection()
         if conn:
             cur = conn.cursor(dictionary=True)
+            cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+            stats["patients"] = cur.fetchone()["count"]
+            cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+            stats["today_patients"] = cur.fetchone()["count"]
+            
             cur.execute("SELECT COUNT(*) AS count FROM users")
             stats["users"] = cur.fetchone()["count"]
             cur.execute("SELECT COUNT(*) AS count FROM appointments WHERE DATE(appt_datetime) = CURDATE()")
@@ -109,15 +114,6 @@ def dashboard():
 
         if supabase_client:
             try:
-                # 1. Total Patients
-                res_total = supabase_client.table("patients").select("id", count="exact").execute()
-                stats["patients"] = res_total.count or 0
-                
-                # 2. Today's Patients
-                start_of_today = datetime.combine(today_obj, datetime.min.time()).isoformat()
-                res_today = supabase_client.table("patients").select("id", count="exact").gte("created_at", start_of_today).execute()
-                stats["today_patients"] = res_today.count or 0
-
                 # 3. Latest Users
                 res_users = supabase_client.table("users").select("username, role, created_at").order("created_at", desc=True).limit(5).execute()
                 if res_users.data:
@@ -167,16 +163,6 @@ def dashboard():
 
             except Exception as e:
                 print(f"Dashboard Supabase Logic Error: {e}")
-                if cur:
-                    cur.execute("SELECT COUNT(*) AS count FROM patients")
-                    stats["patients"] = cur.fetchone()["count"]
-                    cur.execute("SELECT COUNT(*) AS count FROM patients WHERE DATE(created_at) = CURDATE()")
-                    stats["today_patients"] = cur.fetchone()["count"]
-        elif cur:
-            cur.execute("SELECT COUNT(*) AS count FROM patients")
-            stats["patients"] = cur.fetchone()["count"]
-            cur.execute("SELECT COUNT(*) AS count FROM patients WHERE DATE(created_at) = CURDATE()")
-            stats["today_patients"] = cur.fetchone()["count"]
 
     except Exception as e:
         print(f"Admin Dashboard Error: {e}")
