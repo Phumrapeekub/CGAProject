@@ -356,8 +356,10 @@
 </div>     <!-- /.container -->
   
 
-<!-- สคริปต์นับคะแนนรวมอย่างง่าย -->
+<!-- สคริปต์นับคะแนนรวมและระบบความปลอดภัยข้อมูล (Auto-Save) -->
 <script>
+  const STORAGE_KEY = `mmse_draft_{{ hn }}_{{ gcn }}`;
+
   function getChecked(name) {
     const el = document.querySelector(`input[name="${name}"]:checked`);
     return el ? Number(el.value) : 0;
@@ -371,39 +373,61 @@
     return s;
   }
 
-  // ===== นี่คือฟังก์ชันที่แก้ไขแล้ว =====
+  // ระบบบันทึกร่างข้อมูล (Auto-Save)
+  function saveDraft() {
+    const formData = {};
+    const inputs = document.querySelectorAll('input[type="radio"]:checked');
+    inputs.forEach(input => {
+      formData[input.name] = input.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    console.log("Draft saved...");
+  }
+
+  // ระบบกู้คืนข้อมูล (Restore)
+  function restoreDraft() {
+    const draft = localStorage.getItem(STORAGE_KEY);
+    if (draft) {
+      const formData = JSON.parse(draft);
+      for (const [name, value] of Object.entries(formData)) {
+        const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (input) input.checked = true;
+      }
+      console.log("Draft restored!");
+      recalc();
+    }
+  }
+
   function recalc() {
     let sum = 0;
-    
-    // ข้อ 1–2
-    sum += sumGroup('q1', 5); // 5 คะแนน
-    sum += sumGroup('q2', 5); // 5 คะแนน
-    
-    // ข้อ 3
-    sum += getChecked('q3');  // 3 คะแนน
-    
-    // ข้อ 4 (แก้บั๊กแล้ว: เอาค่ามากสุดระหว่าง 4.1 กับ 4.2)
-    sum += Math.max(getChecked('q4_1'), getChecked('q4_2')); // 5 คะแนน
-    
-    // ข้อ 5–11
-    sum += getChecked('q5');  // 3 คะแนน
-    sum += getChecked('q6');  // 2 คะแนน
-    sum += getChecked('q7');  // 1 คะแนน
-    sum += getChecked('q8');  // 3 คะแนน
-    sum += getChecked('q9');  // 1 คะแนน
-    sum += getChecked('q10'); // 1 คะแนน
-    sum += getChecked('q11'); // 1 คะแนน
+    sum += sumGroup('q1', 5); 
+    sum += sumGroup('q2', 5); 
+    sum += getChecked('q3');  
+    sum += Math.max(getChecked('q4_1'), getChecked('q4_2')); 
+    sum += getChecked('q5');  
+    sum += getChecked('q6');  
+    sum += getChecked('q7');  
+    sum += getChecked('q8');  
+    sum += getChecked('q9');  
+    sum += getChecked('q10'); 
+    sum += getChecked('q11'); 
 
-    // 1. อัปเดตคะแนนที่โชว์บนจอ (ที่หัวการ์ด)
     document.getElementById('score').textContent = sum;
-    
-    // 2. อัปเดตคะแนนใน "ช่องลับ" (ที่เราเพิ่มในขั้นตอนที่ 2)
     document.getElementById('total_score_input').value = sum;
   }
   
-  // สั่งให้โค้ดทำงานทุกครั้งที่มีการคลิก
-  document.addEventListener('change', recalc);
-  recalc(); // ทำงานครั้งแรกตอนโหลด
+  document.addEventListener('change', function() {
+    recalc();
+    saveDraft();
+  });
+
+  // ล้างข้อมูลเมื่อส่งฟอร์มสำเร็จ
+  document.querySelector('form').addEventListener('submit', function() {
+    localStorage.removeItem(STORAGE_KEY);
+  });
+
+  // ทำงานเมื่อโหลดหน้าเสร็จ
+  window.onload = restoreDraft;
 </script>
 
 

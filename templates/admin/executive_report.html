@@ -1,0 +1,149 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}รายงานเชิงบริหาร | CGA Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">สรุปรายงานเชิงบริหาร</h1>
+        <p class="text-slate-600 text-sm mt-1">ข้อมูลสรุปภาพรวมเพื่อการกำหนดนโยบายและการจัดการ</p>
+    </div>
+    <div class="flex items-center gap-3 print:hidden">
+        <a href="{{ url_for('admin.export_executive_csv') }}" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            ส่งออก Excel
+        </a>
+        <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+            พิมพ์รายงาน
+        </button>
+    </div>
+</div>
+
+<!-- Executive KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="soft-card p-6 border-t-4 border-t-blue-500">
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">ความครอบคลุมการคัดกรอง</p>
+        <h3 class="text-3xl font-black text-slate-900">{{ stats.completion_rate }}%</h3>
+        <p class="text-[10px] text-slate-400 mt-2">จากเป้าหมายผู้ป่วยสะสม {{ stats.total_patients }} ราย</p>
+    </div>
+    <div class="soft-card p-6 border-t-4 border-t-red-500">
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">กลุ่มเสี่ยงสูงสะสม</p>
+        <h3 class="text-3xl font-black text-red-600">{{ stats.high_risk_count }}</h3>
+        <p class="text-[10px] text-slate-400 mt-2">ต้องได้รับการดูแลเป็นพิเศษ</p>
+    </div>
+    <div class="soft-card p-6 border-t-4 border-t-emerald-500">
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">กลุ่มสุขภาพปกติ</p>
+        <h3 class="text-3xl font-black text-emerald-600">{{ stats.normal_count }}</h3>
+        <p class="text-[10px] text-slate-400 mt-2">เน้นการส่งเสริมสุขภาพเชิงรุก</p>
+    </div>
+    <div class="soft-card p-6 border-t-4 border-t-indigo-500">
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">จำนวนการประเมินทั้งหมด</p>
+        <h3 class="text-3xl font-black text-indigo-600">{{ stats.total_assessments }}</h3>
+        <p class="text-[10px] text-slate-400 mt-2">รวมรายการตรวจซ้ำและติดตามผล</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Chart 1: Risk Distribution -->
+    <div class="soft-card p-8">
+        <h2 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            สัดส่วนระดับความเสี่ยงภาพรวม
+        </h2>
+        <div class="relative h-72">
+            <canvas id="riskDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 2: Age Distribution -->
+    <div class="soft-card p-8">
+        <h2 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            สถิติตามกลุ่มช่วงอายุ
+        </h2>
+        <div class="relative h-72">
+            <canvas id="ageDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="soft-card p-8 mt-8">
+    <h2 class="text-lg font-bold text-slate-900 mb-4">ข้อเสนอแนะเชิงบริหาร</h2>
+    <div class="space-y-4">
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-sm text-slate-700 leading-relaxed">
+                <span class="font-bold text-slate-900">สรุปสภาวะ:</span> 
+                ปัจจุบันระบบมีความครอบคลุมการคัดกรองอยู่ที่ {{ stats.completion_rate }}% 
+                พบผู้ป่วยกลุ่มเสี่ยงสูงจำนวน {{ stats.high_risk_count }} ราย 
+                ซึ่งคิดเป็นร้อยละ {{ ((stats.high_risk_count / stats.total_assessments * 100)|round(1)) if stats.total_assessments > 0 else 0 }} ของผู้ที่ได้รับการประเมินทั้งหมด
+            </p>
+        </div>
+        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+            <p class="text-sm text-blue-800 leading-relaxed">
+                <span class="font-bold text-blue-900">แนวทางการจัดการ:</span> 
+                ควรเพิ่มทรัพยากรการติดตามอาการในกลุ่มอายุที่มีความเสี่ยงสูง และจัดกิจกรรมป้องกันภาวะสมองเสื่อมเชิงรุกในระดับชุมชน
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Risk Distribution Chart
+        const riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+        new Chart(riskCtx, {
+            type: 'pie',
+            data: {
+                labels: ['เสี่ยงสูง', 'เสี่ยงปานกลาง', 'ปกติ'],
+                datasets: [{
+                    data: [{{ risk_dist.high }}, {{ risk_dist.medium }}, {{ risk_dist.normal }}],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // 2. Age Distribution Chart
+        const ageCtx = document.getElementById('ageDistributionChart').getContext('2d');
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['60-70 ปี', '71-80 ปี', '81 ปีขึ้นไป'],
+                datasets: [{
+                    label: 'จำนวนผู้ป่วย',
+                    data: [{{ age_groups['60-70'] }}, {{ age_groups['71-80'] }}, {{ age_groups['81+'] }}],
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+@media print {
+    body { background: white; }
+    .soft-card { box-shadow: none; border: 1px solid #eee; }
+}
+</style>
+{% endblock %}

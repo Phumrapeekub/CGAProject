@@ -9,64 +9,77 @@
 </div>
 
 <!-- KPI Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <!-- Card 1: Total Users -->
-    <div class="kpi-card kpi-blue p-5">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ใช้งานทั้งหมด</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.total_users }}</h3>
-            </div>
-            <div class="kpi-icon">
+    <div class="soft-card p-6 border-t-4 border-t-blue-500">
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">ผู้ใช้งานทั้งหมด</p>
+        <div class="flex items-center justify-between">
+            <h3 class="text-3xl font-black text-slate-900">{{ stats.total_users }}</h3>
+            <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
         </div>
+        <p class="text-[10px] text-slate-400 mt-2">ทุกบทบาทในระบบ</p>
     </div>
 
     <!-- Card 2: Active/Online Users -->
-    <div class="kpi-card kpi-green p-5">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ออนไลน์ (สถานะปกติ)</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.active_users }}</h3>
-            </div>
-            <div class="kpi-icon">
+    <div class="soft-card p-6 border-t-4 border-t-emerald-500">
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">สถานะพร้อมใช้งาน</p>
+        <div class="flex items-center justify-between">
+            <h3 class="text-3xl font-black text-emerald-600">{{ stats.active_users }}</h3>
+            <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
             </div>
         </div>
+        <p class="text-[10px] text-slate-400 mt-2">Active (24 ชม. ล่าสุด)</p>
     </div>
 
     <!-- Card 3: Doctors -->
-    <div class="kpi-card kpi-purple p-5">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">แพทย์</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.doctors }}</h3>
-            </div>
-            <div class="kpi-icon">
+    <div class="soft-card p-6 border-t-4 border-t-indigo-500">
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">แพทย์</p>
+        <div class="flex items-center justify-between">
+            <h3 class="text-3xl font-black text-indigo-600">{{ stats.doctors }}</h3>
+            <div class="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86 1.412l-.318.254a4 4 0 11-5.696-5.696 4 4 0 015.696 5.696l.318-.254a6 6 0 003.86-1.412l2.387.477a2 2 0 001.022.547l2.387.477a2 2 0 001.022.547" /></svg>
             </div>
         </div>
+        <p class="text-[10px] text-slate-400 mt-2">ผู้สรุปผลและวินิจฉัย</p>
     </div>
 
     <!-- Card 4: Nurses -->
-    <div class="kpi-card kpi-orange p-5">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">พยาบาล</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.nurses }}</h3>
-            </div>
-            <div class="kpi-icon">
+    <div class="soft-card p-6 border-t-4 border-t-orange-500">
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">พยาบาล</p>
+        <div class="flex items-center justify-between">
+            <h3 class="text-3xl font-black text-orange-600">{{ stats.nurses }}</h3>
+            <div class="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             </div>
         </div>
+        <p class="text-[10px] text-slate-400 mt-2">ผู้ทำแบบคัดกรองเบื้องต้น</p>
     </div>
 </div>
 
 <div class="soft-card rounded-2xl p-6">
-    <div class="mb-6">
-        <h2 class="text-xl font-semibold text-slate-900">รายชื่อผู้ใช้งานในระบบ</h2>
-        <p class="text-slate-500 text-sm">จัดการสิทธิ์แพทย์และพยาบาล</p>
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-xl font-semibold text-slate-900">รายชื่อผู้ใช้งานในระบบ</h2>
+            <p class="text-slate-500 text-sm">จัดการสิทธิ์แพทย์และพยาบาล</p>
+        </div>
+        <form action="{{ url_for('admin.permissions_list') }}" method="get" class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+            <select name="role" class="w-full md:w-auto glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 border-0" onchange="this.form.submit()">
+                <option value="">ทุกบทบาท</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>ผู้ดูแลระบบ</option>
+                <option value="doctor" {% if role_filter == 'doctor' %}selected{% endif %}>แพทย์</option>
+                <option value="nurse" {% if role_filter == 'nurse' %}selected{% endif %}>พยาบาล</option>
+            </select>
+            <div class="relative w-full md:w-64">
+                <input type="text" name="q" value="{{ q or '' }}" placeholder="ค้นหาชื่อหรือ Username..."
+                       class="glass w-full pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 border-0">
+                <span class="absolute left-3 top-2.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </span>
+            </div>
+        </form>
     </div>
 
     <div class="overflow-x-auto">

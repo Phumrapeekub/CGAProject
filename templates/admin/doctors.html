@@ -3,11 +3,11 @@
 {% block title %}จัดการแพทย์ | CGA Admin{% endblock %}
 
 {% block content %}
-<div class="soft-card rounded-2xl p-6">
-  <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+<div class="space-y-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
     <div>
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">จัดการแพทย์</h1>
-      <p class="text-slate-600 text-sm mt-1">รายชื่อแพทย์ในระบบ {{ doctors|length }}</p>
+      <p class="text-slate-600 text-sm mt-1">จำนวนแพทย์ทั้งหมด {{ doctors|length }} ท่าน</p>
     </div>
 
     <div class="flex items-center gap-3">
@@ -20,78 +20,120 @@
       </form>
       
       <button onclick="openAddDoctorModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-        <span>+</span> เพิ่มแพทย์ใหม่
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+        เพิ่มแพทย์ใหม่
       </button>
     </div>
   </div>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm text-left">
-      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
-        <tr>
-          <th class="px-4 py-3">ชื่อ-นามสกุล</th>
-          <th class="px-4 py-3">ชื่อผู้ใช้</th>
-          <th class="px-4 py-3">สถานะ</th>
-          <th class="px-4 py-3">วันที่เข้าร่วม</th>
-          <th class="px-4 py-3 text-right">จัดการ</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-50">
-        {% for d in doctors %}
-        <tr class="hover:bg-slate-50/50 transition-colors">
-          <td class="px-4 py-3 font-medium text-slate-900">{{ d.full_name }}</td>
-          <td class="px-4 py-3 text-slate-600">{{ d.username }}</td>
-          <td class="px-4 py-3">
-            {% if d.is_active %}
-            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">ปกติ</span>
-            {% else %}
-            <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">ระงับ</span>
-            {% endif %}
-          </td>
-          <td class="px-4 py-3 text-slate-500">{{ d.created_at }}</td>
-          <td class="px-4 py-3 text-right">
-            <a href="{{ url_for('admin.doctor_detail', user_id=d.id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs">ดูข้อมูล</a>
-          </td>
-        </tr>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for d in doctors %}
+    <div class="soft-card p-5 flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-lg">
+      <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <h3 class="font-bold text-slate-900 text-lg mb-1 line-clamp-1">{{ d.full_name }}</h3>
+      <p class="text-slate-500 text-xs mb-2">@{{ d.username }}</p>
+      
+      <div class="mb-2 text-center">
+        <p class="text-[10px] uppercase font-bold text-slate-400">เวรครั้งถัดไป</p>
+        <p class="text-sm font-medium text-blue-600">{{ d.next_duty }}</p>
+      </div>
+
+      <div class="mb-4">
+        {% if d.is_active == 1 %}
+        <a href="{{ url_for('admin.toggle_user_status', username=d.username, role='doctor') }}" 
+           class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide hover:bg-green-200 transition-colors inline-block">
+          ปกติ (ใช้งานอยู่)
+        </a>
         {% else %}
-        <tr>
-          <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลแพทย์</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        <a href="{{ url_for('admin.toggle_user_status', username=d.username, role='doctor') }}" 
+           class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide hover:bg-red-200 transition-colors inline-block">
+          ระงับ (ปิดใช้งาน)
+        </a>
+        {% endif %}
+      </div>
+
+      <div class="w-full pt-4 border-t border-slate-50 flex items-center justify-between">
+        <a href="{{ url_for('admin.doctor_detail', user_id=d.id) }}" class="flex-1 mr-2 text-center py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold transition-colors">
+          ดูข้อมูล
+        </a>
+        <form action="{{ url_for('admin.delete_doctor', user_id=d.id) }}" method="post" onsubmit="return confirm('ยืนยันการลบข้อมูลแพทย์?')">
+            <button type="submit" class="p-2 text-red-400 hover:text-red-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-span-full py-20 text-center">
+        <p class="text-slate-400 italic">ไม่พบข้อมูลแพทย์</p>
+    </div>
+    {% endfor %}
   </div>
 </div>
 
 <!-- Add Doctor Modal -->
 <div id="addDoctorModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-  <div class="glass w-full max-w-lg rounded-2xl p-6 shadow-2xl">
-    <div class="flex justify-between items-center mb-6">
+  <div class="glass w-full max-w-2xl rounded-2xl p-6 shadow-2xl max-h-[90vh] flex flex-col">
+    <div class="flex justify-between items-center mb-6 flex-shrink-0">
       <h2 class="text-xl font-semibold text-slate-900">เพิ่มแพทย์ใหม่</h2>
       <button onclick="closeAddDoctorModal()" class="text-slate-400 hover:text-slate-600">✕</button>
     </div>
     
-    <form action="{{ url_for('admin.add_doctor') }}" method="post" class="space-y-4">
-      <div>
-        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อ-นามสกุล</label>
-        <input type="text" name="full_name" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
-      </div>
-      
-      <div>
-        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อผู้ใช้ (Username)</label>
-        <input type="text" name="username" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
-      </div>
+    <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+      <form id="addDoctorForm" action="{{ url_for('admin.add_doctor') }}" method="post" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อ-นามสกุล</label>
+            <input type="text" name="full_name" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ความเชี่ยวชาญ</label>
+            <input type="text" name="specialization" placeholder="เช่น อายุรศาสตร์" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ชื่อผู้ใช้ (Username)</label>
+            <input type="text" name="username" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">รหัสผ่าน (Password)</label>
+            <input type="password" name="password" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+        </div>
 
-      <div>
-        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">รหัสผ่าน (Password)</label>
-        <input type="password" name="password" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
-      </div>
-      
-      <div class="pt-4 flex gap-3">
-        <button type="button" onclick="closeAddDoctorModal()" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">ยกเลิก</button>
-        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">บันทึกข้อมูล</button>
-      </div>
-    </form>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เบอร์โทรศัพท์</label>
+            <input type="text" name="phone" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">อีเมล</label>
+            <input type="email" name="email" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">ประวัติการศึกษา</label>
+          <textarea name="education" rows="2" placeholder="สถาบันที่จบการศึกษา..." class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-500 uppercase mb-1">เกี่ยวกับแพทย์ (Bio)</label>
+          <textarea name="bio" rows="3" placeholder="ประวัติย่อหรือคำแนะนำเพิ่มเติม..." class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"></textarea>
+        </div>
+      </form>
+    </div>
+    
+    <div class="pt-4 flex gap-3 mt-4 flex-shrink-0">
+      <button type="button" onclick="closeAddDoctorModal()" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">ยกเลิก</button>
+      <button type="submit" form="addDoctorForm" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">บันทึกข้อมูล</button>
+    </div>
   </div>
 </div>
 

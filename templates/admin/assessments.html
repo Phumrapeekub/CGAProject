@@ -1,60 +1,177 @@
 {% extends "admin/admin_base.html" %}
 
-{% block title %}การประเมิน CGA | CGA Admin{% endblock %}
+{% block title %}ประวัติการประเมิน | CGA Admin{% endblock %}
 
 {% block content %}
-<div class="soft-card rounded-2xl p-6">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-    <div>
-      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">ประวัติการประเมิน CGA</h1>
-      <p class="text-slate-600 text-sm mt-1">รายการการประเมินทั้งหมดในระบบ</p>
+<div class="mb-8">
+    {% if target_patient_id %}
+    <div class="mb-4">
+        <a href="{{ url_for('admin.patient_detail', id=target_patient_id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-50 transition-all shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            ย้อนกลับไปยังรายละเอียดผู้ป่วย
+        </a>
     </div>
-  </div>
+    {% endif %}
+    
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">ประวัติการประเมิน CGA</h1>
+                <p class="text-slate-600 text-sm mt-1">รายการการประเมินทั้งหมดในระบบ</p>
+            </div>
+            
+            <!-- Compact KPI Count -->
+            <div class="flex items-center gap-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-2xl">
+                <div class="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                </div>
+                <div>
+                    <p class="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-tight">Total</p>
+                    <p class="text-lg font-bold text-blue-900 leading-tight">{{ total_count }} <span class="text-[10px] font-normal opacity-60">Items</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Professional Search & Filter Section -->
+        <div class="w-full flex flex-col lg:flex-row gap-4 items-end">
+            <!-- Date Filter -->
+            <form action="{{ url_for('admin.assessments_list') }}" method="get" class="flex flex-wrap items-end gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                <input type="hidden" name="q" value="{{ q or '' }}">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Start Date</label>
+                    <input type="date" name="start_date" value="{{ start_date or '' }}" 
+                           class="glass px-3 py-2 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 border-slate-200">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">End Date</label>
+                    <input type="date" name="end_date" value="{{ end_date or '' }}" 
+                           class="glass px-3 py-2 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 border-slate-200">
+                </div>
+                <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 transition-all">
+                    Filter
+                </button>
+                {% if start_date or end_date %}
+                <a href="{{ url_for('admin.assessments_list', q=q) }}" class="text-slate-400 hover:text-red-500 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </a>
+                {% endif %}
+            </form>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm text-left">
-      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
-        <tr>
-          <th class="px-4 py-3">วันที่ประเมิน</th>
-          <th class="px-4 py-3">HN</th>
-          <th class="px-4 py-3">ชื่อผู้ป่วย</th>
-          <th class="px-4 py-3">ระดับความเสี่ยง</th>
-          <th class="px-4 py-3">สถานะ</th>
-          <th class="px-4 py-3 text-right">จัดการ</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-50">
-        {% for a in assessments %}
-        <tr class="hover:bg-slate-50/50 transition-colors">
-          <td class="px-4 py-3 font-medium text-slate-900">{{ a.assessment_date }}</td>
-          <td class="px-4 py-3 text-blue-600">{{ a.hn }}</td>
-          <td class="px-4 py-3">{{ a.full_name }}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase
-              {% if a.risk_level == 'high' %}bg-red-100 text-red-700
-              {% elif a.risk_level == 'medium' %}bg-orange-100 text-orange-700
-              {% else %}bg-green-100 text-green-700{% endif %}">
-              {{ a.risk_level or 'N/A' }}
-            </span>
-          </td>
-          <td class="px-4 py-3">
-            {% if a.is_completed %}
-            <span class="text-green-600 text-xs font-semibold">สมบูรณ์</span>
-            {% else %}
-            <span class="text-slate-400 text-xs">กำลังดำเนินการ</span>
-            {% endif %}
-          </td>
-          <td class="px-4 py-3 text-right">
-            <a href="{{ url_for('admin.assessment_detail', header_id=a.header_id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">ดูรายละเอียด</a>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="6" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการประเมิน</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+            <!-- Search Bar -->
+            <div class="flex-grow">
+                <form action="{{ url_for('admin.assessments_list') }}" method="get" class="relative group">
+                    <input type="hidden" name="start_date" value="{{ start_date or '' }}">
+                    <input type="hidden" name="end_date" value="{{ end_date or '' }}">
+                    <input type="text" name="q" value="{{ q or '' }}" placeholder="ค้นหาชื่อผู้ป่วย หรือ HN..."
+                        class="glass w-full pl-10 pr-10 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 border-slate-200 group-hover:border-blue-300 transition-all shadow-sm">
+                    <span class="absolute left-3.5 top-3 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="soft-card rounded-2xl p-6">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-separate border-spacing-y-2">
+            <thead class="text-slate-500 uppercase text-xs tracking-wider">
+                <tr>
+                    <th class="px-4 py-2">วันที่ประเมิน</th>
+                    <th class="px-4 py-2">ผู้ป่วย</th>
+                    <th class="px-4 py-2">คะแนนการทดสอบย่อย</th>
+                    <th class="px-4 py-2 text-center">สถานะ</th>
+                    <th class="px-4 py-2 text-right">การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in assessments %}
+                <tr id="row-{{ a.header_id }}" class="bg-white hover:bg-slate-50 transition-colors shadow-sm assessment-row">
+                    <td class="px-4 py-4 font-medium text-slate-700 border-y border-l rounded-l-xl border-slate-100">{{ a.assessment_date }}</td>
+                    <td class="px-4 py-4 border-y border-slate-100">
+                        <div class="font-bold text-slate-900">{{ a.full_name }}</div>
+                        <div class="text-xs text-blue-600 font-mono">{{ a.hn }}</div>
+                    </td>
+                    <td class="px-4 py-4 border-y border-slate-100">
+                        <div class="flex flex-wrap gap-1">
+                            {% if a.scores %}
+                                {% for score in a.scores %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-100">
+                                    {{ score.instrument }}: {{ score.total_score }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-slate-400 italic text-[10px]">ไม่มีข้อมูลย่อย</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 text-center border-y border-slate-100">
+                        <span class="flex items-center justify-center gap-1 text-[10px] font-bold uppercase
+                            {% if a.status_color == 'green' %}text-green-600{% elif a.status_color == 'blue' %}text-blue-600{% elif a.status_color == 'orange' %}text-orange-600{% else %}text-slate-500{% endif %}">
+                            {% if a.status_color == 'green' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                            {% elif a.status_color == 'orange' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                            {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            {% endif %}
+                            {{ a.status_label }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 text-right border-y border-r rounded-r-xl border-slate-100">
+                        <a href="{{ url_for('admin.assessment_detail', header_id=a.header_id) }}" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-bold rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all">
+                            ดูผลละเอียด
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการประเมิน</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="mt-8 flex items-center justify-between border-t border-slate-50 pt-6">
+        <p class="text-xs text-slate-500 font-medium">Page <span class="text-slate-900">{{ page }}</span> of {{ total_pages }}</p>
+        <div class="flex gap-2">
+            {% if page > 1 %}
+            <a href="{{ url_for('admin.assessments_list', page=page-1, q=q, start_date=start_date, end_date=end_date) }}" 
+               class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">Previous</a>
+            {% endif %}
+            
+            {% if page < total_pages %}
+            <a href="{{ url_for('admin.assessments_list', page=page+1, q=q, start_date=start_date, end_date=end_date) }}" 
+               class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-blue-600 transition-all shadow-lg shadow-slate-200">Next Page</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if there is a hash in the URL (e.g., #row-123)
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#row-')) {
+            const targetRow = document.querySelector(hash);
+            if (targetRow) {
+                // Smooth scroll to the target row
+                setTimeout(() => {
+                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Add a temporary highlight effect
+                    targetRow.classList.add('bg-blue-50', 'ring-2', 'ring-blue-400', 'ring-inset');
+                    setTimeout(() => {
+                        targetRow.classList.remove('ring-2', 'ring-blue-400', 'ring-inset');
+                        // Optional: keep a very light background to show which one was viewed
+                        targetRow.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                    }, 2000);
+                }, 100);
+            }
+        }
+    });
+</script>
 {% endblock %}

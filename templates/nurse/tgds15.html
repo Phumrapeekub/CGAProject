@@ -258,14 +258,62 @@
                         <input type="radio" id="q15_no" name="q15" value="no"><label for="q15_no">ไม่ใช่</label>
                     </div>
                 </div>
-            </form>
-            
-            <div class="info-box">
-                <strong>การให้คะแนน:</strong> ข้อที่ 1, 5, 7, 11, 13 ถ้าตอบ "ไม่ใช่" ได้ 1 คะแนน<br>
-                ข้อที่ 2, 3, 4, 6, 8, 9, 10, 12, 14, 15 ถ้าตอบ "ใช่" ได้ 1 คะแนน<br>
-                <strong>การแปลผล:</strong> คะแนนรวม >=6 คะแนน = มีภาวะซึมเศร้า | 4-5 คะแนน = เสี่ยง | <4 คะแนน = ปกติ
+                        </form>
+                        
+                        <div class="info-box">
+                            <strong>การให้คะแนน:</strong> ข้อที่ 1, 5, 7, 11, 13 ถ้าตอบ "ไม่ใช่" ได้ 1 คะแนน<br>
+                            ข้อที่ 2, 3, 4, 6, 8, 9, 10, 12, 14, 15 ถ้าตอบ "ใช่" ได้ 1 คะแนน<br>
+                            <strong>การแปลผล:</strong> คะแนนรวม >=6 คะแนน = มีภาวะซึมเศร้า | 4-5 คะแนน = เสี่ยง | <4 คะแนน = ปกติ
+                        </div>
+                    </div>
+                </section>
             </div>
-        </div>
-    </section>
-</div>
-{% endblock %}
+            
+            <!-- ระบบความปลอดภัยข้อมูล (Auto-Save) -->
+            <script>
+              // ใช้ HN จากข้อมูลที่มี (ถ้า Template นี้ไม่มีตัวแปร HN ต้องดึงจาก URL หรือวิธีอื่น)
+              // สมมติว่าดึงจาก URL path หรือ parameter
+              const urlParams = new URLSearchParams(window.location.search);
+              const hn = "{{ hn }}" || urlParams.get('hn') || 'unknown';
+              const STORAGE_KEY = `tgds_draft_${hn}`;
+            
+              // ระบบบันทึกร่างข้อมูล (Auto-Save)
+              function saveDraft() {
+                const formData = {};
+                const inputs = document.querySelectorAll('input[type="radio"]:checked');
+                inputs.forEach(input => {
+                  formData[input.name] = input.value;
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+                console.log("TGDS Draft saved...");
+              }
+            
+              // ระบบกู้คืนข้อมูล (Restore)
+              function restoreDraft() {
+                const draft = localStorage.getItem(STORAGE_KEY);
+                if (draft) {
+                  const formData = JSON.parse(draft);
+                  for (const [name, value] of Object.entries(formData)) {
+                    const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                    if (input) input.checked = true;
+                  }
+                  console.log("TGDS Draft restored!");
+                }
+              }
+            
+              document.addEventListener('change', function(e) {
+                if (e.target.type === 'radio') {
+                  saveDraft();
+                }
+              });
+            
+              // ล้างข้อมูลเมื่อส่งฟอร์มสำเร็จ
+              document.querySelector('form').addEventListener('submit', function() {
+                localStorage.removeItem(STORAGE_KEY);
+              });
+            
+              // ทำงานเมื่อโหลดหน้าเสร็จ
+              window.onload = restoreDraft;
+            </script>
+            {% endblock %}
+            

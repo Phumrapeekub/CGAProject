@@ -5,7 +5,7 @@
 {% block content %}
 <div class="mb-6 flex items-center justify-between">
     <div class="flex items-center gap-3">
-        <a href="{{ url_for('admin.assessments_list') }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+        <a href="{{ url_for('admin.assessments_list') }}#row-{{ header.id }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </a>
         <div>
@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <div class="soft-card p-6 border-l-4 {% if header.overall_risk == 'high' %}border-red-500{% elif header.overall_risk == 'medium' %}border-orange-500{% else %}border-green-500{% endif %}">
+        <div class="soft-card p-6 border-l-4 {% if header.risk_color == 'red' %}border-red-500{% elif header.risk_color == 'orange' %}border-orange-500{% else %}border-green-500{% endif %}">
             <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                 สรุปผลการประเมิน
@@ -51,19 +51,19 @@
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between border-b border-slate-50 pb-2">
                     <span class="text-slate-500">วันที่ประเมิน</span>
-                    <span class="font-medium text-slate-900">{{ header.assessed_at.strftime('%d/%m/%Y %H:%M') if header.assessed_at else '-' }}</span>
+                    <span class="font-medium text-slate-900">{{ header.assessed_at.strftime('%d/%m/%Y %H:%M') if header.assessed_at and header.assessed_at.strftime else header.assessed_at or '-' }}</span>
                 </div>
                 <div class="flex justify-between border-b border-slate-50 pb-2">
                     <span class="text-slate-500">ผู้ประเมิน</span>
-                    <span class="font-medium text-slate-900">{{ header.assessor_name or 'ไม่ระบุ' }}</span>
+                    <span class="font-medium text-slate-900">{{ header.assessor_name or 'เจ้าหน้าที่พยาบาล' }}</span>
                 </div>
                 <div class="mt-4">
                     <span class="text-slate-500 block mb-2 uppercase text-[10px] font-bold tracking-wider">ระดับความเสี่ยงรวม</span>
-                    <div class="px-4 py-3 rounded-xl font-bold text-center text-lg uppercase
-                        {% if header.overall_risk == 'high' %}bg-red-100 text-red-700
-                        {% elif header.overall_risk == 'medium' %}bg-orange-100 text-orange-700
+                    <div class="px-4 py-3 rounded-xl font-bold text-center text-sm uppercase
+                        {% if header.risk_color == 'red' %}bg-red-100 text-red-700
+                        {% elif header.risk_color == 'orange' %}bg-orange-100 text-orange-700
                         {% else %}bg-green-100 text-green-700{% endif %}">
-                        {{ header.overall_risk or 'NORMAL' }}
+                        {{ header.overall_risk or 'ปกติ' }}
                     </div>
                 </div>
                 {% if header.note %}
@@ -138,28 +138,32 @@
                 <div class="border-b border-slate-100 pb-6 last:border-0">
                     <h3 class="text-sm font-bold text-blue-700 uppercase mb-4 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                        Instrument: {{ instr }}
+                        {{ instr }}
                     </h3>
-                    <div class="grid grid-cols-1 gap-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {% for ans in ans_list %}
-                        <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                            <span class="w-6 h-6 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                                {{ ans.question_no }}
-                            </span>
+                        <div class="flex items-start justify-between p-3 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-slate-100">
                             <div class="flex-grow">
-                                <div class="text-sm text-slate-800">{{ ans.answer_text or 'ไม่มีข้อความตอบ' }}</div>
-                                {% if ans.answer_int is not none %}
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ ans.question_label or 'Item ' ~ loop.index }}</div>
+                                <div class="text-sm font-medium text-slate-800">{{ ans.value_text or ans.answer_text or '-' }}</div>
+                                {% if ans.answer_int is not none and ans.answer_int != '' %}
                                 <div class="text-[10px] text-slate-400 mt-0.5">Value: {{ ans.answer_int }}</div>
                                 {% endif %}
                             </div>
+                            {% if ans.score is not none %}
                             <div class="text-right flex-shrink-0">
                                 <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold">
                                     {{ ans.score }} pt
                                 </span>
                             </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+                {% else %}
+                <div class="text-center py-10">
+                    <p class="text-slate-400 italic">ไม่มีข้อมูลรายละเอียดคำตอบ</p>
                 </div>
                 {% endfor %}
             </div>

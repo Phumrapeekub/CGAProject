@@ -3,45 +3,98 @@
 {% block title %}การนัดหมาย | CGA Admin{% endblock %}
 
 {% block content %}
-<div class="soft-card rounded-2xl p-6">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-    <div>
-      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">การนัดหมาย</h1>
-      <p class="text-slate-600 text-sm mt-1">รายการนัดหมายทั้งหมดในระบบ</p>
+<div class="space-y-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('admin.dashboard') }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+      </a>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">การนัดหมาย</h1>
+        <p class="text-slate-600 text-sm mt-1">รายการนัดหมายทั้งหมดในระบบ</p>
+      </div>
     </div>
   </div>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm text-left">
-      <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
-        <tr>
-          <th class="px-4 py-3">วัน-เวลา</th>
-          <th class="px-4 py-3">HN</th>
-          <th class="px-4 py-3">ชื่อผู้ป่วย</th>
-          <th class="px-4 py-3">ประเภท</th>
-          <th class="px-4 py-3">หมายเหตุ</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-50">
-        {% for a in appointments %}
-        <tr class="hover:bg-slate-50/50 transition-colors">
-          <td class="px-4 py-3 font-medium text-slate-900">{{ a.appt_datetime }}</td>
-          <td class="px-4 py-3 text-blue-600">{{ a.hn }}</td>
-          <td class="px-4 py-3">{{ a.full_name }}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold uppercase">{{ a.appt_type }}</span>
-          </td>
-          <td class="px-4 py-3 text-slate-500 text-xs">{{ a.note or '-' }}</td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="5" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการนัดหมาย</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- Search & Filter Card -->
+  <div class="soft-card p-6">
+    <form action="{{ url_for('admin.appointments_list') }}" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">วันที่เริ่มต้น</label>
+        <input type="date" name="start_date" value="{{ start_date or '' }}" 
+               class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">วันที่สิ้นสุด</label>
+        <input type="date" name="end_date" value="{{ end_date or '' }}" 
+               class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-500 uppercase mb-1">สถานะ</label>
+        <select name="status" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none">
+          <option value="">ทั้งหมด</option>
+          <option value="scheduled" {% if selected_status == 'scheduled' %}selected{% endif %}>รอนัดหมาย</option>
+          <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>เสร็จสิ้น</option>
+          <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>ยกเลิก</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-md shadow-blue-100">
+          ค้นหาข้อมูล
+        </button>
+        <a href="{{ url_for('admin.appointments_list') }}" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+          ล้าง
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div class="soft-card rounded-2xl p-6">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="text-slate-500 border-b border-slate-100 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-4 py-3">วัน-เวลา</th>
+            <th class="px-4 py-3">HN</th>
+            <th class="px-4 py-3">ชื่อผู้ป่วย</th>
+            <th class="px-4 py-3">ประเภท</th>
+            <th class="px-4 py-3">สถานะ</th>
+            <th class="px-4 py-3">หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for a in appointments %}
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-4 py-3 font-medium text-slate-900">{{ a.appt_datetime }}</td>
+            <td class="px-4 py-3 text-blue-600">{{ a.hn }}</td>
+            <td class="px-4 py-3">{{ a.full_name }}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold uppercase">{{ a.appt_type }}</span>
+            </td>
+            <td class="px-4 py-3 text-xs">
+                {% if a.status == 'scheduled' %}
+                <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded-full">รอนัดหมาย</span>
+                {% elif a.status == 'completed' %}
+                <span class="text-green-600 bg-green-50 px-2 py-1 rounded-full">เสร็จสิ้น</span>
+                {% elif a.status == 'cancelled' %}
+                <span class="text-red-600 bg-red-50 px-2 py-1 rounded-full">ยกเลิก</span>
+                {% elif a.status == 'no_show' %}
+                <span class="text-gray-600 bg-gray-50 px-2 py-1 rounded-full">ไม่มา</span>
+                {% else %}
+                {{ a.status }}
+                {% endif %}
+            </td>
+            <td class="px-4 py-3 text-slate-500 text-xs">{{ a.note or '-' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-4 py-10 text-center text-slate-400 italic">ไม่พบข้อมูลการนัดหมาย</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-<<<<<<< HEAD
 
 {% endblock %}

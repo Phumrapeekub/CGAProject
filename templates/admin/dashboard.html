@@ -10,6 +10,12 @@
       <p class="text-slate-600 text-sm mt-1">ข้อมูล ณ วันที่ {{ today.strftime('%d/%m/%Y') }}</p>
     </div>
     <div class="flex items-center gap-2">
+      <!-- Manual Sync Button -->
+      <button onclick="triggerSync()" id="syncBtn" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" id="syncIcon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        <span>Sync to Cloud</span>
+      </button>
+
       <form id="filterForm" method="get" action="{{ url_for('admin.dashboard') }}" class="flex items-center gap-2">
         <select name="month" onchange="document.getElementById('filterForm').submit()" class="glass px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
           {% for m in range(1, 13) %}
@@ -32,50 +38,49 @@
   </div>
 
   <!-- KPI Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-    <a href="{{ url_for('admin.patients_list') }}" class="kpi-card kpi-blue p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยทั้งหมด</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.patients }}</h3>
-        </div>
-        <div class="kpi-icon">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+    <a href="{{ url_for('admin.patients_list') }}" class="soft-card p-6 border-t-4 border-t-blue-500 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
+      <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">ผู้ป่วยทั้งหมด</p>
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-black text-slate-900">{{ stats.patients }}</h3>
+        <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
         </div>
       </div>
+      <p class="text-[10px] text-slate-400 mt-2">ลงทะเบียนในระบบทั้งหมด</p>
     </a>
-    <a href="{{ url_for('admin.patients_list', filter='today') }}" class="kpi-card kpi-green p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ผู้ป่วยใหม่วันนี้</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.today_patients }}</h3>
-        </div>
-        <div class="kpi-icon">
+
+    <a href="{{ url_for('admin.patients_list', filter='today') }}" class="soft-card p-6 border-t-4 border-t-emerald-500 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
+      <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">ผู้ป่วยใหม่วันนี้</p>
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-black text-emerald-600">{{ stats.today_patients }}</h3>
+        <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </div>
       </div>
+      <p class="text-[10px] text-slate-400 mt-2">เพิ่มขึ้นจากเมื่อวาน</p>
     </a>
-    <div class="kpi-card kpi-purple p-5">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">นัดหมายวันนี้</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.appointments_today }}</h3>
-        </div>
-        <div class="kpi-icon">
+
+    <div class="soft-card p-6 border-t-4 border-t-indigo-500">
+      <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">นัดหมายวันนี้</p>
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-black text-indigo-600">{{ stats.appointments_today }}</h3>
+        <div class="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </div>
       </div>
+      <p class="text-[10px] text-slate-400 mt-2">รายการนัดที่ต้องดำเนินการ</p>
     </div>
-    <a href="{{ url_for('admin.assessments_list') }}" class="kpi-card kpi-orange p-5 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">ประเมิน CGA ทั้งหมด</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.total_assessments }}</h3>
-        </div>
-        <div class="kpi-icon">
+
+    <a href="{{ url_for('admin.assessments_list') }}" class="soft-card p-6 border-t-4 border-t-orange-500 hover:shadow-lg transition-all transform hover:-translate-y-1 block">
+      <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">ประเมิน CGA ทั้งหมด</p>
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-black text-orange-600">{{ stats.total_assessments }}</h3>
+        <div class="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         </div>
       </div>
+      <p class="text-[10px] text-slate-400 mt-2">รายการที่ประเมินสำเร็จแล้ว</p>
     </a>
   </div>
 
@@ -122,7 +127,7 @@
                 {{ u.role }}
               </span>
             </td>
-            <td class="px-4 py-3 text-slate-500">{{ u.created_at }}</td>
+            <td class="px-4 py-3 text-slate-500">{{ u.created_at_display }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -137,99 +142,206 @@
         Chart.defaults.font.family = "'Inter', 'Prompt', sans-serif";
         Chart.defaults.color = '#64748b';
 
-        // 1. New Patients per Day Chart (Modern Bar)
+        // 1. New Patients per Day Chart (Modern & Elegant Bar)
         const patientDayLabels = {{ patient_day_labels | tojson }};
         const patientDayValues = {{ patient_day_values | tojson }};
-
         const ctx2 = document.getElementById('patientMonthChart').getContext('2d');
         
-        // Gradient for Bar Chart
-        let gradient = ctx2.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)'); // Blue 500
-        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)'); // Blue 500 fading
+        // สร้าง Gradient ที่ดูนุ่มนวล
+        let gradientFill = ctx2.createLinearGradient(0, 0, 0, 400);
+        gradientFill.addColorStop(0, 'rgba(79, 70, 229, 0.9)');   // Indigo 600
+        gradientFill.addColorStop(1, 'rgba(147, 197, 253, 0.3)'); // Blue 300
+
+        // ปลั๊กอินสำหรับเพิ่มเงาให้กับแท่งกราฟ (Shadow Effect)
+        const shadowPlugin = {
+            id: 'shadowPlugin',
+            beforeDraw: (chart) => {
+                const { ctx } = chart;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4;
+            },
+            afterDraw: (chart) => {
+                chart.ctx.restore();
+            }
+        };
 
         new Chart(ctx2, {
             type: 'bar',
+            plugins: [shadowPlugin],
             data: {
                 labels: patientDayLabels,
                 datasets: [{
                     label: 'ผู้ป่วยใหม่',
                     data: patientDayValues,
-                    backgroundColor: gradient,
-                    borderRadius: 6,
+                    backgroundColor: gradientFill,
+                    hoverBackgroundColor: 'rgba(79, 70, 229, 1)',
+                    borderRadius: 10, // แท่งกราฟมนขึ้น
                     borderSkipped: false,
                     barThickness: 'flex',
-                    maxBarThickness: 32
+                    maxBarThickness: 28,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#1e293b',
-                        padding: 12,
-                        titleFont: { size: 13 },
-                        bodyFont: { size: 13 },
-                        cornerRadius: 8,
-                        displayColors: false
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate 900
+                        padding: 14,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 14 },
+                        cornerRadius: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return ` จำนวน: ${context.parsed.y} ราย`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: '#f1f5f9',
-                            borderDash: [5, 5]
+                            color: 'rgba(241, 245, 249, 1)',
+                            drawBorder: false,
                         },
-                        ticks: { precision: 0 }
+                        ticks: { 
+                            precision: 0,
+                            font: { size: 11 }
+                        }
                     },
                     x: {
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
-
-        // 2. Service Type Distribution Chart (Doughnut for better distribution view)
-        const serviceTypeLabels = {{ service_type_labels | tojson }};
-        const serviceTypeValues = {{ service_type_values | tojson }};
-
-        const ctx3 = document.getElementById('serviceTypeChart').getContext('2d');
-        new Chart(ctx3, {
-            type: 'doughnut',
-            data: {
-                labels: serviceTypeLabels,
-                datasets: [{
-                    data: serviceTypeValues,
-                    backgroundColor: [
-                        '#8b5cf6', // Violet
-                        '#ec4899', // Pink
-                        '#3b82f6', // Blue
-                        '#10b981', // Emerald
-                        '#f59e0b'  // Amber
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { size: 12 }
+                        grid: { display: false },
+                        ticks: { 
+                            font: { size: 11 },
+                            maxRotation: 45,
+                            minRotation: 0
                         }
                     }
                 }
             }
         });
+
+        // 2. Service Type Distribution Chart (Premium Doughnut)
+        const serviceTypeLabels = {{ service_type_labels | tojson }};
+        const serviceTypeValues = {{ service_type_values | tojson }};
+
+        const ctx3 = document.getElementById('serviceTypeChart').getContext('2d');
+        
+        // กราฟโดนัทก็ใช้เงาได้เช่นกัน
+        const donutShadowPlugin = {
+            id: 'donutShadowPlugin',
+            beforeDraw: (chart) => {
+                const { ctx } = chart;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 8;
+            },
+            afterDraw: (chart) => {
+                chart.ctx.restore();
+            }
+        };
+
+        new Chart(ctx3, {
+            type: 'doughnut',
+            plugins: [donutShadowPlugin],
+            data: {
+                labels: serviceTypeLabels,
+                datasets: [{
+                    data: serviceTypeValues,
+                    backgroundColor: [
+                        '#6366f1', // Indigo 500
+                        '#8b5cf6', // Violet 500
+                        '#ec4899', // Pink 500
+                        '#3b82f6', // Blue 500
+                        '#10b981'  // Emerald 500
+                    ],
+                    hoverBackgroundColor: [
+                        '#4f46e5', // Darker Indigo
+                        '#7c3aed', // Darker Violet
+                        '#db2777', // Darker Pink
+                        '#2563eb', // Darker Blue
+                        '#059669'  // Darker Emerald
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 20,
+                    borderRadius: 4, // เพิ่มความมนให้ชิ้นส่วน
+                    spacing: 2      // ระยะห่างระหว่างชิ้น
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%', // ให้วงกลางใหญ่ขึ้น ดูทันสมัย
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutElastic' // อนิเมชั่นเด้งๆ นุ่มๆ
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom', // ย้ายมาไว้ข้างล่างเพื่อให้กราฟเด่นขึ้น
+                        labels: {
+                            usePointStyle: true,
+                            padding: 25,
+                            font: { size: 12, weight: '500' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        cornerRadius: 10,
+                        bodyFont: { size: 14 }
+                    }
+                }
+            }
+        });
     });
+</script>
+
+<script>
+    async function triggerSync() {
+        const btn = document.getElementById('syncBtn');
+        const icon = document.getElementById('syncIcon');
+        const label = btn.querySelector('span');
+
+        // Start Animation
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+        label.innerText = 'Syncing...';
+
+        try {
+            const response = await fetch('{{ url_for("admin.sync_offline_data") }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`✅ การซิงค์ข้อมูลสำเร็จ!\nอัปเดตข้อมูลแล้ว ${data.synced} รายการ`);
+                window.location.reload();
+            } else {
+                alert('❌ การซิงค์ล้มเหลว: ' + (data.error || 'เกิดข้อผิดพลาดที่ไม่รู้จัก'));
+            }
+        } catch (error) {
+            console.error('Sync Error:', error);
+            alert('❌ ไม่สามารถติดต่อ Server ได้ (ตรวจสอบเน็ตของคุณ)');
+        } finally {
+            // Stop Animation
+            btn.disabled = false;
+            icon.classList.remove('animate-spin');
+            label.innerText = 'Sync to Cloud';
+        }
+    }
 </script>
 {% endblock %}
