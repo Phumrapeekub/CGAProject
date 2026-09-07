@@ -58,22 +58,7 @@
           </p>
         </header>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="mt-6 space-y-2">
-              {% for category, message in messages %}
-                <div class="rounded-2xl border border-slate-200 bg-white/75 px-4 py-3 text-sm text-slate-700">
-                  <span class="font-medium">
-                    {% if category == "error" %}⚠️{% else %}✅{% endif %}
-                  </span>
-                  <span class="ml-1">{{ message }}</span>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        <!-- ✅ สำคัญ: action ต้องชี้ไป route login -->
+        <!-- action ต้องชี้ไป route login -->
         <form class="mt-7 space-y-4" method="post" action="{{ url_for('auth.login') }}">
           <div class="space-y-2">
             <label class="text-sm font-medium text-slate-700">ชื่อผู้ใช้</label>
