@@ -3820,5 +3820,1135 @@
       "smoke": "สูบ",
       "alcohol": "ดื่มบางครั้ง"
     }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:45.184217",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:46.288103",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:46.309347",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:46.387453",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:47.333504",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:47.453979",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:48.618897",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:49.405633",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:49.565407",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:49.807056",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:50.436878",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:50.839745",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:51.404914",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:52.620432",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:52.759881",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:53.119324",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:53.379543",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:53.789471",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:54.088204",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:54.373225",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:54.835892",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:55.367616",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:55.621413",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:55.748047",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:55.875822",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:55.947993",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:56.074565",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:56.091174",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:56.729463",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:56.978622",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:57.193653",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:57.561922",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:58.116061",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:58.824386",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:59.102681",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:59.248105",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:53:59.364168",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:00.379131",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-07",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:02.175514",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:24.132058",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:25.816826",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 200,
+      "patient_id": 188,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:26.632699",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN084",
+      "patient_name": "ทองม้วน ทองเอก",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 10,
+      "tgds_score": 5,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:daily",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:27.654983",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:27.878486",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:28.371066",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:29.460093",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 200,
+      "patient_id": 188,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:29.719094",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:29.970150",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 200,
+      "patient_id": 188,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:30.399806",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN084",
+      "patient_name": "ทองม้วน ทองเอก",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 10,
+      "tgds_score": 5,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:daily",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:30.960810",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN084",
+      "patient_name": "ทองม้วน ทองเอก",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 10,
+      "tgds_score": 5,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:daily",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:31.417099",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:31.923972",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:31.954265",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "gcn": "005",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "gender": null,
+      "birth_date": null
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:33.254347",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:33.552977",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 200,
+      "patient_id": 188,
+      "encounter_date": "2026-09-07",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:33.999710",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:34.552411",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN084",
+      "patient_name": "ทองม้วน ทองเอก",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 10,
+      "tgds_score": 5,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": null,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:quit, alcohol:daily",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:yes, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:35.533536",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T12:54:37.124028",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 0,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:45:40.216491",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:45:41.302467",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "sex": null,
+      "birth_date": "1957-09-26"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:45:51.792698",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:45:52.912347",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "sex": "ชาย",
+      "birth_date": "1957-09-26"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:56:09.664870",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 200,
+      "patient_id": 188,
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "assessed_date": "2026-09-07",
+      "age": 68,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "",
+      "mmse_score": 10,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 5,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "เลิกแล้ว",
+      "alcohol": "ดื่มทุกวัน"
+    }
+  },
+  {
+    "timestamp": "2026-09-07T22:56:10.763612",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN084",
+      "full_name": "ทองม้วน ทองเอก",
+      "phone": "0322156898",
+      "address": "เลขที่ 64 หมู่ 8 ต. ท่าฉลอม อ. เมืองสมุทรสาคร จ. สมุทรสาคร 74000",
+      "sex": "ชาย",
+      "gender": "male",
+      "birth_date": "1957-09-26"
+    }
   }
 ]

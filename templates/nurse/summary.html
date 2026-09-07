@@ -113,10 +113,16 @@
               </div>
               <div class="space-y-1 p-3 bg-slate-50 rounded-xl mb-4 border border-slate-100 max-h-32 overflow-y-auto">
                   {% set q8_labels = [
-                      "1. คิดทำร้ายตัวเอง", "2. คิดอยากตาย", "3. ควบคุมความอยากตายได้", "4. มีแผนการทำร้ายตัวเอง",
-                      "5. เตรียมการทำร้ายตัวเอง", "6. ทำร้ายตัวเอง(1เดือน)", "7. ทำร้ายตัวเอง(2เดือน)", "8. ทำร้ายตัวเอง(1ปี)", "9. เคยพยายามฆ่าตัวตาย"
+                      "1. คิดอยากตาย/ตายไปจะดีกว่า", 
+                      "2. อยากทำร้ายตัวเอง", 
+                      "3. คิดเกี่ยวกับการฆ่าตัวตาย", 
+                      "4. มีแผนการที่จะฆ่าตัวตาย",
+                      "5. เตรียมการที่จะทำร้ายตนเอง", 
+                      "6. ได้ทำร้ายตนเอง/พยายามฆ่าตัวตาย", 
+                      "7. ตลอดชีวิตเคยทำร้ายตนเอง", 
+                      "8. ตลอดชีวิตเคยพยายามฆ่าตัวตาย"
                   ] %}
-                  {% for i in range(1, 10) %}
+                  {% for i in range(1, 9) %}
                   {% set ans = q8_details.get(i|string, '-') if q8_details else '-' %}
                   <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
                       <span class="text-slate-500 truncate mr-2" title="{{ q8_labels[i-1] }}">{{ q8_labels[i-1] }}</span>

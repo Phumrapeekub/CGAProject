@@ -1982,10 +1982,12 @@ def patient_update(hn: str):
             supabase = get_supabase_client()
             supabase_sex = 'ชาย' if f.get('gender') == 'male' else ('หญิง' if f.get('gender') == 'female' else None)
             sb_data = {
-                "full_name": f.get('full_name'), 
-                "phone": f.get('phone'), 
-                "address": f.get('address'), 
-                "sex": supabase_sex, 
+                "hn": f.get('hn') or hn,
+                "full_name": f.get('full_name'),
+                "phone": f.get('phone'),
+                "address": f.get('address'),
+                "sex": supabase_sex,
+                "gender": f.get('gender') or None,
                 "birth_date": f.get('birthdate') or None
             }
             # ใช้ Safe Sync เพื่อป้องกัน Error จากคอลัมน์ที่ไม่มี
