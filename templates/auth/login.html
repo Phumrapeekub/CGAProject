@@ -59,7 +59,19 @@
         </header>
 
         <!-- action ต้องชี้ไป route login -->
-        <form class="mt-7 space-y-4" method="post" action="{{ url_for('auth.login') }}">
+        
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="mb-4">
+                  {% for category, message in messages %}
+                    <div class="p-4 mb-2 text-sm text-white rounded-lg {% if category == 'error' %}bg-red-500{% else %}bg-green-500{% endif %}" role="alert">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+            <form class="mt-7 space-y-4" method="post" action="{{ url_for('auth.login') }}">
           <div class="space-y-2">
             <label class="text-sm font-medium text-slate-700">ชื่อผู้ใช้</label>
             <input
