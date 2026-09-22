@@ -627,11 +627,13 @@ def patient_detail(id: int):
                             sid = h.get('session_id')
                             h_scores = scores_map.get(sid, {})
                             h_stat = h.get("status") or ""
+                            h_risk = h.get("overall_risk") or ""
+                            risk_label = "เสี่ยง (สูง)" if h_risk == "high" else "ปกติ" if h_risk == "low" else (h_risk or "รอสรุป")
                             
                             assessments.append({
                                 "header_id": cid,
                                 "date": datetime.fromisoformat(h["assessed_at"]).strftime('%Y-%m-%d') if h.get("assessed_at") else enc_map.get(h["encounter_id"], "-"),
-                                "risk": h.get("overall_risk") or "รอสรุป",
+                                "risk": risk_label,
                                 "status": "สมบูรณ์" if h_stat in ["completed", "sent_to_doctor"] else "กำลังดำเนินการ",
                                 "mmse_score": h_scores.get("mmse"),
                                 "tgds_score": h_scores.get("tgds"),
@@ -640,19 +642,52 @@ def patient_detail(id: int):
             except Exception as system_err:
                 print(f"Error fetching systemic assessments: {system_err}")
 
-            # --- deduplicate and Sort ---
-            # Group by Date + HN (simplified)
+            # --- 4. Fetch from Local MySQL cga_records (Guaranteed complete) ---
+            try:
+                conn_loc = get_db_connection()
+                if conn_loc:
+                    cur_loc = conn_loc.cursor(dictionary=True)
+                    cur_loc.execute("SELECT * FROM cga_records WHERE hn = %s ORDER BY assessed_date ASC", (patient["hn"],))
+                    for r in cur_loc.fetchall():
+                        d_str = str(r.get("assessed_date") or "-")
+                        m_sc = r.get("mmse_score")
+                        t_sc = r.get("tgds_score")
+                        assessments.append({
+                            "header_id": r["id"],
+                            "date": d_str,
+                            "risk": r.get("mmse_result") or ("เสี่ยง" if (m_sc and m_sc < 24) else "ปกติ"),
+                            "status": "สมบูรณ์",
+                            "mmse_score": m_sc,
+                            "tgds_score": t_sc,
+                            "source": "local_cga_records"
+                        })
+                    cur_loc.close()
+                    conn_loc.close()
+            except Exception as loc_e:
+                print(f"Local cga_records fetch error: {loc_e}")
+
+            # --- Consolidate & Deduplicate by Date ---
             unique_assessments = {}
             for a in assessments:
-                # Try to avoid duplicates by date and key scores if available
-                key = f"{a['date']}_{a['mmse_score']}_{a['tgds_score']}"
-                if key not in unique_assessments:
-                    unique_assessments[key] = a
+                d = a.get("date") or "-"
+                if d not in unique_assessments:
+                    unique_assessments[d] = a.copy()
                 else:
-                    # Prefer records with more data or from specific sources
-                    existing = unique_assessments[key]
-                    if (a['mmse_score'] is not None and existing['mmse_score'] is None):
-                        unique_assessments[key] = a
+                    existing = unique_assessments[d]
+                    # Retain valid scores
+                    if existing.get("mmse_score") is None and a.get("mmse_score") is not None:
+                        existing["mmse_score"] = a["mmse_score"]
+                    if existing.get("tgds_score") is None and a.get("tgds_score") is not None:
+                        existing["tgds_score"] = a["tgds_score"]
+                    
+                    # Prefer informative risk label
+                    if existing.get("risk") in ["N/A", "high", "low", "medium", "รอสรุป", "", None]:
+                        if a.get("risk") and a.get("risk") not in ["N/A", "high", "low", "medium", "รอสรุป"]:
+                            existing["risk"] = a["risk"]
+
+                    # Prefer concrete header_id
+                    if a.get("source") in ["cga_records", "local_cga_records"] and a.get("mmse_score") is not None:
+                        existing["header_id"] = a["header_id"]
 
             assessments = list(unique_assessments.values())
             assessments.sort(key=lambda x: x['date'])
