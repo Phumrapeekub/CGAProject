@@ -155,11 +155,29 @@ def dashboard():
                 res_cons = supabase_client.table("consultations").select("id", count="exact").execute()
                 
                 service_type_labels = ["ประเมินสำเร็จ (CGA)", "รอสรุป (Referral)"]
-                service_type_values = [res_cga.count or 0, res_cons.count or 0]
-                
                 # If everything is zero, show placeholders so chart isn't empty
                 if sum(service_type_values) == 0:
                     service_type_values = [1, 1] # Just for UI visibility
+
+                # 6. Fallback stats from Supabase if MySQL stats are 0
+                if stats.get("patients", 0) == 0:
+                    try:
+                        res_p_cnt = supabase_client.table("cga_records").select("id", count="exact").execute()
+                        stats["patients"] = res_p_cnt.count or 0
+                        today_str = today_obj.strftime('%Y-%m-%d')
+                        res_today_p = supabase_client.table("cga_records").select("id", count="exact").eq("assessed_date", today_str).execute()
+                        stats["today_patients"] = res_today_p.count or 0
+
+                        res_u = supabase_client.table("users").select("id", count="exact").execute()
+                        stats["users"] = res_u.count or 0
+
+                        res_appts = supabase_client.table("appointments").select("id", count="exact").gte("appt_datetime", today_str).execute()
+                        stats["appointments_today"] = res_appts.count or 0
+
+                        res_assess = supabase_client.table("cga_headers").select("id", count="exact").neq("status", "in_progress").execute()
+                        stats["total_assessments"] = res_assess.count or 0
+                    except Exception as s_err:
+                        print(f"Supabase Stats Fallback: {s_err}")
 
             except Exception as e:
                 print(f"Dashboard Supabase Logic Error: {e}")

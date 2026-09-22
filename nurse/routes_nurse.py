@@ -335,9 +335,19 @@ def dashboard():
                     p['hn'] = f"HN{clean_hn.zfill(3)}"
     except Exception as e:
         current_app.logger.error(f"Dashboard Error: {e}")
+        try:
+            supabase = get_supabase_client()
+            if supabase:
+                res_cga = supabase.table("cga_records").select("id", count="exact").execute()
+                kpis["total"] = res_cga.count or 0
+                today_str = date.today().strftime('%Y-%m-%d')
+                res_today = supabase.table("cga_records").select("id", count="exact").eq("assessed_date", today_str).execute()
+                kpis["today"] = res_today.count or 0
+        except Exception as sb_err:
+            pass
     finally:
-        cur.close()
-        conn.close()
+        if cur: cur.close()
+        if conn: conn.close()
     return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, role="พยาบาล")
 
 @nurse_bp.get("/api/kpis", endpoint="api_kpis")

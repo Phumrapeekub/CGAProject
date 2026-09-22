@@ -1,0 +1,182 @@
+{% extends "doctor/medical_base.html" %}
+{% block title %}บันทึกเวชระเบียน | {{ enc.full_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 lg:px-6 py-8 space-y-8">
+
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-6">
+        <div class="w-20 h-20 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center text-3xl font-semibold shadow-xl shadow-slate-200">
+            {{ enc.full_name[0] if enc.full_name else 'พ' }}
+        </div>
+        <div class="space-y-1">
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-semibold text-slate-900 tracking-tight">{{ enc.full_name or '-' }}</h1>
+                <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-semibold uppercase tracking-widest border border-blue-100">
+                    {{ 'การประเมิน CGA' if enc.encounter_type == 'cga' else enc.encounter_type or 'ผู้ป่วยนอก' }}
+                </span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-500 font-semibold text-sm">
+                <span>HN: {{ enc.hn or '-' }}</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                <span>วันที่รับบริการ: {{ enc.created_at.strftime("%d/%m/%Y %H:%M") if enc.created_at else '-' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button onclick="window.print()" class="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-semibold text-sm hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+            <i class="fas fa-print"></i> พิมพ์เอกสาร
+        </button>
+        <a href="{{ url_for('doctor.patient_detail', hn=enc.hn) }}"
+           class="px-6 py-3 bg-blue-600 text-white rounded-2xl font-semibold text-sm hover:bg-blue-700 shadow-xl shadow-blue-200/50 transition-all flex items-center gap-2">
+          <i class="fas fa-arrow-left"></i> กลับหน้าประวัติ
+        </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Left Column: Patient Context & Vitals -->
+    <div class="lg:col-span-1 space-y-8">
+        <!-- ข้อมูลทางคลินิกเบื้องต้น -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 bg-slate-50/50 border-b border-slate-50">
+                <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-widest flex items-center gap-3">
+                    <i class="fas fa-heartbeat text-red-500"></i> ข้อมูลทางคลินิก
+                </h3>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 rounded-2xl p-6 text-center">
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase mb-1 tracking-widest">ส่วนสูง</div>
+                        <div class="text-3xl font-semibold text-slate-800">{{ cga_info.height or '-' }} <span class="text-sm text-slate-400">ซม.</span></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-6 text-center">
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase mb-1 tracking-widest">รอบเอว</div>
+                        <div class="text-3xl font-semibold text-slate-800">{{ cga_info.waist or '-' }} <span class="text-sm text-slate-400">ซม.</span></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-4 border-b border-slate-50">
+                        <span class="text-sm font-semibold text-slate-500">การสูบบุหรี่</span>
+                        <span class="text-base font-semibold text-slate-800">{{ cga_info.smoke or '-' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-4 border-b border-slate-50">
+                        <span class="text-sm font-semibold text-slate-500">การดื่มสุรา</span>
+                        <span class="text-base font-semibold text-slate-800">{{ cga_info.alcohol or '-' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-4 border-b border-slate-50">
+                        <span class="text-sm font-semibold text-slate-500">ผู้ดูแลหลัก</span>
+                        <span class="text-base font-semibold text-slate-800">{{ cga_info.caregiver_name or '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- สถานะการรับรู้ (Sensory) -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 bg-slate-50/50 border-b border-slate-50">
+                <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-widest flex items-center gap-3">
+                    <i class="fas fa-eye text-indigo-500"></i> สถานะการรับรู้
+                </h3>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="space-y-3">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">การมองเห็น (ซ้าย/ขวา)</div>
+                    <div class="flex gap-3">
+                        <span class="flex-1 px-4 py-3 bg-indigo-50 rounded-xl text-indigo-700 text-sm font-semibold text-center">ซ้าย: {{ cga_info.vision_left or '-' }}</span>
+                        <span class="flex-1 px-4 py-3 bg-indigo-50 rounded-xl text-indigo-700 text-sm font-semibold text-center">ขวา: {{ cga_info.vision_right or '-' }}</span>
+                    </div>
+                </div>
+                <div class="space-y-3 pt-2">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">การได้ยิน (ซ้าย/ขวา)</div>
+                    <div class="flex gap-3">
+                        <span class="flex-1 px-4 py-3 bg-blue-50 rounded-xl text-blue-700 text-sm font-semibold text-center">ซ้าย: {{ cga_info.hearing_left or '-' }}</span>
+                        <span class="flex-1 px-4 py-3 bg-blue-50 rounded-xl text-blue-700 text-sm font-semibold text-center">ขวา: {{ cga_info.hearing_right or '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle & Right: Assessment & Notes (SOAP Style) -->
+    <div class="lg:col-span-2 space-y-8">
+        
+        <!-- S: Subjective (อาการสำคัญ) -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 bg-slate-50/50 border-b border-slate-50">
+                <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-widest flex items-center gap-3">
+                    <i class="fas fa-comment-medical text-amber-500"></i> Subjective (อาการสำคัญ/บันทึก)
+                </h3>
+            </div>
+            <div class="p-8">
+                <div class="text-slate-700 font-medium text-lg leading-relaxed whitespace-pre-line bg-amber-50/30 p-8 rounded-3xl border border-amber-100/50">
+                    {{ enc.note or 'ไม่มีบันทึกอาการสำคัญ' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- A & P: Assessment & Plan (การวินิจฉัยและแผนรักษา) -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 bg-slate-50/50 border-b border-slate-50">
+                <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-widest flex items-center gap-3">
+                    <i class="fas fa-user-md text-blue-600"></i> A & P (การวินิจฉัยและแผนการรักษา)
+                </h3>
+            </div>
+            <div class="p-8">
+                {% if dx_notes %}
+                    <div class="space-y-10">
+                        {% for n in dx_notes %}
+                        <div class="relative pl-10 border-l-4 border-blue-100 py-2">
+                            <div class="absolute -left-[10px] top-0 w-4 h-4 rounded-full bg-blue-600 border-4 border-white shadow-sm"></div>
+                            {% set doc_name = n.get('users', {}).get('full_name') if n is mapping else none %}
+                            <div class="text-sm font-semibold text-slate-400 uppercase mb-6 tracking-widest">บันทึกโดย {{ doc_name or enc.creator_name or 'แพทย์ผู้ตรวจ' }} • {{ n.created_at.strftime("%d/%m/%Y %H:%M") }} น.</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <div class="text-sm font-semibold text-slate-400 uppercase tracking-widest">การวินิจฉัย (Diagnosis)</div>
+                                    <div class="bg-blue-50/50 rounded-2xl p-6 text-lg font-semibold text-slate-800 border border-blue-100/50">{{ n.diagnosis or '-' }}</div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="text-sm font-semibold text-slate-400 uppercase tracking-widest">แผนการรักษา (Treatment Plan)</div>
+                                    <div class="bg-emerald-50/50 rounded-2xl p-6 text-lg font-semibold text-slate-800 border border-emerald-100/50">{{ n.plan or '-' }}</div>
+                                </div>
+                            </div>
+                            {% if n.followup_note %}
+                            <div class="mt-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div class="text-xs font-semibold text-slate-400 uppercase mb-2">บันทึกติดตามผล (Follow-up)</div>
+                                <div class="text-sm font-semibold text-slate-600">{{ n.followup_note }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center py-12 text-slate-300 space-y-4">
+                        <i class="fas fa-file-medical text-5xl opacity-20"></i>
+                        <p class="font-semibold text-sm text-center">ยังไม่มีบันทึกการวินิจฉัยจากแพทย์<br>อยู่ระหว่างรอการตรวจประเมิน</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+  </div>
+
+</div>
+
+<style>
+@media print {
+    .flex.items-center.gap-3, nav, footer, .lg\:px-6.py-8.space-y-8 > div:first-child a {
+        display: none !important;
+    }
+    body { background: white !important; }
+    .bg-white { box-shadow: none !important; border: 1px solid #eee !important; }
+    details { border: 1px solid #eee !important; }
+    summary i { display: none !important; }
+    details[open] summary { background: #f8fafc !important; }
+}
+</style>
+{% endblock %}

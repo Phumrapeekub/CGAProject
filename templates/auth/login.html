@@ -64,7 +64,7 @@
               {% if messages %}
                 <div class="mb-4">
                   {% for category, message in messages %}
-                    <div class="p-4 mb-2 text-sm text-white rounded-lg {% if category == 'error' %}bg-red-500{% else %}bg-green-500{% endif %}" role="alert">
+                    <div class="p-4 mb-2 text-sm text-white rounded-lg" style="{% if category == 'error' %}background-color: #ef4444;{% else %}background-color: #22c55e;{% endif %}" role="alert">
                       {{ message }}
                     </div>
                   {% endfor %}

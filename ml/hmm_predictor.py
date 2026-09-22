@@ -22,10 +22,10 @@ try:
     _LABELS = _b['label_names']
     _N      = _b['n_states']
     _ACC    = _b['metrics']['accuracy']
-    print(f'[HMM] \u2705 Model loaded  accuracy={_ACC*100:.1f}%')
+    print(f'[HMM] [OK] Model loaded  accuracy={_ACC*100:.1f}%')
 except Exception as e:
     _model = None
-    print(f'[HMM] \u26a0 WARNING: {e}')
+    print(f'[HMM] [WARN] WARNING: {e}')
 
 _COLORS = ['#10b981', '#f59e0b', '#ef4444']
 _SLUGS  = ['normal', 'mci', 'dementia']

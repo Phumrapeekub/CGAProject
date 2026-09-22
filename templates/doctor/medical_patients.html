@@ -8,7 +8,6 @@
   <!-- แถวบน: Search + Risk filter + Export -->
   <div class="bg-white rounded-2xl shadow-sm px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-    <!-- กล่องค้นหา (แยก HN / ชื่อ-นามสกุล) -->
     <div class="flex-1">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
@@ -51,10 +50,8 @@
       </div>
     </div>
 
-    <!-- ด้านขวา: risk filter + Export -->
     <div class="flex items-center gap-3 justify-end">
 
-      <!-- เลือกความเสี่ยง -->
       <div class="flex items-center gap-2">
         <span class="text-gray-600 text-sm">ความเสี่ยง:</span>
         <select
@@ -70,7 +67,6 @@
         </select>
       </div>
 
-      <!-- Export -->
       <button
         type="button"
         onclick="exportExcel()"
@@ -87,7 +83,6 @@
     </div>
   </div>
 
-  <!-- หัวข้อ section -->
   <div class="flex items-center gap-2 text-primary">
     <svg fill="#191970" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"
          class="h-9 w-9">
@@ -96,47 +91,54 @@
 
     <h2 class="text-xl md:text-2xl font-semibold">
       รายชื่อผู้สูงอายุ ({{ patients|length }} คน)
+      {% if date_q %}
+        <span class="text-sm font-normal text-indigo-600 block md:inline md:ml-2">ประเมินวันที่: {{ date_q }}</span>
+      {% elif request.args.get('start_date') %}
+        <span class="text-sm font-normal text-indigo-600 block md:inline md:ml-2">ประเมินช่วง: {{ request.args.get('start_date') }} - {{ request.args.get('end_date') or request.args.get('start_date') }}</span>
+      {% endif %}
     </h2>
   </div>
 
-  <!-- การ์ดตาราง -->
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm md:text-base">
-        <thead class="bg-slate-50 border-b border-slate-200 text-gray-600">
+  <div class="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col">
+    <!-- Scrollable Container -->
+    <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] min-h-[550px] scroller">
+      <table class="min-w-full text-sm md:text-base border-separate border-spacing-0">
+        <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
           <tr>
-            <th class="px-6 py-3 text-left font-semibold">HN / GCN</th>
-            <th class="px-6 py-3 text-left font-semibold">ชื่อ-นามสกุล</th>
-            <th class="px-6 py-3 text-left font-semibold">อายุ</th>
-            <th class="px-6 py-3 text-left font-semibold">วันที่ลงทะเบียน</th>
-            <th class="px-6 py-3 text-left font-semibold">โรคประจำตัว</th>
-            <th class="px-6 py-3 text-left font-semibold">การประเมินล่าสุด</th>
-            <th class="px-6 py-3 text-left font-semibold">ความเสี่ยง</th>
-            <th class="px-6 py-3 text-center font-semibold">จัดการ</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">HN / GCN</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">ชื่อ-นามสกุล</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">อายุ</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">โรคประจำตัว</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">การประเมินล่าสุด</th>
+            <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">ความเสี่ยง</th>
+            <th class="px-6 py-4 text-center font-bold text-slate-600 border-b border-slate-200 bg-slate-50">จัดการ</th>
           </tr>
         </thead>
 
-        <tbody class="divide-y divide-gray-100">
+        <tbody class="divide-y divide-gray-100 bg-white">
           {% for p in patients %}
+
+            {# ==========================================================
+               ✅ SAFE NORMALIZATION: กันพังเมื่อไม่มี key mmse/tgds
+               รองรับ: mmse, mmse_score / tgds, tgds_score / sra
+               ========================================================== #}
             {% set risk_slug = p.risk_slug %}
+
             <tr class="patients-row hover:bg-blue-50/60 transition-colors"
-                data-name="{{ (p.name or '')|lower }}"
+                data-name="{{ (p.full_name or '')|lower }}"
                 data-hn="{{ (p.hn or '')|lower }}"
                 data-gcn="{{ (p.gcn or '')|lower }}"
                 data-risk="{{ risk_slug }}">
 
-              <!-- HN / GCN -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="font-semibold text-gray-900">{{ p.hn }}</div>
                 <div class="text-xs text-gray-400">{{ p.gcn or '' }}</div>
               </td>
 
-              <!-- ชื่อ -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-semibold text-gray-900">{{ p.name }}</div>
+                <div class="font-semibold text-gray-900">{{ p.full_name }}</div>
               </td>
 
-              <!-- อายุ + เพศ -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div>{{ p.age }} ปี</div>
                 <div class="text-xs text-gray-500">
@@ -148,12 +150,6 @@
                 </div>
               </td>
 
-              <!-- วันที่ลงทะเบียน -->
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">
-                {{ p.created_at[:10] if p.created_at else '-' }}
-              </td>
-
-              <!-- โรคประจำตัว -->
               <td class="px-6 py-4 whitespace-nowrap">
                 {% if p.disease %}
                   <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
@@ -164,19 +160,18 @@
                 {% endif %}
               </td>
 
-              <!-- การประเมินล่าสุด -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-gray-900">{{ p.last_assessed_date or '-' }}</div>
                 <div class="text-xs text-gray-500">
-                  {% if p.mmse is not none %}
-                    MMSE: {{ p.mmse }}{% if p.tgds is not none %} | D: {{ p.tgds }}{% endif %}
+                  {% if p.mmse is not none or p.tgds is not none %}
+                    {% if p.mmse is not none %}MMSE: {{ p.mmse }}{% endif %}
+                    {% if p.tgds is not none %}{% if p.mmse is not none %} | {% endif %}D: {{ p.tgds }}{% endif %}
                   {% else %}
                     ยังไม่มีข้อมูล
                   {% endif %}
                 </div>
               </td>
 
-              <!-- ความเสี่ยง -->
               <td class="px-6 py-4 whitespace-nowrap">
                 {% set risk_label =
                   'เสี่ยงสูง' if risk_slug == 'high'
@@ -196,12 +191,11 @@
                 </span>
               </td>
 
-              <!-- จัดการ -->
               <td class="px-6 py-4 text-center whitespace-nowrap">
                 <div class="flex items-center justify-center gap-3">
 
-                  <!-- 🔵 ดูข้อมูล (แก้ไข: เพิ่ม gcn=p.gcn) -->
-                  <a href="{{ url_for('doctor.patient_detail', hn=p.hn, gcn=p.gcn) }}"
+                  <!-- ✅ ดูข้อมูล (ใช้ endpoint ที่มีจริง) -->
+                  <a href="{{ url_for('doctor.patient_detail', hn=p.hn) }}"
                      class="inline-flex items-center justify-center rounded-full p-2
                             bg-blue-50 hover:bg-blue-100 transition"
                      title="ดูข้อมูล">
@@ -211,14 +205,14 @@
                     </svg>
                   </a>
 
-                  <!-- 🔴 ลบ (คงไว้) -->
+                  <!-- ✅ ลบ (endpoint ที่มีจริง) -->
                   <form method="POST"
                         action="{{ url_for('doctor.patients_delete', hn=p.hn) }}"
                         onsubmit="return confirm('ยืนยันลบข้อมูลผู้ป่วย HN {{ p.hn }} ?');">
                     <button type="submit"
                             class="inline-flex items-center justify-center rounded-full p-2
                                    bg-red-50 hover:bg-red-100 transition"
-                            title="ลบข้อมูล">
+                            title="ลบข้อมูลผู้ป่วย">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5">
                         <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -310,47 +304,6 @@ function exportExcel() {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-
-
-
-
-// --- Auto-Refresh System (AJAX Polling) ---
-let isPolling = false;
-async function fetchLatestPatients() {
-  if (isPolling) return;
-  isPolling = true;
-  try {
-    const res = await fetch(window.location.href);
-    if (res.ok) {
-      const htmlText = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, "text/html");
-      const newContainer = doc.getElementById("patientsTableContainer");
-      const currentContainer = document.getElementById("patientsTableContainer");
-      
-      if (newContainer && currentContainer) {
-        // Compare HTML to see if there's an actual change
-        if (currentContainer.innerHTML !== newContainer.innerHTML) {
-          currentContainer.innerHTML = newContainer.innerHTML;
-          // Re-apply search filters if user is typing
-          if (typeof filterpatients === 'function') {
-            filterpatients();
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Auto-refresh failed:", error);
-  } finally {
-    isPolling = false;
-  }
-}
-
-// Poll every 5 seconds
-setInterval(fetchLatestPatients, 5000);
-// ------------------------------------------
-
-
 </script>
 
 {% endblock %}

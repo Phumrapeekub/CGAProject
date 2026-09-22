@@ -5,7 +5,6 @@ from datetime import datetime, date, timedelta
 from ml.hmm_predictor import predictor # ✅ Import real AI model
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
-from flask_login import login_required # type: ignore
 import os
 import re
 import pandas as pd
@@ -324,6 +323,22 @@ def dashboard():
         finally:
             local_cur.close()
             local_conn.close()
+
+        # Fallback from Supabase if local DB has 0 or failed
+        if total_patients == 0 and supabase:
+            try:
+                res_vk = supabase.table("view_doctor_kpis").select("*").limit(1).execute()
+                if res_vk.data:
+                    vk = res_vk.data[0]
+                    total_patients = vk.get("total_patients", 0)
+                    today_patients = vk.get("today_patients", 0)
+                    month_patients = vk.get("month_patients", 0)
+                    high_risk = vk.get("high_risk", 0)
+                else:
+                    res_p_cnt = supabase.table("cga_records").select("id", count="exact").execute()
+                    total_patients = res_p_cnt.count or 0
+            except Exception as sb_err:
+                print(f"Doctor KPI Supabase Fallback Error: {sb_err}")
 
         # นัดหมายวันนี้
         res_appts_count = supabase.table("appointments") \
@@ -2475,13 +2490,7 @@ def cga_history_detail(cga_id):
         return redirect(url_for("doctor.dashboard"))
     
 @doctor_bp.route("/cga/<int:cga_id>")
-@login_required
 def cga_detail(cga_id):
-    cga = CGA.query.get_or_404(cga_id)
-    patient = cga.patient
-
-    return render_template(
-        "doctor/medical_cga_detail.html",
-        cga=cga,
-        patient=patient
-    )
+    if not _guard_doctor():
+        return redirect(url_for("doctor.login"))
+    return redirect(url_for("doctor.cga_history_detail", id=cga_id))

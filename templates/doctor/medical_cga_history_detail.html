@@ -1,0 +1,169 @@
+{% extends "doctor/medical_base.html" %}
+{% block title %}รายละเอียดการประเมิน CGA | {{ patient.full_name }}{% endblock %}
+
+{% block head %}
+<style>
+  :root {
+    --card-radius: 24px;
+  }
+  body {
+    background-color: #f1f5f9;
+  }
+  .cga-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    border-radius: var(--card-radius);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .score-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-weight: 500; /* ปรับลดความหนาลง */
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .patient-hero {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);
+  }
+  .patient-name {
+    font-size: 2.5rem; /* ขนาดใหญ่เท่าเดิม */
+    font-weight: 500; /* ปรับลดความหนาลงจาก Black เป็น Medium */
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .patient-meta-item {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    padding: 0.75rem 1.25rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 lg:px-6 py-10 space-y-8">
+
+  <!-- Formal Report Header -->
+  <div class="border-b-4 border-indigo-600 pb-4 mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-sm font-medium uppercase tracking-[0.4em] text-indigo-500 mb-1">Official Clinical Record</h2>
+        <h1 class="text-4xl font-medium text-slate-900 tracking-tight">
+          CGA Assessment <span class="text-indigo-600">Report</span>
+        </h1>
+      </div>
+      <div class="hidden md:block text-right">
+        <div class="text-[10px] font-medium uppercase tracking-widest text-slate-400">Document ID</div>
+        <div class="text-sm font-medium text-slate-600">#CGA-{{ cga.id or '000' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Large Header Section -->
+  <div class="patient-hero">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+      <div class="space-y-4">
+        <h1 class="patient-name text-slate-900">
+          {{ patient.full_name or 'ไม่ระบุชื่อ' }}
+        </h1>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <div class="patient-meta-item">
+            <span class="text-[10px] font-medium uppercase text-slate-400 tracking-widest">Hospital Number</span>
+            <span class="text-lg font-medium text-slate-700">{{ patient.hn or '-' }}</span>
+          </div>
+          <div class="patient-meta-item">
+            <span class="text-[10px] font-medium uppercase text-slate-400 tracking-widest">Assessment Date</span>
+            <span class="text-lg font-medium text-slate-700">{{ cga.assessed_date or '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <button onclick="window.print()" class="h-14 px-8 bg-white border border-slate-200 text-slate-600 rounded-2xl font-medium text-sm hover:bg-slate-50 transition-all shadow-sm flex items-center gap-3">
+            <i class="fas fa-print"></i> พิมพ์รายงาน
+        </button>
+        <a href="{{ url_for('doctor.patient_detail', hn=patient.hn) }}"
+           class="h-14 px-8 bg-slate-900 text-white rounded-2xl font-medium text-sm hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center gap-3">
+          <i class="fas fa-arrow-left"></i> กลับหน้าผู้ป่วย
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assessment Summaries -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    <!-- 01: MMSE-T Summary -->
+    <div class="cga-card p-6 border-l-8 border-indigo-600">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-slate-400 uppercase tracking-widest">01: MMSE-T (สมรรถภาพสมอง)</h3>
+            <div class="score-badge bg-indigo-50 text-indigo-700 border border-indigo-100">
+                {{ cga.mmse_score or 0 }} / 30
+            </div>
+        </div>
+        <div class="space-y-1">
+            <div class="text-2xl font-medium text-slate-800">{{ cga.mmse_result or 'ปกติ' }}</div>
+            <p class="text-xs font-medium text-slate-400 uppercase tracking-tight">Mini-Mental State Examination</p>
+        </div>
+    </div>
+
+    <!-- 02: 2Q/TGDS Summary -->
+    <div class="cga-card p-6 border-l-8 border-purple-600">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-slate-400 uppercase tracking-widest">02: TGDS-15 (ซึมเศร้า)</h3>
+            <div class="score-badge bg-purple-50 text-purple-700 border border-purple-100">
+                {{ cga.tgds_score or 0 }} / 15
+            </div>
+        </div>
+        <div class="space-y-1">
+            <div class="text-2xl font-medium text-slate-800">{{ cga.tgds_result or 'ปกติ' }}</div>
+            <p class="text-xs font-medium text-slate-400 uppercase tracking-tight">Thai Geriatric Depression Scale</p>
+        </div>
+    </div>
+
+    <!-- 03: 8Q Summary -->
+    <div class="cga-card p-6 border-l-8 border-rose-600">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-slate-400 uppercase tracking-widest">03: 8Q (ความเสี่ยงฆ่าตัวตาย)</h3>
+            <div class="score-badge bg-rose-50 text-rose-700 border border-rose-100">
+                {{ cga.suicide_risk or 'ปกติ' }}
+            </div>
+        </div>
+        <div class="space-y-1">
+            <div class="text-2xl font-medium text-slate-800">
+                {% if cga.suicide_risk and cga.suicide_risk != 'ปกติ' %}มีภาวะเสี่ยง{% else %}ไม่พบความเสี่ยง{% endif %}
+            </div>
+            <p class="text-xs font-medium text-slate-400 uppercase tracking-tight">Suicide Risk Screening</p>
+        </div>
+    </div>
+
+    <!-- 04: Overall Status -->
+    <div class="cga-card p-6 border-l-8 border-emerald-600 bg-emerald-50/20">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-slate-400 uppercase tracking-widest">04: สถานะโดยรวม</h3>
+            <div class="score-badge bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] uppercase">
+                Final Status
+            </div>
+        </div>
+        <div class="space-y-1">
+            <div class="text-2xl font-medium text-emerald-700">{{ cga.risk_level or 'ปกติ' }}</div>
+            <p class="text-xs font-medium text-emerald-600/60 uppercase tracking-tight">Assessment Conclusion</p>
+        </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

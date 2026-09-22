@@ -5,6 +5,7 @@ from auth import auth_bp
 from admin.routes_admin import admin_bp
 from doctor.routes_doctor import doctor_bp
 from nurse.routes_nurse import nurse_bp
+from Line.routes_line import line_bp
 from supabase_utils import check_supabase_connection
 from dotenv import load_dotenv
 load_dotenv()
@@ -12,6 +13,17 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
+
+def parse_dt(d):
+    if not d: return None
+    from datetime import datetime
+    if isinstance(d, str):
+        try:
+            return datetime.fromisoformat(d.replace('Z', '+00:00'))
+        except:
+            return None
+    return d
+app.jinja_env.globals.update(parse_dt=parse_dt)
 
 # ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face
 app.config.update(
@@ -24,6 +36,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(doctor_bp)
 app.register_blueprint(nurse_bp)
+app.register_blueprint(line_bp)
 
 @app.get("/")
 def root():
