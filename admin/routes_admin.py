@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from flask import Blueprint, render_template, redirect, url_for, flash, session
+from psycopg2.extras import RealDictCursor
 from db.db import get_db_connection
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -39,7 +40,7 @@ def dashboard():
 
     cur = None
     try:
-        cur = conn.cursor(dictionary=True)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
 
         def count(table: str) -> int:
             try:

@@ -75,7 +75,7 @@ def predict(mmse_scores: list, max_score: int = 30, edu: str = 'ประถม'
             warning = f'\u26a0 Rapid decline: {_LABELS[seq[-2]]} \u2192 {_LABELS[seq[-1]]}'
     return {
         'result':          _LABELS[pred],
-        'risk_score':      round(risk_score * 5, 2),
+        'risk_score':      round(risk_score * 2.5, 2),
         'confidence':      round(confidence * 100),
         'warning':         warning,
         'n_visits':        len(mmse_scores),

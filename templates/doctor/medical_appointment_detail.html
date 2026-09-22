@@ -1,0 +1,137 @@
+{% extends "doctor/medical_base.html" %}
+{% block title %}ใบนัดหมาย | {{ appt.full_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10 space-y-8">
+
+  <!-- Action Bar -->
+  <div class="flex items-center justify-between">
+    <a href="{{ url_for('doctor.patient_detail', hn=appt.hn) }}" 
+       class="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-semibold text-sm transition-all shadow-sm">
+      <i class="fas fa-arrow-left text-xs"></i>
+      กลับหน้าประวัติผู้ป่วย
+    </a>
+    
+    <button onclick="window.print()" class="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-sm transition-all shadow-lg shadow-blue-200">
+        <i class="fas fa-print"></i>
+        พิมพ์ใบนัดหมาย
+    </button>
+  </div>
+
+  <!-- Appointment Card -->
+  <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_30px_60px_rgba(0,0,0,0.05)] overflow-hidden">
+    
+    <!-- Card Header -->
+    <div class="bg-slate-900 px-10 py-10 text-white flex justify-between items-center">
+        <div class="space-y-1">
+            <div class="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500">Official Appointment</div>
+            <h1 class="text-3xl font-semibold tracking-tight">ใบนัดหมาย</h1>
+        </div>
+        <div class="text-right">
+            <div class="text-sm font-semibold text-blue-400">คลินิกผู้สูงอายุ (CGA Clinic)</div>
+            <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">โรงพยาบาลพะเยา</div>
+        </div>
+    </div>
+
+    <!-- Patient Info -->
+    <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/30">
+        <div class="flex justify-between items-center">
+            <div class="space-y-1">
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">ชื่อ-นามสกุล ผู้ป่วย</div>
+                <div class="text-2xl font-semibold text-slate-900">{{ appt.full_name or '-' }}</div>
+            </div>
+            <div class="text-right space-y-1">
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">เลขประจำตัว (HN)</div>
+                <div class="text-2xl font-semibold text-blue-600 tracking-wider">{{ appt.hn or '-' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Detail -->
+    <div class="p-10 space-y-10">
+        
+        <!-- COMPACT Date & Time Row (Using SVG for visibility) -->
+        <div class="flex items-center gap-5 p-5 bg-slate-50 rounded-3xl border border-slate-100">
+            <div class="w-12 h-12 rounded-2xl bg-white border border-blue-100 text-blue-600 flex items-center justify-center shadow-sm">
+                <!-- SVG Calendar Icon -->
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div class="flex-1 flex items-center justify-between pr-4 divide-x divide-slate-200">
+                <div class="flex-1">
+                    <div class="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-0.5">วันที่นัดหมาย</div>
+                    <div class="text-lg font-semibold text-slate-900">
+                        {{ appt.appt_datetime.strftime("%d/%m/") ~ (appt.appt_datetime.year + 543) if appt.appt_datetime else '-' }}
+                    </div>
+                </div>
+                <div class="flex-1 pl-8">
+                    <div class="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-0.5">เวลาที่นัด</div>
+                    <div class="text-lg font-semibold text-slate-900">{{ appt.appt_datetime.strftime("%H:%M") if appt.appt_datetime else '-' }} น.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Details List -->
+        <div class="grid grid-cols-1 gap-6 px-2">
+            <div class="flex justify-between items-center border-b border-slate-50 pb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">ประเภทการนัดหมาย</span>
+                <span class="text-base font-semibold text-slate-800">
+                    {% if appt.appt_type == 'followup' %}ตรวจติดตามอาการ (Follow-up)
+                    {% elif appt.appt_type == 'cga' %}ประเมินสุขภาพผู้สูงอายุ (CGA)
+                    {% else %}{{ appt.appt_type or '-' }}{% endif %}
+                </span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-50 pb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">สถานที่</span>
+                {% set loc_display = appt.note.split(' | ')[0] if '|' in (appt.note or '') else 'ชั้น 2 อาคารผู้ป่วยนอก คลินิกผู้สูงอายุ' %}
+                <span class="text-base font-semibold text-slate-800">{{ loc_display }}</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-50 pb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">แพทย์ผู้นัด</span>
+                <span class="text-base font-semibold text-slate-800">{{ appt.doctor_name or 'ประจำคลินิก' }}</span>
+            </div>
+        </div>
+
+        <!-- Preparation Instructions -->
+        <div class="bg-amber-50/50 border border-amber-100 rounded-[2.5rem] p-8">
+            <div class="flex items-center gap-3 text-amber-700 mb-4">
+                <i class="fas fa-info-circle text-sm"></i>
+                <h3 class="text-xs font-semibold uppercase tracking-widest">คำแนะนำในการเตรียมตัว</h3>
+            </div>
+            <div class="text-sm font-semibold text-slate-600 leading-relaxed space-y-2">
+                <p>• กรุณานำใบนัดและบัตรประชาชนมาแสดงก่อนเวลานัด 15 นาที</p>
+                <p>• กรณีมีการเจาะเลือด โปรดงดน้ำและอาหารหลัง 20:00 น. ของวันก่อนนัด</p>
+                <p>• นำยาทั้งหมดที่กำลังรับประทานอยู่ในปัจจุบันมาด้วยทุกครั้ง</p>
+            </div>
+        </div>
+
+        {% if appt.note %}
+        <div class="px-2">
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">หมายเหตุเพิ่มเติมจากแพทย์</div>
+            {% set clean_note = appt.note.split(' | ')[1] if '|' in (appt.note or '') else appt.note %}
+            <div class="text-sm font-semibold text-slate-500 italic bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                "{{ clean_note }}"
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-10 py-6 bg-slate-50 border-t border-slate-100 flex justify-center text-[10px] font-semibold text-slate-300 uppercase tracking-[0.4em]">
+        <span>Electronic Appointment System</span>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@media print {
+    body { background: white !important; }
+    .max-w-2xl { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    nav, footer, a, button { display: none !important; }
+    .bg-white { box-shadow: none !important; border: 1px solid #eee !important; }
+}
+</style>
+{% endblock %}

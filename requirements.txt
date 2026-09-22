@@ -1,0 +1,14 @@
+Flask
+python-dotenv
+psycopg2-binary
+supabase
+line-bot-sdk
+pandas
+APScheduler
+h2o
+customtkinter
+tkcalendar
+matplotlib
+mysql-connector-python
+flask-login
+

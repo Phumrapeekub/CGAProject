@@ -1,398 +1,100 @@
+{# =========================
+   doctor/assess/mmse_form_partial.html
+   - UI ดึงมาจากพยาบาล (templates/nurse/mmse.html)
+   - ปรับเป็น Read-only สำหรับหมอ
+========================= #}
+
 {% set m = mmse or {} %}
-{% set ro = view_only|default(false) %}
-
-{# Education level และ cutoff #}
 {% set edu = m.get('education_level') or 'primary' %}
-{% set cutoff = m.get('cutoff_score') or (14 if edu == 'none' else (17 if edu == 'primary' else 22)) %}
-{% set max_score = 23 if edu == 'none' else 30 %}
 {% set total = m.get('score_total') or 0 %}
-{% set interpretation = m.get('interpretation') or '' %}
+{% set summary_only = m.get('is_summary_only') or false %}
 
-{% set is_risk = (interpretation == 'suspected_dementia' or total <= cutoff) %}
+{% set hide_badge = hide_summary_badge if hide_summary_badge is defined else false %}
 
-<div class="w-full">
+<div class="space-y-8 select-none">
 
-  <div class="rounded-3xl border border-slate-200 bg-white overflow-hidden">
-
-    <!-- ===== Header (2025 style) ===== -->
-    <div class="p-4 md:p-5 bg-gradient-to-r from-indigo-50 to-violet-50 border-b border-slate-100">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div class="min-w-0">
-          <div class="text-base font-extrabold text-slate-900">สมรรถภาพสมอง (MMSE-T 2002)</div>
-          <div class="text-xs text-slate-500 mt-0.5">
-            ระดับการศึกษา:
-            <span class="font-extrabold text-slate-700">
-              {% if edu == 'none' %}ไม่ได้เรียน/อ่านเขียนไม่ได้
-              {% elif edu == 'primary' %}ประถมศึกษา
-              {% else %}สูงกว่าประถมศึกษา{% endif %}
-            </span>
-            • Cut-off ≤ <span class="font-extrabold text-slate-700">{{ cutoff }}</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="px-3 py-2 rounded-2xl border {% if is_risk %}bg-rose-50 border-rose-200{% else %}bg-emerald-50 border-emerald-200{% endif %}">
-            <div class="text-[10px] font-extrabold text-slate-500">คะแนนรวม</div>
-            <div class="flex items-baseline gap-2">
-              <div class="text-2xl font-black {% if is_risk %}text-rose-600{% else %}text-emerald-600{% endif %}">{{ total }}</div>
-              <div class="text-sm font-extrabold {% if is_risk %}text-rose-700{% else %}text-emerald-700{% endif %}">/ {{ max_score }}</div>
-            </div>
-          </div>
-
-          <div class="hidden sm:flex px-3 py-2 rounded-2xl border border-slate-200 bg-white">
-            <div class="text-[10px] font-extrabold text-slate-500">เกณฑ์ตัด</div>
-            <div class="text-sm font-extrabold text-slate-900">≤ {{ cutoff }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- progress -->
-      <div class="mt-4 h-2 w-full rounded-full bg-white/70 border border-slate-200 overflow-hidden">
-        <div class="h-full {% if is_risk %}bg-rose-500{% else %}bg-emerald-500{% endif %}"
-             style="width: {{ (total / max_score * 100)|round }}%"></div>
-      </div>
+  {% if summary_only and not hide_badge %}
+  <div class="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-500 shadow-sm">
+      <i class="fas fa-info-circle"></i>
     </div>
-
-    <!-- ===== Result summary ===== -->
-    <div class="p-4 md:p-5 border-b border-slate-100">
-      {% if is_risk %}
-        <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-white/70 border border-rose-200 flex items-center justify-center font-black text-rose-700">!</div>
-            <div class="min-w-0">
-              <div class="font-extrabold text-rose-800">ผลการวินิจฉัยเบื้องต้น: สงสัยภาวะสมองเสื่อม</div>
-              <div class="text-sm text-rose-800/90 mt-1">
-                คะแนน {{ total }}/{{ max_score }} • Cut-off ≤{{ cutoff }} • แนะนำส่งต่อแพทย์/ติดตามเพิ่มเติม
-              </div>
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-white/70 border border-emerald-200 flex items-center justify-center font-black text-emerald-700">✓</div>
-            <div class="min-w-0">
-              <div class="font-extrabold text-emerald-800">ผลการวินิจฉัยเบื้องต้น: ไม่เข้าเกณฑ์สงสัยภาวะสมองเสื่อม</div>
-              <div class="text-sm text-emerald-800/90 mt-1">
-                คะแนน {{ total }}/{{ max_score }} • Cut-off ≤{{ cutoff }}
-              </div>
-            </div>
-          </div>
-        </div>
-      {% endif %}
+    <div class="text-xs font-bold text-amber-800">
+      แสดงเฉพาะคะแนนรวม ({{ total }} คะแนน): ไม่มีข้อมูลรายละเอียดรายข้อจากระบบนำเข้า
     </div>
+  </div>
+  {% endif %}
 
-    <!-- ===== Questions ===== -->
-    <div class="p-4 md:p-5 space-y-3">
-
-      {# helper macro-like snippets (manual) #}
-
-      <!-- Q1 -->
-      {% set q1_score = m.get('q1_time_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 1: Orientation for Time</div>
-            <div class="text-sm text-slate-500 mt-1">วัน / วันที่ / เดือน / ปี / ฤดู</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q1_score == 5 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q1_score >= 3 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q1_score }} / 5
-          </span>
+  <!-- ระดับการศึกษา -->
+  <div>
+    <label class="block text-slate-500 font-bold text-xs uppercase tracking-widest mb-3">ระดับการศึกษา</label>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {% for val, label in [('none','ไม่ได้เรียน'), ('primary','ประถมศึกษา'), ('higher','มัธยมศึกษาขึ้นไป')] %}
+      <div class="flex items-center gap-3 rounded-2xl border p-4 {{ 'bg-blue-50 border-blue-200' if edu == val else 'bg-slate-50 border-slate-100 opacity-50' }}">
+        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ 'border-blue-500' if edu == val else 'border-slate-300' }}">
+          {% if edu == val %}<div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>{% endif %}
         </div>
-        <div class="px-4 pb-4">
-          <div class="flex flex-wrap gap-2">
-            {% for i in range(5) %}
-              {% set is_correct = (i < q1_score) %}
-              <div class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-semibold
-                {% if is_correct %}bg-emerald-50 border-emerald-200 text-emerald-700
-                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
-                <span class="w-6 h-6 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-black
-                  {% if is_correct %}text-emerald-700{% else %}text-slate-300{% endif %}">
-                  {% if is_correct %}✓{% else %}—{% endif %}
-                </span>
-                <span>
-                  {% if i == 0 %}วัน{% elif i == 1 %}วันที่{% elif i == 2 %}เดือน{% elif i == 3 %}ปี{% else %}ฤดู{% endif %}
-                </span>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
+        <span class="text-sm font-bold {{ 'text-blue-700' if edu == val else 'text-slate-400' }}">{{ label }}</span>
       </div>
-
-      <!-- Q2 -->
-      {% set q2_score = m.get('q2_place_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 2: Orientation for Place</div>
-            <div class="text-sm text-slate-500 mt-1">สถานที่ / ชั้น / อำเภอ / จังหวัด / ภาค</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q2_score == 5 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q2_score >= 3 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q2_score }} / 5
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="flex flex-wrap gap-2">
-            {% for i in range(5) %}
-              {% set is_correct = (i < q2_score) %}
-              <div class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-semibold
-                {% if is_correct %}bg-emerald-50 border-emerald-200 text-emerald-700
-                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
-                <span class="w-6 h-6 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-black
-                  {% if is_correct %}text-emerald-700{% else %}text-slate-300{% endif %}">
-                  {% if is_correct %}✓{% else %}—{% endif %}
-                </span>
-                <span>
-                  {% if i == 0 %}สถานที่{% elif i == 1 %}ชั้น{% elif i == 2 %}อำเภอ{% elif i == 3 %}จังหวัด{% else %}ภาค{% endif %}
-                </span>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Q3 -->
-      {% set q3_score = m.get('q3_registration_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 3: Registration</div>
-            <div class="text-sm text-slate-500 mt-1">จำชื่อ 3 อย่าง: ดอกไม้ / แม่น้ำ / รถไฟ</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q3_score == 3 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q3_score >= 1 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q3_score }} / 3
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {% set words = ['ดอกไม้','แม่น้ำ','รถไฟ'] %}
-            {% for i in range(3) %}
-              {% set ok = (i < q3_score) %}
-              <div class="px-3 py-3 rounded-2xl border text-center font-extrabold
-                {% if ok %}bg-emerald-50 border-emerald-200 text-emerald-700
-                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
-                <div class="text-xs font-black mb-1">{% if ok %}✓{% else %}—{% endif %}</div>
-                {{ words[i] }}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Q4 (if edu != none) -->
-      {% if edu != 'none' %}
-        {% set q4_score = m.get('q4_attention_calc_score') or 0 %}
-        <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-          <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div>
-              <div class="font-extrabold text-slate-900">ข้อ 4: Attention / Calculation</div>
-              <div class="text-sm text-slate-500 mt-1">100 - 7 ต่อเนื่อง: 93, 86, 79, 72, 65</div>
-            </div>
-            <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-              {% if q4_score == 5 %}bg-emerald-50 border-emerald-200 text-emerald-700
-              {% elif q4_score >= 3 %}bg-amber-50 border-amber-200 text-amber-700
-              {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-              ได้ {{ q4_score }} / 5
-            </span>
-          </div>
-          <div class="px-4 pb-4">
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              {% set expected = [93,86,79,72,65] %}
-              {% for i in range(5) %}
-                {% set ok = (i < q4_score) %}
-                <div class="p-3 rounded-2xl border text-center
-                  {% if ok %}bg-emerald-50 border-emerald-200{% else %}bg-slate-50 border-slate-200{% endif %}">
-                  <div class="text-lg font-black {% if ok %}text-emerald-700{% else %}text-slate-400{% endif %}">{{ expected[i] }}</div>
-                  <div class="text-xs font-extrabold {% if ok %}text-emerald-600{% else %}text-slate-400{% endif %}">
-                    {% if ok %}ถูก{% else %}ผิด{% endif %}
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
-      <!-- Q5 -->
-      {% set q5_score = m.get('q5_recall_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 5: Recall</div>
-            <div class="text-sm text-slate-500 mt-1">ทวนชื่อ 3 อย่างจากข้อ 3</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q5_score == 3 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q5_score >= 1 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q5_score }} / 3
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {% set words = ['ดอกไม้','แม่น้ำ','รถไฟ'] %}
-            {% for i in range(3) %}
-              {% set ok = (i < q5_score) %}
-              <div class="px-3 py-3 rounded-2xl border text-center font-extrabold
-                {% if ok %}bg-emerald-50 border-emerald-200 text-emerald-700
-                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
-                <div class="text-xs font-black mb-1">{% if ok %}✓{% else %}—{% endif %}</div>
-                {{ words[i] }}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Q6 -->
-      {% set q6_score = m.get('q6_naming_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 6: Naming</div>
-            <div class="text-sm text-slate-500 mt-1">บอกชื่อสิ่งของ: ดินสอ / นาฬิกา</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q6_score == 2 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q6_score == 1 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q6_score }} / 2
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {% set items = ['ดินสอ','นาฬิกา'] %}
-            {% for i in range(2) %}
-              {% set ok = (i < q6_score) %}
-              <div class="px-3 py-3 rounded-2xl border flex items-center justify-between
-                {% if ok %}bg-emerald-50 border-emerald-200{% else %}bg-rose-50 border-rose-200{% endif %}">
-                <div class="font-extrabold {% if ok %}text-emerald-800{% else %}text-rose-800{% endif %}">{{ items[i] }}</div>
-                <div class="text-sm font-black {% if ok %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                  {% if ok %}✓{% else %}✕{% endif %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Q7 -->
-      {% set q7_score = m.get('q7_repetition_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 7: Repetition</div>
-            <div class="text-sm text-slate-500 mt-1">พูดตาม: “ใครใคร่ขายไข่ไก่”</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q7_score == 1 %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q7_score }} / 1
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
-            <div class="text-sm font-extrabold text-slate-800">“ใครใคร่ขายไข่ไก่”</div>
-            <div class="text-sm font-black {% if q7_score == 1 %}text-emerald-700{% else %}text-rose-700{% endif %}">
-              {% if q7_score == 1 %}✓ ทำได้{% else %}✕ ทำไม่ได้{% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Q8 -->
-      {% set q8_score = m.get('q8_verbal_command_score') or 0 %}
-      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div class="font-extrabold text-slate-900">ข้อ 8: Verbal Command</div>
-            <div class="text-sm text-slate-500 mt-1">ทำตามคำสั่ง 3 ขั้นตอน</div>
-          </div>
-          <span class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border text-sm font-extrabold
-            {% if q8_score == 3 %}bg-emerald-50 border-emerald-200 text-emerald-700
-            {% elif q8_score >= 1 %}bg-amber-50 border-amber-200 text-amber-700
-            {% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
-            ได้ {{ q8_score }} / 3
-          </span>
-        </div>
-        <div class="px-4 pb-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {% set steps = ['รับกระดาษ','พับครึ่ง','วางลง'] %}
-            {% for i in range(3) %}
-              {% set ok = (i < q8_score) %}
-              <div class="px-3 py-3 rounded-2xl border flex items-center justify-between
-                {% if ok %}bg-emerald-50 border-emerald-200{% else %}bg-rose-50 border-rose-200{% endif %}">
-                <div class="text-sm font-extrabold {% if ok %}text-emerald-800{% else %}text-rose-800{% endif %}">
-                  {{ i+1 }}. {{ steps[i] }}
-                </div>
-                <div class="text-sm font-black {% if ok %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                  {% if ok %}✓{% else %}✕{% endif %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Q9-11 (if edu != none) -->
-      {% if edu != 'none' %}
-        <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-          <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3">เพิ่มเติม (นับคะแนน)</div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {% set q9_score  = m.get('q9_written_command_score') or 0 %}
-            {% set q10_score = m.get('q10_writing_score') or 0 %}
-            {% set q11_score = m.get('q11_visuoconstruction_score') or 0 %}
-
-            <div class="rounded-2xl border p-4 {% if q9_score == 1 %}bg-emerald-50 border-emerald-200{% else %}bg-rose-50 border-rose-200{% endif %}">
-              <div class="text-xs font-extrabold text-slate-500">ข้อ 9</div>
-              <div class="font-extrabold text-slate-900 mt-1">Written Command</div>
-              <div class="text-sm text-slate-500 mt-1">อ่าน “หลับตา” แล้วทำตาม</div>
-              <div class="mt-3 text-sm font-black {% if q9_score == 1 %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                {% if q9_score == 1 %}✓ ทำได้{% else %}✕ ทำไม่ได้{% endif %}
-              </div>
-            </div>
-
-            <div class="rounded-2xl border p-4 {% if q10_score == 1 %}bg-emerald-50 border-emerald-200{% else %}bg-rose-50 border-rose-200{% endif %}">
-              <div class="text-xs font-extrabold text-slate-500">ข้อ 10</div>
-              <div class="font-extrabold text-slate-900 mt-1">Writing</div>
-              <div class="text-sm text-slate-500 mt-1">เขียนประโยค 1 ประโยค</div>
-              <div class="mt-3 text-sm font-black {% if q10_score == 1 %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                {% if q10_score == 1 %}✓ ทำได้{% else %}✕ ทำไม่ได้{% endif %}
-              </div>
-            </div>
-
-            <div class="rounded-2xl border p-4 {% if q11_score == 1 %}bg-emerald-50 border-emerald-200{% else %}bg-rose-50 border-rose-200{% endif %}">
-              <div class="text-xs font-extrabold text-slate-500">ข้อ 11</div>
-              <div class="font-extrabold text-slate-900 mt-1">Visuoconstruction</div>
-              <div class="text-sm text-slate-500 mt-1">วาดรูป 5 เหลี่ยมซ้อน</div>
-              <div class="mt-3 text-sm font-black {% if q11_score == 1 %}text-emerald-700{% else %}text-rose-700{% endif %}">
-                {% if q11_score == 1 %}✓ วาดได้{% else %}✕ วาดไม่ได้{% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
-      <!-- note -->
-      {% if m.get('note') %}
-        <div class="rounded-2xl border border-slate-200 bg-white p-4">
-          <div class="text-sm font-extrabold text-slate-900 mb-2">หมายเหตุ</div>
-          <div class="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            {{ m.get('note') }}
-          </div>
-        </div>
-      {% endif %}
-
+      {% endfor %}
     </div>
   </div>
 
+  <!-- ข้อ 1 & 2 (Orientation) -->
+  {% for section_title, prefix, questions in [
+    ('ข้อ 1: Orientation for Time (5 คะแนน)', 'q1', [
+      'วันนี้วันที่เท่าไหร่', 'วันนี้ วันอะไร', 'เดือนนี้ เดือนอะไร', 'ปีนี้ ปีอะไร', 'ฤดูกาลอะไร'
+    ]),
+    ('ข้อ 2: Orientation for Place (5 คะแนน)', 'q2', [
+      'สถานที่ตรงนี้คือที่ไหน', 'ขณะนี้อยู่ชั้นอะไร', 'ที่อยู่นี้อำเภออะไร', 'ที่นี่จังหวัดอะไร', 'ที่นี่ภาคอะไร'
+    ])
+  ] %}
+  <section class="space-y-3">
+    <div class="rounded-2xl bg-sky-50 text-sky-800 px-4 py-2 text-sm font-bold">{{ section_title }}</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {% for txt in questions %}
+      {% set score_key = prefix ~ '_' ~ loop.index %}
+      {% set val = m.get(score_key) %}
+      {% set is_correct = val == 1 %}
+      {% set is_wrong = val == 0 and val is not none %}
+      <div class="rounded-2xl border p-4 flex items-center justify-between {{ 'bg-emerald-50 border-emerald-100' if is_correct else 'bg-rose-50 border-rose-100' if is_wrong else 'bg-white border-slate-100' }}">
+        <div class="text-sm font-bold text-slate-700">{{ loop.index }}. {{ txt }}</div>
+        <div class="flex gap-2">
+          <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black {{ 'bg-emerald-500 text-white shadow-sm' if is_correct else 'bg-slate-100 text-slate-300' }}">✓</span>
+          <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black {{ 'bg-rose-500 text-white shadow-sm' if is_wrong else 'bg-slate-100 text-slate-300' }}">✗</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <!-- ข้อ 3-11 (Summary Buttons Style) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for label, key, max in [
+      ('ข้อ 3: Registration', 'q3_registration_score', 3),
+      ('ข้อ 4.1: Calculation', 'q4_attention_calc_score', 5),
+      ('ข้อ 5: Recall', 'q5_recall_score', 3),
+      ('ข้อ 6: Naming', 'q6_naming_score', 2),
+      ('ข้อ 7: Repetition', 'q7_repetition_score', 1),
+      ('ข้อ 8: Verbal Command', 'q8_verbal_command_score', 3),
+      ('ข้อ 9: Written Command', 'q9_written_command_score', 1),
+      ('ข้อ 10: Writing', 'q10_writing_score', 1),
+      ('ข้อ 11: Visuoconstruction', 'q11_visuoconstruction_score', 1)
+    ] %}
+    {% set score = m.get(key) %}
+    <div class="rounded-2xl border border-slate-100 p-5 bg-white shadow-sm">
+      <div class="text-xs font-black text-slate-400 uppercase mb-3 tracking-widest">{{ label }}</div>
+      <div class="flex flex-wrap gap-2">
+        {% for i in range(0, max + 1) %}
+        <div class="px-4 py-2 rounded-xl border-2 font-black text-sm transition-all
+          {{ 'bg-indigo-600 border-indigo-600 text-white shadow-md' if score == i else 'bg-slate-50 border-slate-100 text-slate-300' }}">
+          {{ i }} {{ 'คำ' if 'Registration' in label or 'Recall' in label else ('คะแนน' if i > 0 else '') }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
 </div>
+

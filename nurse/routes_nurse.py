@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple, List
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from mysql.connector import Error  # type: ignore
+from psycopg2.extras import RealDictCursor
 from db.db import get_db_connection
 
 nurse_bp = Blueprint("nurse", __name__, url_prefix="/nurse")
@@ -46,7 +47,7 @@ def _find_patient_table(conn) -> Tuple[str, str, str, str]:
     คืนค่า: (table, id_col, hn_col, gcn_col)
     """
     dbname = _get_db_name(conn)
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # candidate tables that contain hn+gcn (case-insensitive)
     cur.execute(
@@ -98,7 +99,7 @@ def _find_encounter_table(conn, patient_table: str) -> Tuple[str, str, Optional[
     - created_at_col อาจเป็น created_at / createdAt / ...
     """
     dbname = _get_db_name(conn)
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # 1) หา table ที่มี column patient_id (case-insensitive)
     cur.execute(
@@ -204,7 +205,7 @@ def _find_sessions_table(conn, encounter_table: str) -> Tuple[str, str, Optional
     คืนค่า: (sess_table, encounter_fk_col, created_at_col, created_by_col)
     """
     dbname = _get_db_name(conn)
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Prefer table name 'assessment_sessions' if exists
     cur.execute(
@@ -283,7 +284,7 @@ def _find_headers_table(conn) -> Tuple[str, str, str, Optional[str], Optional[st
     คืนค่า: (hdr_table, encounter_fk_col, session_fk_col, assessed_by_col, assessed_at_col, created_at_col)
     """
     dbname = _get_db_name(conn)
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Prefer 'cga_headers' if exists
     cur.execute(
@@ -388,7 +389,7 @@ def assess_create():
         flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "danger")
         return redirect(url_for("nurse.assess_new"))
 
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # TX
@@ -588,7 +589,7 @@ def assess_session(header_id: int):
         flash("เชื่อมต่อฐานข้อมูลไม่สำเร็จ", "danger")
         return redirect(url_for("nurse.assess_new"))
 
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # ใช้ตาราง header จริง + patients จริง
@@ -634,7 +635,7 @@ def dashboard():
         return redirect(url_for("auth.login"))
 
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     cur.execute("SELECT COUNT(*) AS c FROM assessment_sessions WHERE DATE(created_at)=CURDATE()")
     today = cur.fetchone()["c"]

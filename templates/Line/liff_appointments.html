@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>การนัดหมาย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 16px; }
+    .item { border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>การนัดหมาย</h1>
+  <div id="list">กำลังโหลด...</div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const LIFF_ID = "ใส่_LIFF_ID_ของคุณตรงนี้";
+
+    async function main() {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const p = await liff.getProfile();
+      const res = await fetch(`/liff/api/appointments?userId=${p.userId}`);
+      const json = await res.json();
+
+      const el = document.getElementById("list");
+      if (!json.ok || !json.data.length) {
+        el.innerHTML = "<p>ไม่พบนัดหมาย</p>";
+        return;
+      }
+
+      el.innerHTML = json.data.map(a => `
+        <div class="item">
+          <div><b>วันที่:</b> ${a.date}</div>
+          <div><b>เวลา:</b> ${a.time}</div>
+          <div><b>ประเภท:</b> ${a.type}</div>
+        </div>
+      `).join("");
+    }
+    main();
+  </script>
+</body>
+</html>

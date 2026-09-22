@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash
+from psycopg2.extras import RealDictCursor
 from db.db import get_db_connection
 
 auth_bp = Blueprint("auth", __name__)
@@ -24,7 +25,7 @@ def login():
 
         cur = None
         try:
-            cur = conn.cursor(dictionary=True)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(
                 """
                 SELECT
@@ -60,6 +61,8 @@ def login():
             return redirect(url_for("auth.login"))
 
         pwd_hash = user.get("password_hash") or ""
+        
+        
         if not pwd_hash or not check_password_hash(pwd_hash, password):
             flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
             return redirect(url_for("auth.login"))

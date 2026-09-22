@@ -770,10 +770,10 @@ def patients():
 
                 # Determine Slug based on 3-state logic
                 # HIGH: Dementia OR High Suicide/Depression
-                if (prediction.get("state") == "Dementia") or sra_val >= 17 or tgds_val >= 10 or final_score >= 3.75:
+                if (prediction.get("result") == "Dementia") or sra_val >= 17 or tgds_val >= 10 or final_score >= 3.75:
                     risk_slug = "high"
                 # MEDIUM: MCI OR Moderate Suicide/Depression
-                elif (prediction.get("state") == "MCI") or sra_val >= 9 or tgds_val >= 5 or (mmse is not None and mmse <= 24) or final_score >= 2.0:
+                elif (prediction.get("result") == "MCI") or sra_val >= 9 or tgds_val >= 5 or (mmse is not None and mmse <= 24) or final_score >= 2.0:
                     risk_slug = "medium"
                 else:
                     risk_slug = "low"
@@ -1022,8 +1022,8 @@ def patient_detail(hn):
 
                 # Mapping findings
                 findings = []
-                if prediction.get("state") == "Dementia": findings.append("ความเสี่ยงภาวะสมองเสื่อม")
-                elif prediction.get("state") == "MCI": findings.append("ความเสี่ยงภาวะ MCI")
+                if prediction.get("result") == "Dementia": findings.append("ความเสี่ยงภาวะสมองเสื่อม")
+                elif prediction.get("result") == "MCI": findings.append("ความเสี่ยงภาวะ MCI")
                 if tgds_val >= 10: findings.append("ภาวะซึมเศร้ารุนแรง")
                 elif tgds_val >= 5: findings.append("ภาวะซึมเศร้า")
                 if sra_val >= 17: findings.append("ความเสี่ยงด้านความปลอดภัย")
@@ -1038,9 +1038,12 @@ def patient_detail(hn):
                 
                 desc = f"ตรวจพบ: {', '.join(findings)}" if findings else "ไม่พบความเสี่ยงที่ผิดปกติ"
 
-                # Progress percentages (based on 5.0 max)
-                mmse_pct = int((clinical_dementia_score / 5) * 100)
-                tgds_pct = int((dep_score / 5) * 100)
+                # Progress percentages (Match actual scores for better user understanding)
+                # MMSE: Higher is better, but bar matches score 0-30
+                mmse_score_pct = int((mmse_val / 30) * 100)
+                # TGDS: Higher is worse, bar matches score 0-15
+                tgds_score_pct = int((tgds_val / 15) * 100)
+                # SRA: Risk based (0-5 scale)
                 sra_pct = int((sra_score / 5) * 100)
                 
                 ai_analysis = {
@@ -1052,15 +1055,15 @@ def patient_detail(hn):
                     "domains": [
                         {
                             "name": "สมรรถภาพสมอง (MMSE)", 
-                            "percent": mmse_pct, 
-                            "tone": "bad" if prediction.get("state") == "Dementia" else "warn" if prediction.get("state") == "MCI" else "good", 
-                            "note": f"สถานะ: {prediction.get('state')}"
+                            "percent": mmse_score_pct, 
+                            "tone": "bad" if prediction.get("result") == "Dementia" else "warn" if prediction.get("result") == "MCI" else "good", 
+                            "note": f"คะแนน {int(mmse_val)}/30 - สถานะ: {prediction.get('result')}"
                         },
                         {
                             "name": "สภาวะทางอารมณ์ (TGDS)", 
-                            "percent": tgds_pct, 
+                            "percent": tgds_score_pct, 
                             "tone": "bad" if tgds_val >= 10 else "warn" if tgds_val >= 5 else "good", 
-                            "note": f"TGDS {int(tgds_val)}/15"
+                            "note": f"คะแนน {int(tgds_val)}/15"
                         },
                         {
                             "name": "ความปลอดภัย/ฆ่าตัวตาย", 
@@ -1079,9 +1082,9 @@ def patient_detail(hn):
                     "recs": []
                 }
                 
-                if prediction.get("state") == "Dementia":
+                if prediction.get("result") == "Dementia":
                     ai_analysis["recs"].extend(["ควรตรวจประเมิน MoCA หรือ MRI เพิ่มเติม", "ทบทวนการใช้ยาที่มีผลต่อระบบประสาท"])
-                elif prediction.get("state") == "MCI":
+                elif prediction.get("result") == "MCI":
                     ai_analysis["recs"].append("แนะนำกิจกรรมลับสมองและเข้าสังคม")
                 if sra_val >= 9:
                     ai_analysis["recs"].append("ควรส่งพบผู้เชี่ยวชาญด้านสุขภาพจิต")

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ข้อมูลของฉัน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h1>ข้อมูลของฉัน</h1>
+  <div id="content">กำลังโหลด...</div>
+
+  <script>
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+
+        if (data.error) {
+          document.getElementById("content").innerText = "❌ ไม่พบข้อมูลผู้ใช้";
+        } else {
+          document.getElementById("content").innerHTML = `
+            <p><b>ชื่อ:</b> ${data.full_name}</p>
+            <p><b>HN:</b> ${data.hn}</p>
+          `;
+        }
+      } catch (err) {
+        document.getElementById("content").innerText = "❌ โหลดข้อมูลไม่สำเร็จ";
+        console.error(err);
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
