@@ -461,6 +461,83 @@ def patient_detail(id: int):
             flash("ไม่พบข้อมูลผู้ป่วย", "error")
             return redirect(url_for("admin.patients_list"))
         patient = resp.data[0]
+
+        # Enrich patient with chronic_disease and emergency contacts from MySQL / assessment_answers / cga_records
+        try:
+            conn = get_db_connection()
+            if conn:
+                cur = conn.cursor(dictionary=True)
+                # 1. Check local MySQL patients table
+                cur.execute("SELECT chronic_disease, emergency_contact_name, emergency_contact_phone FROM patients WHERE hn = %s OR id = %s", (patient.get("hn"), id))
+                local_p = cur.fetchone()
+                if local_p:
+                    if local_p.get("chronic_disease"):
+                        patient["chronic_disease"] = local_p["chronic_disease"]
+                    if local_p.get("emergency_contact_name"):
+                        patient["emergency_contact_name"] = local_p["emergency_contact_name"]
+                    if local_p.get("emergency_contact_phone"):
+                        patient["emergency_contact_phone"] = local_p["emergency_contact_phone"]
+
+                # 2. If chronic_disease or emergency contacts are still missing, check assessment_answers
+                if not patient.get("chronic_disease") or not patient.get("emergency_contact_name") or not patient.get("emergency_contact_phone"):
+                    cur.execute("""
+                        SELECT a.answer_text
+                        FROM patients p
+                        JOIN encounters e ON p.id = e.patient_id
+                        JOIN assessment_sessions s ON e.id = s.encounter_id
+                        JOIN assessment_answers a ON s.id = a.session_id
+                        WHERE (p.hn = %s OR p.id = %s) AND a.instrument = 'basic'
+                          AND (a.answer_text LIKE 'chronicDiseases:%' 
+                            OR a.answer_text LIKE 'otherDisease:%'
+                            OR a.answer_text LIKE 'emergency_phone:%'
+                            OR a.answer_text LIKE 'caregiver_name:%')
+                        ORDER BY a.id DESC
+                    """, (patient.get("hn"), id))
+                    ans_rows = cur.fetchall()
+
+                    found_diseases = []
+                    other_d = ""
+                    for ar in ans_rows:
+                        txt = ar.get("answer_text") or ""
+                        if ":" in txt:
+                            k, v = txt.split(":", 1)
+                            k, v = k.strip(), v.strip()
+                            if k == "chronicDiseases" and not patient.get("chronic_disease"):
+                                for cd in v.split(","):
+                                    clean_cd = cd.strip().lower()
+                                    if clean_cd == 'diabetes': found_diseases.append('เบาหวาน')
+                                    elif clean_cd == 'hypertension': found_diseases.append('ความดันโลหิตสูง')
+                                    elif clean_cd == 'heart': found_diseases.append('โรคหัวใจ')
+                                    elif clean_cd == 'kidney': found_diseases.append('โรคไต')
+                                    elif clean_cd == 'cancer': found_diseases.append('มะเร็ง')
+                                    elif clean_cd and clean_cd != '-': found_diseases.append(clean_cd)
+                            elif k == "otherDisease" and v and v != "-":
+                                other_d = v
+                            elif k == "emergency_phone" and not patient.get("emergency_contact_phone"):
+                                patient["emergency_contact_phone"] = v
+                            elif k == "caregiver_name" and not patient.get("emergency_contact_name"):
+                                patient["emergency_contact_name"] = v
+
+                    if not patient.get("chronic_disease"):
+                        if other_d and other_d not in found_diseases:
+                            found_diseases.append(other_d)
+                        if found_diseases:
+                            patient["chronic_disease"] = ", ".join(dict.fromkeys(found_diseases))
+
+                # 3. Check cga_records as fallback
+                if not patient.get("emergency_contact_name") or not patient.get("emergency_contact_phone"):
+                    cur.execute("SELECT caregiver_name, emergency_phone FROM cga_records WHERE hn = %s ORDER BY id DESC LIMIT 1", (patient.get("hn"),))
+                    cga_row = cur.fetchone()
+                    if cga_row:
+                        if not patient.get("emergency_contact_name") and cga_row.get("caregiver_name"):
+                            patient["emergency_contact_name"] = cga_row["caregiver_name"]
+                        if not patient.get("emergency_contact_phone") and cga_row.get("emergency_phone"):
+                            patient["emergency_contact_phone"] = cga_row["emergency_phone"]
+
+                cur.close()
+                conn.close()
+        except Exception as enrich_err:
+            print(f"Error enriching patient detail: {enrich_err}")
         
         # Fetch primary doctor info if exists
         primary_doctor = None
@@ -525,39 +602,37 @@ def patient_detail(id: int):
                     
                     # Get CGA headers
                     headers_resp = supabase.table("cga_headers")\
-                        .select("id, assessed_at, overall_risk, encounter_id, assessment_sessions(id, status)")\
+                        .select("id, assessed_at, overall_risk, encounter_id, session_id, status")\
                         .in_("encounter_id", enc_ids)\
                         .execute()
                     
                     if headers_resp.data:
-                        header_ids = [h['id'] for h in headers_resp.data]
-                        
-                        # Get Scores for these headers
-                        scores_resp = supabase.table("assessment_scores")\
-                            .select("cga_id, instrument, total_score")\
-                            .in_("cga_id", header_ids)\
-                            .execute()
-                        
+                        sess_ids = [h['session_id'] for h in headers_resp.data if h.get('session_id')]
                         scores_map = {}
-                        for s in scores_resp.data:
-                            cid = s['cga_id']
-                            if cid not in scores_map: scores_map[cid] = {}
-                            scores_map[cid][s['instrument'].lower()] = s['total_score']
+                        if sess_ids:
+                            try:
+                                scores_resp = supabase.table("assessment_scores")\
+                                    .select("session_id, instrument, total_score")\
+                                    .in_("session_id", sess_ids)\
+                                    .execute()
+                                for s in (scores_resp.data or []):
+                                    sid = s.get('session_id')
+                                    if sid not in scores_map: scores_map[sid] = {}
+                                    scores_map[sid][str(s.get('instrument') or '').lower()] = s.get('total_score')
+                            except Exception as score_err:
+                                print(f"Scores fetch error: {score_err}")
 
                         for h in headers_resp.data:
-                            sess = h.get("assessment_sessions") or []
-                            if isinstance(sess, list) and sess: sess = sess[0]
-                            elif isinstance(sess, dict): pass
-                            else: sess = {}
-                            
                             cid = h['id']
-                            h_scores = scores_map.get(cid, {})
+                            sid = h.get('session_id')
+                            h_scores = scores_map.get(sid, {})
+                            h_stat = h.get("status") or ""
                             
                             assessments.append({
                                 "header_id": cid,
                                 "date": datetime.fromisoformat(h["assessed_at"]).strftime('%Y-%m-%d') if h.get("assessed_at") else enc_map.get(h["encounter_id"], "-"),
                                 "risk": h.get("overall_risk") or "รอสรุป",
-                                "status": "สมบูรณ์" if sess.get("status") == "completed" else "กำลังดำเนินการ",
+                                "status": "สมบูรณ์" if h_stat in ["completed", "sent_to_doctor"] else "กำลังดำเนินการ",
                                 "mmse_score": h_scores.get("mmse"),
                                 "tgds_score": h_scores.get("tgds"),
                                 "source": "system"
@@ -623,6 +698,7 @@ def update_patient(id: int):
     emergency_contact_name = request.form.get("emergency_contact_name", "").strip()
     emergency_contact_phone = request.form.get("emergency_contact_phone", "").strip()
     primary_doctor_id = request.form.get("primary_doctor_id") or None
+    hn = request.form.get("hn", "").strip()
     
     if not full_name:
         flash("กรุณากรอกชื่อ-นามสกุล", "error")
@@ -631,7 +707,7 @@ def update_patient(id: int):
     try:
         updated = False
         
-        # 1. Update Supabase
+        # 1. Update Supabase (Only existing columns on Supabase to prevent PGRST204)
         supabase_url = (os.getenv("SUPABASE_URL") or "").strip()
         supabase_key = (os.getenv("SUPABASE_KEY") or "").strip()
         
@@ -643,9 +719,6 @@ def update_patient(id: int):
                     "phone": phone,
                     "gender": gender,
                     "address": address,
-                    "chronic_disease": chronic_disease,
-                    "emergency_contact_name": emergency_contact_name,
-                    "emergency_contact_phone": emergency_contact_phone,
                     "primary_doctor_id": primary_doctor_id,
                     "updated_at": datetime.now().isoformat()
                 }
@@ -660,31 +733,19 @@ def update_patient(id: int):
                 print(f"Supabase Update Error: {se}")
                 flash(f"Supabase Error: {se}", "error")
         
-        # 2. Update MySQL
+        # 2. Update MySQL (Contains chronic_disease and emergency contact info)
         conn = get_db_connection()
         if conn:
             try:
                 cur = conn.cursor()
-                # Try updating with all fields. Catch if columns missing.
-                try:
-                    cur.execute("""
-                        UPDATE patients 
-                        SET full_name=%s, gender=%s, birth_date=%s, phone=%s, address=%s,
-                            chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s
-                        WHERE id=%s
-                    """, (full_name, gender, birth_date, phone, address, chronic_disease, emergency_contact_name, emergency_contact_phone, id))
-                except Exception as col_err:
-                    # Fallback if chronic_disease missing
-                    if "Unknown column" in str(col_err):
-                        cur.execute("""
-                            UPDATE patients 
-                            SET full_name=%s, gender=%s, birth_date=%s, phone=%s, address=%s,
-                                emergency_contact_name=%s, emergency_contact_phone=%s
-                            WHERE id=%s
-                        """, (full_name, gender, birth_date, phone, address, emergency_contact_name, emergency_contact_phone, id))
-                    else:
-                        raise col_err
-
+                cur.execute("""
+                    UPDATE patients 
+                    SET full_name=%s, gender=%s, birth_date=%s, phone=%s, address=%s,
+                        chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s,
+                        primary_doctor_id=%s
+                    WHERE id=%s OR (hn=%s AND %s != '')
+                """, (full_name, gender, birth_date, phone, address, chronic_disease, 
+                      emergency_contact_name, emergency_contact_phone, primary_doctor_id, id, hn, hn))
                 conn.commit()
                 cur.close()
                 conn.close()

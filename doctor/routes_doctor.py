@@ -1295,6 +1295,10 @@ def patient_detail(hn):
                                 basic_extras["caregiver_relation"] = val.split(":", 1)[1]
                             elif val.startswith("emergency_phone:"):
                                 basic_extras["caregiver_phone"] = val.split(":", 1)[1]
+                            elif val.startswith("chronicDiseases:"):
+                                basic_extras["chronicDiseases"] = val.split(":", 1)[1]
+                            elif val.startswith("otherDisease:"):
+                                basic_extras["otherDisease"] = val.split(":", 1)[1]
 
 
         # Inject MMSE details from assessment_mmse tables
@@ -1510,6 +1514,44 @@ def patient_detail(hn):
             cga_general["caregiver_relation"] = basic_extras["caregiver_relation"]
         if "caregiver_phone" in basic_extras and basic_extras["caregiver_phone"]:
             cga_general["caregiver_phone"] = basic_extras["caregiver_phone"]
+
+        # Chronic diseases translation and mapping
+        doctor_diseases = []
+        if "chronicDiseases" in basic_extras:
+            for cd in basic_extras["chronicDiseases"].split(","):
+                clean_cd = cd.strip().lower()
+                if clean_cd == 'diabetes': doctor_diseases.append('เบาหวาน')
+                elif clean_cd == 'hypertension': doctor_diseases.append('ความดันโลหิตสูง')
+                elif clean_cd == 'heart': doctor_diseases.append('โรคหัวใจ')
+                elif clean_cd == 'kidney': doctor_diseases.append('โรคไต')
+                elif clean_cd == 'cancer': doctor_diseases.append('มะเร็ง')
+                elif clean_cd and clean_cd != '-': doctor_diseases.append(clean_cd)
+        if "otherDisease" in basic_extras and basic_extras["otherDisease"].strip() and basic_extras["otherDisease"].strip() != '-':
+            doctor_diseases.append(basic_extras["otherDisease"].strip())
+
+        # Fallback to MySQL patients table if basic_extras didn't have it
+        if not doctor_diseases:
+            try:
+                conn_chk = get_db_connection()
+                if conn_chk:
+                    cur_chk = conn_chk.cursor(dictionary=True)
+                    cur_chk.execute("SELECT chronic_disease FROM patients WHERE hn = %s", (hn,))
+                    p_row = cur_chk.fetchone()
+                    if p_row and p_row.get("chronic_disease"):
+                        cga_general["disease"] = p_row["chronic_disease"]
+                        cga_general["chronic_disease"] = p_row["chronic_disease"]
+                    cur_chk.close()
+                    conn_chk.close()
+            except:
+                pass
+
+        if doctor_diseases:
+            disease_str = ", ".join(dict.fromkeys(doctor_diseases))
+            cga_general["disease"] = disease_str
+            cga_general["chronic_disease"] = disease_str
+        elif not cga_general.get("disease"):
+            cga_general["disease"] = latest_cga.get("comorbidity_detail") or latest_c.get("note_from_nurse") or "-"
+            cga_general["chronic_disease"] = cga_general["disease"]
 
         return render_template(
             "doctor/medical_patients_detail.html",

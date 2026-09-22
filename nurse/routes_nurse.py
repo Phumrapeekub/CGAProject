@@ -689,9 +689,32 @@ def assess_step1_save(header_id: int):
         p_id = data.get("patient_id")
         sess_id = data.get("session_id")
         
+        # Extract and translate chronic diseases
+        d = f.getlist('chronicDiseases')
+        other_d = (f.get('otherDisease') or '').strip()
+        disease_labels = []
+        for cd in d:
+            clean_cd = cd.strip().lower()
+            if clean_cd == 'diabetes': disease_labels.append('เบาหวาน')
+            elif clean_cd == 'hypertension': disease_labels.append('ความดันโลหิตสูง')
+            elif clean_cd == 'heart': disease_labels.append('โรคหัวใจ')
+            elif clean_cd == 'kidney': disease_labels.append('โรคไต')
+            elif clean_cd == 'cancer': disease_labels.append('มะเร็ง')
+            elif clean_cd and clean_cd != '-': disease_labels.append(clean_cd)
+        if other_d and other_d not in disease_labels and other_d != '-':
+            disease_labels.append(other_d)
+        chronic_str = ", ".join(dict.fromkeys(disease_labels)) if disease_labels else ""
+        caregiver_name = (f.get('caregiver_name') or '').strip()
+        emergency_phone = (f.get('emergency_phone') or '').strip()
+
         # Update Patients Table (Local)
-        cur.execute("UPDATE patients SET full_name=%s, birth_date=%s, gender=%s, phone=%s, address=%s WHERE id=%s",
-                    (full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr, p_id))
+        cur.execute("""
+            UPDATE patients 
+            SET full_name=%s, birth_date=%s, gender=%s, phone=%s, address=%s,
+                chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s
+            WHERE id=%s
+        """, (full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr,
+              chronic_str or None, caregiver_name or None, emergency_phone or None, p_id))
         
         if sess_id:
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (sess_id,))

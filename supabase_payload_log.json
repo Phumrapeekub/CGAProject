@@ -4950,5 +4950,287 @@
       "gender": "male",
       "birth_date": "1957-09-26"
     }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:23.981843",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN085",
+      "gcn": "002",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0254789663",
+      "address": "เลขที่ 26 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "gender": "male",
+      "birth_date": "1957-09-02",
+      "emergency_phone": "0214558966",
+      "caregiver_name": "ระบบ",
+      "caregiver_relation": "ทดสอบ"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:25.148779",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 202,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-10",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:26.586870",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 202,
+      "patient_id": 208,
+      "hn": "HN085",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-09-10",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "ระบบ",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 12,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 19,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปัสสาวะเล็ด",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:47.823767",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN085",
+      "gcn": "002",
+      "full_name": "ทดสอบ ระบบ",
+      "phone": "0254789663",
+      "address": "เลขที่ 26 หมู่ 1 ต. แม่กา อ. เมืองพะเยา จ. พะเยา 56000",
+      "gender": "male",
+      "birth_date": "1957-09-02",
+      "emergency_phone": "0214558966",
+      "caregiver_name": "ระบบ",
+      "caregiver_relation": "ทดสอบ"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:49.317022",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 202,
+      "patient_id": 208,
+      "encounter_date": "2026-09-10",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:50.069222",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN085",
+      "patient_name": "ทดสอบ ระบบ",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 12,
+      "tgds_score": 12,
+      "priority": "normal",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "abnormal",
+      "sleep_problem": "abnormal",
+      "depression_2q": "Q1:yes, Q2:no"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:50.940277",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 202,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:10:52.357772",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 202,
+      "patient_id": 208,
+      "hn": "HN085",
+      "full_name": "ทดสอบ ระบบ",
+      "assessed_date": "2026-09-10",
+      "age": 69,
+      "education": "ไม่ได้เรียน",
+      "caregiver_name": "ระบบ",
+      "mmse_score": 12,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 12,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 19,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปัสสาวะเล็ด",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:46:48.511470",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN086",
+      "gcn": "002",
+      "full_name": "ทด สอบ",
+      "phone": "0563656363",
+      "address": "เลขที่ 55 หมู่ 1 ต. กุดพิมาน อ. ด่านขุนทด จ. นครราชสีมา 30210",
+      "gender": "male",
+      "birth_date": "1957-03-21",
+      "emergency_phone": "0873546246",
+      "caregiver_name": "สุพล",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:46:49.477595",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 203,
+      "assessed_by": 3,
+      "assessment_date": "2026-09-22",
+      "risk_level": "high",
+      "overall_risk": "high",
+      "status": "completed",
+      "is_completed": true
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:46:50.983823",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 203,
+      "patient_id": 210,
+      "hn": "HN086",
+      "full_name": "ทด สอบ",
+      "assessed_date": "2026-09-22",
+      "age": 69,
+      "education": "ประถม",
+      "caregiver_name": "สุพล",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 17,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:47:05.335803",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN086",
+      "gcn": "002",
+      "full_name": "ทด สอบ",
+      "phone": "0563656363",
+      "address": "เลขที่ 55 หมู่ 1 ต. กุดพิมาน อ. ด่านขุนทด จ. นครราชสีมา 30210",
+      "gender": "male",
+      "birth_date": "1957-03-21",
+      "emergency_phone": "0873546246",
+      "caregiver_name": "สุพล",
+      "caregiver_relation": "หลาน"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:47:06.726488",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 203,
+      "patient_id": 210,
+      "encounter_date": "2026-09-22",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:47:07.475136",
+    "table": "consultations",
+    "method": "insert",
+    "payload": {
+      "hn": "HN086",
+      "patient_name": "ทด สอบ",
+      "nurse_name": "นส.พิชญาภา สายทอง",
+      "mmse_score": 17,
+      "tgds_score": 9,
+      "priority": "urgent",
+      "note_from_nurse": "",
+      "status": "pending",
+      "age": 69,
+      "cognition_status": "เสี่ยงภาวะสมองเสื่อม",
+      "health_behavior": "smoke:yes, alcohol:social",
+      "incontinence": "normal",
+      "sleep_problem": "normal",
+      "depression_2q": "Q1:no, Q2:yes"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:47:08.261077",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 203,
+      "status": "sent_to_doctor",
+      "overall_risk": "high",
+      "risk_level": "high"
+    }
+  },
+  {
+    "timestamp": "2026-09-22T23:47:09.699980",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 203,
+      "patient_id": 210,
+      "hn": "HN086",
+      "full_name": "ทด สอบ",
+      "assessed_date": "2026-09-22",
+      "age": 69,
+      "education": "ประถม",
+      "caregiver_name": "สุพล",
+      "mmse_score": 17,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 9,
+      "tgds_result": "ซึมเศร้า",
+      "q8_score": 17,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "สูบ",
+      "alcohol": "ดื่มบางครั้ง"
+    }
   }
 ]

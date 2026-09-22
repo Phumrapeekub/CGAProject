@@ -144,7 +144,7 @@
               </span>
             </div>
 
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div class="rounded-2xl soft-chip p-3">
                 <div class="text-[11px] text-slate-500 font-bold">ที่อยู่</div>
                 <div class="text-sm font-bold text-slate-800 mt-1 leading-relaxed">{{ p.get('address') or '-' }}</div>
@@ -164,6 +164,12 @@
                   {% if g.get('caregiver_phone') %}
                     <span class="text-slate-500 font-semibold">({{ g.get('caregiver_phone') }})</span>
                   {% endif %}
+                </div>
+              </div>
+              <div class="rounded-2xl bg-white/85 border {% if g.get('disease') and g.get('disease') != '-' %}border-red-200 bg-red-50/50{% else %}border-emerald-200 bg-emerald-50/50{% endif %} p-3">
+                <div class="text-[11px] {% if g.get('disease') and g.get('disease') != '-' %}text-red-700{% else %}text-emerald-700{% endif %} font-bold">โรคประจำตัว</div>
+                <div class="text-sm font-bold {% if g.get('disease') and g.get('disease') != '-' %}text-red-800{% else %}text-emerald-800{% endif %} mt-1">
+                  {{ g.get('disease') or 'ไม่มีโรคประจำตัว' }}
                 </div>
               </div>
             </div>
