@@ -34,38 +34,39 @@ def get_db_connection():
     # 1. Local unix socket
     for sock in ["/tmp/mysql.sock", "/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock"]:
         if os.path.exists(sock):
-            for pwd in ["Kantiya203_", "", None]:
-                try:
-                    conn = mysql.connector.connect(
-                        unix_socket=sock,
-                        user="root",
-                        password=pwd,
-                        database="cga_system_dev",
-                        connect_timeout=1
-                    )
-                    return conn
-                except mysql.connector.Error:
-                    continue
+            for u in ["root", "user"]:
+                for pwd in ["Kantiya203_", "", None]:
+                    try:
+                        conn = mysql.connector.connect(
+                            unix_socket=sock,
+                            user=u,
+                            password=pwd,
+                            database="cga_system_dev",
+                            connect_timeout=1
+                        )
+                        return conn
+                    except mysql.connector.Error:
+                        continue
 
     # 2. Localhost TCP (only 127.0.0.1 or localhost, never remote dead hosts)
     host = os.getenv("DB_HOST", "127.0.0.1")
     if host in ["127.0.0.1", "localhost"]:
         port = int(os.getenv("DB_PORT", "3306"))
-        user = os.getenv("DB_USER", "root")
-        pwd = os.getenv("DB_PASSWORD") or "Kantiya203_"
         database = os.getenv("DB_NAME", "cga_system_dev")
-        try:
-            conn = mysql.connector.connect(
-                host=host,
-                port=port,
-                user=user,
-                password=pwd,
-                database=database,
-                connect_timeout=1
-            )
-            return conn
-        except mysql.connector.Error:
-            pass
+        for u in [os.getenv("DB_USER", "root"), "user", "root"]:
+            for pwd in [os.getenv("DB_PASSWORD") or "Kantiya203_", "Kantiya203_", "", None]:
+                try:
+                    conn = mysql.connector.connect(
+                        host=host,
+                        port=port,
+                        user=u,
+                        password=pwd,
+                        database=database,
+                        connect_timeout=1
+                    )
+                    return conn
+                except mysql.connector.Error:
+                    pass
 
     return None
 
