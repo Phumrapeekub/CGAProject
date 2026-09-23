@@ -43,6 +43,30 @@ def ensure_mariadb_running():
 
 ensure_mariadb_running()
 
+def init_cga_database_if_needed():
+    if os.name == 'nt':
+        return
+    import subprocess, time
+    sock_path = "/tmp/mysql.sock"
+    for _ in range(30):
+        if os.path.exists(sock_path):
+            break
+        time.sleep(0.3)
+    
+    try:
+        out = subprocess.check_output([
+            "mysql", f"--socket={sock_path}", "-u", "root", "-e",
+            "CREATE DATABASE IF NOT EXISTS cga_system_dev; SHOW TABLES FROM cga_system_dev;"
+        ], text=True)
+        if "patients" not in out and os.path.exists("/app/init_db.sql"):
+            print("Importing /app/init_db.sql into cga_system_dev...")
+            subprocess.run(f"mysql --socket={sock_path} -u root cga_system_dev < /app/init_db.sql", shell=True, check=True)
+            print("Database import complete!")
+    except Exception as e:
+        print("Error initializing cga_system_dev database:", e)
+
+init_cga_database_if_needed()
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
 
