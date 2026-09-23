@@ -25,11 +25,12 @@ def parse_dt(d):
     return d
 app.jinja_env.globals.update(parse_dt=parse_dt)
 
-# ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face
+# ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face Spaces
+is_hf_space = bool(os.getenv("SPACE_ID"))
 app.config.update(
-    SESSION_COOKIE_SECURE=False, # Set to False for local HTTP testing
+    SESSION_COOKIE_SECURE=is_hf_space,
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax', # Changed to Lax for local dev
+    SESSION_COOKIE_SAMESITE='None' if is_hf_space else 'Lax',
 )
 
 app.register_blueprint(auth_bp)

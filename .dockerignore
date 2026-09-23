@@ -1,0 +1,14 @@
+venv/
+.venv/
+Train/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.vscode/
+scratch/
+*.tmp
+*.log
