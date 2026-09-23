@@ -29,7 +29,7 @@ get_db_client = get_supabase_client
 def get_db_connection():
     """
     Safe fallback for MySQL connection:
-    Only attempts local connection if available, never hangs on unreachable cloud hosts.
+    Connects to local unix socket or localhost TCP, auto-creating cga_system_dev if needed.
     """
     # 1. Local unix socket
     for sock in ["/tmp/mysql.sock", "/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock"]:
@@ -45,28 +45,47 @@ def get_db_connection():
                             connect_timeout=1
                         )
                         return conn
-                    except mysql.connector.Error:
+                    except mysql.connector.Error as e:
+                        if e.errno == 1049:  # Unknown database
+                            try:
+                                admin_c = mysql.connector.connect(unix_socket=sock, user=u, password=pwd, connect_timeout=1)
+                                admin_cur = admin_c.cursor()
+                                admin_cur.execute("CREATE DATABASE IF NOT EXISTS cga_system_dev")
+                                admin_cur.close()
+                                admin_c.close()
+                                return mysql.connector.connect(unix_socket=sock, user=u, password=pwd, database="cga_system_dev", connect_timeout=1)
+                            except:
+                                pass
                         continue
 
-    # 2. Localhost TCP (only 127.0.0.1 or localhost, never remote dead hosts)
-    host = os.getenv("DB_HOST", "127.0.0.1")
-    if host in ["127.0.0.1", "localhost"]:
-        port = int(os.getenv("DB_PORT", "3306"))
-        database = os.getenv("DB_NAME", "cga_system_dev")
-        for u in [os.getenv("DB_USER", "root"), "user", "root"]:
-            for pwd in [os.getenv("DB_PASSWORD") or "Kantiya203_", "Kantiya203_", "", None]:
-                try:
-                    conn = mysql.connector.connect(
-                        host=host,
-                        port=port,
-                        user=u,
-                        password=pwd,
-                        database=database,
-                        connect_timeout=1
-                    )
-                    return conn
-                except mysql.connector.Error:
-                    pass
+    # 2. Localhost TCP (always try 127.0.0.1:3306 first)
+    for h in ["127.0.0.1", "localhost"]:
+        for port in [3306]:
+            for u in ["root", "user"]:
+                for pwd in ["Kantiya203_", "", None]:
+                    try:
+                        conn = mysql.connector.connect(
+                            host=h,
+                            port=port,
+                            user=u,
+                            password=pwd,
+                            database="cga_system_dev",
+                            connect_timeout=1
+                        )
+                        return conn
+                    except mysql.connector.Error as e:
+                        if e.errno == 1049:  # Unknown database
+                            try:
+                                admin_c = mysql.connector.connect(host=h, port=port, user=u, password=pwd, connect_timeout=1)
+                                admin_cur = admin_c.cursor()
+                                admin_cur.execute("CREATE DATABASE IF NOT EXISTS cga_system_dev")
+                                admin_cur.close()
+                                admin_c.close()
+                                return mysql.connector.connect(host=h, port=port, user=u, password=pwd, database="cga_system_dev", connect_timeout=1)
+                            except:
+                                pass
+                        pass
 
     return None
+
 

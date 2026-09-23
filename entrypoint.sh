@@ -24,6 +24,10 @@ if [ -n "$MARIADB_EXEC" ] && [ -d "/app/mariadb/data" ]; then
     for i in $(seq 1 20); do
         if mysqladmin ping --silent --socket=/tmp/mysql.sock 2>/dev/null || mysqladmin ping --silent -h 127.0.0.1 -P 3306 2>/dev/null; then
             echo "MariaDB is online and ready!"
+            mysql --socket=/tmp/mysql.sock -u root -e "CREATE DATABASE IF NOT EXISTS cga_system_dev;" 2>/dev/null || true
+            if [ -f "/app/init_db.sql" ]; then
+                mysql --socket=/tmp/mysql.sock -u root cga_system_dev < /app/init_db.sql 2>/dev/null || true
+            fi
             break
         fi
         sleep 1

@@ -46,11 +46,11 @@ if os.getenv("RUN_LOCAL_MARIADB") == "1":
     ensure_mariadb_running()
 
 def init_cga_database_if_needed():
-    if os.name == 'nt' or os.getenv("RUN_LOCAL_MARIADB") != "1":
+    if os.name == 'nt':
         return
     import subprocess, time
     sock_path = "/tmp/mysql.sock"
-    for _ in range(30):
+    for _ in range(15):
         if os.path.exists(sock_path):
             break
         time.sleep(0.3)
@@ -72,7 +72,7 @@ def init_cga_database_if_needed():
     except Exception as e:
         print("Error initializing cga_system_dev database:", e)
 
-if os.getenv("RUN_LOCAL_MARIADB") == "1":
+if os.name != 'nt':
     init_cga_database_if_needed()
 
 app = Flask(__name__)
