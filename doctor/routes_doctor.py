@@ -293,53 +293,45 @@ def dashboard():
         today_str = today.isoformat()
 
         # =========================
-        # 1) KPIs
+        # 1) KPIs (Primary: Supabase Cloud)
         # =========================
         total_patients = today_patients = month_patients = high_risk = date_patient_count = 0
         date_label_th = "วันนี้"
+        if filter_type == "week": date_label_th = "สัปดาห์นี้"
+        elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
+        elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
 
-        local_conn = get_db_connection()
-        if local_conn:
-            try:
-                local_cur = local_conn.cursor(dictionary=True)
-                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
-                total_patients = local_cur.fetchone()["c"]
+        try:
+            # 1. Total unique patients in hospital from Supabase
+            res_p_cnt = supabase.table("patients").select("id", count="exact").not_.like("hn", "TMP-%").execute()
+            total_patients = res_p_cnt.count or 0
 
-                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (start_str, end_str))
-                date_patient_count = local_cur.fetchone()["c"]
-                
-                if filter_type == "week": date_label_th = "สัปดาห์นี้"
-                elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
-                elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
-                
-                today_patients = date_patient_count
+            # 2. Patients evaluated in selected date range
+            res_d_cnt = supabase.table("cga_records").select("id", count="exact").gte("assessed_date", start_str).lte("assessed_date", end_str).execute()
+            date_patient_count = res_d_cnt.count or 0
+            today_patients = date_patient_count
 
-                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (m_start_current, m_end_current))
-                month_patients = local_cur.fetchone()["c"]
-
-                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE (cr.mmse_score <= 15 OR cr.tgds_score >= 10 OR cr.suicide_risk = 'yes') AND ch.status != 'in_progress'")
-                high_risk = local_cur.fetchone()["c"]
-                local_cur.close()
-            except Exception as e:
-                print("Local DB KPI Error:", e)
-            finally:
-                local_conn.close()
-
-        # Fallback from Supabase if local DB has 0 or failed
-        if total_patients == 0 and supabase:
-            try:
-                res_vk = supabase.table("view_doctor_kpis").select("*").limit(1).execute()
-                if res_vk.data:
-                    vk = res_vk.data[0]
-                    total_patients = vk.get("total_patients", 0)
-                    today_patients = vk.get("today_patients", 0)
-                    month_patients = vk.get("month_patients", 0)
-                    high_risk = vk.get("high_risk", 0)
-                else:
-                    res_p_cnt = supabase.table("cga_records").select("id", count="exact").execute()
-                    total_patients = res_p_cnt.count or 0
-            except Exception as sb_err:
-                print(f"Doctor KPI Supabase Fallback Error: {sb_err}")
+            # 3. Month patients evaluated
+            res_m_cnt = supabase.table("cga_records").select("id", count="exact").gte("assessed_date", m_start_current).lte("assessed_date", m_end_current).execute()
+            month_patients = res_m_cnt.count or 0
+        except Exception as sb_err:
+            print(f"Doctor KPI Supabase Query Error: {sb_err}")
+            # Local fallback if Supabase fails
+            local_conn = get_db_connection()
+            if local_conn:
+                try:
+                    local_cur = local_conn.cursor(dictionary=True)
+                    local_cur.execute("SELECT COUNT(*) AS c FROM patients WHERE hn NOT LIKE 'TMP-%'")
+                    total_patients = local_cur.fetchone()["c"]
+                    local_cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE assessed_date >= %s AND assessed_date <= %s", (start_str, end_str))
+                    today_patients = local_cur.fetchone()["c"]
+                    local_cur.execute("SELECT COUNT(*) AS c FROM cga_records WHERE assessed_date >= %s AND assessed_date <= %s", (m_start_current, m_end_current))
+                    month_patients = local_cur.fetchone()["c"]
+                    local_cur.close()
+                except Exception as le:
+                    print("Local DB KPI Error:", le)
+                finally:
+                    local_conn.close()
 
         # นัดหมายวันนี้
         res_appts_count = supabase.table("appointments") \

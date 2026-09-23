@@ -50,71 +50,35 @@ def dashboard():
             print(f"Dashboard Supabase Init Error: {e}")
 
     try:
-        conn = get_db_connection()
-        if conn:
-            cur = conn.cursor(dictionary=True)
-            cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
-            stats["patients"] = cur.fetchone()["count"]
-            cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
-            stats["today_patients"] = cur.fetchone()["count"]
-            
-            cur.execute("SELECT COUNT(*) AS count FROM users")
-            stats["users"] = cur.fetchone()["count"]
-            cur.execute("SELECT COUNT(*) AS count FROM appointments WHERE DATE(appt_datetime) = CURDATE()")
-            stats["appointments_today"] = cur.fetchone()["count"]
-            cur.execute("SELECT COUNT(*) AS count FROM assessment_sessions WHERE DATE(created_at) = CURDATE()")
-            stats["assessments_today"] = cur.fetchone()["count"]
-            cur.execute("SELECT COUNT(*) AS count FROM assessment_sessions")
-            stats["total_assessments"] = cur.fetchone()["count"]
-            
-            # Fetch from MySQL first as initial data
-            cur.execute("SELECT username, role, created_at FROM users ORDER BY created_at DESC LIMIT 5")
-            latest_users_raw = cur.fetchall()
-            latest_users = []
-            for u in latest_users_raw:
-                display_date = "-"
-                if u.get("created_at") and isinstance(u["created_at"], datetime):
-                    display_date = u["created_at"].strftime('%d/%m/%Y %H:%M')
-                latest_users.append({
-                    "username": u["username"],
-                    "role": u["role"],
-                    "created_at_display": display_date
-                })
-
-            # 1. Fetch Service Type counts (Followup & CGA)
-            cur.execute("SELECT appt_type, COUNT(*) AS count FROM appointments WHERE appt_type IN ('followup', 'cga') GROUP BY appt_type")
-            service_type_data = cur.fetchall()
-            
-            # 2. Fetch Today's Scheduled Appointments Count
-            cur.execute("SELECT COUNT(*) AS count FROM appointments WHERE DATE(appt_datetime) = CURDATE() AND status = 'scheduled'")
-            today_appt_count = cur.fetchone()["count"]
-            
-            # Map DB ENUM values to Display Labels
-            mapping = {
-                "followup": "ติดตามอาการ",
-                "cga": "ประเมิน CGA"
-            }
-            temp_dict = {label: 0 for label in mapping.values()}
-            for row in service_type_data:
-                db_val = row["appt_type"]
-                if db_val in mapping:
-                    temp_dict[mapping[db_val]] = row["count"]
-            
-            # Add Today's Appointments to the chart data
-            service_type_labels = list(temp_dict.keys())
-            service_type_values = list(temp_dict.values())
-            
-            service_type_labels.append("นัดหมายวันนี้")
-            service_type_values.append(today_appt_count)
-            
-            # Fallback: If no data at all, show sample data for visualization
-            if sum(service_type_values) == 0:
-                service_type_labels = ["ติดตามอาการ", "ประเมิน CGA", "นัดหมายวันนี้"]
-                service_type_values = [10, 8, 5]
-
         if supabase_client:
             try:
-                # 3. Latest Users
+                today_str = today_obj.strftime('%Y-%m-%d')
+                tomorrow_str = (today_obj + timedelta(days=1)).strftime('%Y-%m-%d')
+
+                # 1. Total Patients (excluding temporary draft TMP-%)
+                res_p = supabase_client.table("patients").select("id", count="exact").not_.like("hn", "TMP-%").execute()
+                stats["patients"] = res_p.count or 0
+
+                # 2. Today's New Patients
+                res_today_p = supabase_client.table("patients").select("id", count="exact").not_.like("hn", "TMP-%").gte("created_at", today_str).execute()
+                stats["today_patients"] = res_today_p.count or 0
+
+                # 3. Users count
+                res_u = supabase_client.table("users").select("id", count="exact").execute()
+                stats["users"] = res_u.count or 0
+
+                # 4. Appointments today
+                res_appts = supabase_client.table("appointments").select("id", count="exact").gte("appt_datetime", today_str).lt("appt_datetime", tomorrow_str).execute()
+                stats["appointments_today"] = res_appts.count or 0
+
+                # 5. Total & Today CGA Assessments
+                res_cga_tot = supabase_client.table("cga_records").select("id", count="exact").execute()
+                stats["total_assessments"] = res_cga_tot.count or 0
+
+                res_cga_today = supabase_client.table("cga_records").select("id", count="exact").gte("assessed_date", today_str).execute()
+                stats["assessments_today"] = res_cga_today.count or 0
+
+                # 6. Latest Users
                 res_users = supabase_client.table("users").select("username, role, created_at").order("created_at", desc=True).limit(5).execute()
                 if res_users.data:
                     latest_users = []
@@ -127,18 +91,17 @@ def dashboard():
                             except: display_date = u["created_at"]
                         latest_users.append({"username": u["username"], "role": u["role"], "created_at_display": display_date})
 
-                # 4. Patient Chart (New Patients per Day - MONTHLY)
-                # Fetch all patients for the selected month in ONE query
+                # 7. Patient Chart (New Patients per Day - MONTHLY)
                 first_day = date(selected_year, selected_month, 1)
                 last_day_num = calendar.monthrange(selected_year, selected_month)[1]
                 last_day = date(selected_year, selected_month, last_day_num)
-                
+
                 res_month = supabase_client.table("patients").select("created_at")\
+                    .not_.like("hn", "TMP-%")\
                     .gte("created_at", first_day.isoformat())\
                     .lte("created_at", datetime.combine(last_day, datetime.max.time()).isoformat())\
                     .execute()
-                
-                # Aggregate in Python
+
                 day_counts = {day: 0 for day in range(1, last_day_num + 1)}
                 for p in (res_month.data or []):
                     try:
@@ -146,41 +109,77 @@ def dashboard():
                         if dt.month == selected_month:
                             day_counts[dt.day] += 1
                     except: pass
-                
+
                 patient_day_labels = [f"{d}/{selected_month}" for d in range(1, last_day_num + 1)]
                 patient_day_values = [day_counts[d] for d in range(1, last_day_num + 1)]
 
-                # 5. Service Type Chart (Real Data from CGA Records & Consultations)
+                # 8. Service Type Chart (Real Data from CGA Records & Consultations)
                 res_cga = supabase_client.table("cga_records").select("id", count="exact").execute()
                 res_cons = supabase_client.table("consultations").select("id", count="exact").execute()
-                
+
+                cga_count = res_cga.count or 0
+                cons_count = res_cons.count or 0
                 service_type_labels = ["ประเมินสำเร็จ (CGA)", "รอสรุป (Referral)"]
-                # If everything is zero, show placeholders so chart isn't empty
+                service_type_values = [cga_count, cons_count]
                 if sum(service_type_values) == 0:
-                    service_type_values = [1, 1] # Just for UI visibility
-
-                # 6. Fallback stats from Supabase if MySQL stats are 0
-                if stats.get("patients", 0) == 0:
-                    try:
-                        res_p_cnt = supabase_client.table("cga_records").select("id", count="exact").execute()
-                        stats["patients"] = res_p_cnt.count or 0
-                        today_str = today_obj.strftime('%Y-%m-%d')
-                        res_today_p = supabase_client.table("cga_records").select("id", count="exact").eq("assessed_date", today_str).execute()
-                        stats["today_patients"] = res_today_p.count or 0
-
-                        res_u = supabase_client.table("users").select("id", count="exact").execute()
-                        stats["users"] = res_u.count or 0
-
-                        res_appts = supabase_client.table("appointments").select("id", count="exact").gte("appt_datetime", today_str).execute()
-                        stats["appointments_today"] = res_appts.count or 0
-
-                        res_assess = supabase_client.table("cga_headers").select("id", count="exact").neq("status", "in_progress").execute()
-                        stats["total_assessments"] = res_assess.count or 0
-                    except Exception as s_err:
-                        print(f"Supabase Stats Fallback: {s_err}")
+                    service_type_values = [1, 1]
 
             except Exception as e:
                 print(f"Dashboard Supabase Logic Error: {e}")
+
+        # Fallback to MySQL if Supabase was unavailable or returned no patient stats
+        if stats.get("patients", 0) == 0:
+            try:
+                conn = get_db_connection()
+                if conn:
+                    cur = conn.cursor(dictionary=True)
+                    cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+                    stats["patients"] = cur.fetchone()["count"]
+                    cur.execute("SELECT COUNT(*) AS count FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+                    stats["today_patients"] = cur.fetchone()["count"]
+
+                    cur.execute("SELECT COUNT(*) AS count FROM users")
+                    stats["users"] = cur.fetchone()["count"]
+                    cur.execute("SELECT COUNT(*) AS count FROM appointments WHERE DATE(appt_datetime) = CURDATE()")
+                    stats["appointments_today"] = cur.fetchone()["count"]
+                    cur.execute("SELECT COUNT(*) AS count FROM assessment_sessions WHERE DATE(created_at) = CURDATE()")
+                    stats["assessments_today"] = cur.fetchone()["count"]
+                    cur.execute("SELECT COUNT(*) AS count FROM assessment_sessions")
+                    stats["total_assessments"] = cur.fetchone()["count"]
+
+                    if not latest_users:
+                        cur.execute("SELECT username, role, created_at FROM users ORDER BY created_at DESC LIMIT 5")
+                        latest_users_raw = cur.fetchall()
+                        for u in latest_users_raw:
+                            display_date = "-"
+                            if u.get("created_at") and isinstance(u["created_at"], datetime):
+                                display_date = u["created_at"].strftime('%d/%m/%Y %H:%M')
+                            latest_users.append({
+                                "username": u["username"],
+                                "role": u["role"],
+                                "created_at_display": display_date
+                            })
+
+                    if not service_type_values or sum(service_type_values) == 0:
+                        cur.execute("SELECT appt_type, COUNT(*) AS count FROM appointments WHERE appt_type IN ('followup', 'cga') GROUP BY appt_type")
+                        service_type_data = cur.fetchall()
+                        cur.execute("SELECT COUNT(*) AS count FROM appointments WHERE DATE(appt_datetime) = CURDATE() AND status = 'scheduled'")
+                        today_appt_count = cur.fetchone()["count"]
+                        mapping = {"followup": "ติดตามอาการ", "cga": "ประเมิน CGA"}
+                        temp_dict = {label: 0 for label in mapping.values()}
+                        for row in service_type_data:
+                            db_val = row["appt_type"]
+                            if db_val in mapping:
+                                temp_dict[mapping[db_val]] = row["count"]
+                        service_type_labels = list(temp_dict.keys())
+                        service_type_values = list(temp_dict.values())
+                        service_type_labels.append("นัดหมายวันนี้")
+                        service_type_values.append(today_appt_count)
+                        if sum(service_type_values) == 0:
+                            service_type_labels = ["ติดตามอาการ", "ประเมิน CGA", "นัดหมายวันนี้"]
+                            service_type_values = [10, 8, 5]
+            except Exception as e:
+                print(f"Admin Dashboard MySQL Fallback Error: {e}")
 
     except Exception as e:
         print(f"Admin Dashboard Error: {e}")
