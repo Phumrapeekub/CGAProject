@@ -65,25 +65,39 @@ def debug_db():
     port_3306_open = (sock.connect_ex(('127.0.0.1', 3306)) == 0)
     sock.close()
     
-    # 2. Try connect with multiple password combinations
+    # 2. Try connect to env DB_HOST with SSL and without SSL
     from db.db import get_db_connection
     import mysql.connector
     
     results = {}
-    for pwd in [None, "Kantiya203_", ""]:
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    port = int(os.getenv("DB_PORT", "3306"))
+    user = os.getenv("DB_USER", "root")
+    pwd = os.getenv("DB_PASSWORD")
+    db = os.getenv("DB_NAME", "cga_system_dev")
+
+    for ssl_mode in [False, True]:
         try:
             c = mysql.connector.connect(
-                host="127.0.0.1",
-                port=3306,
-                user="root",
+                host=host,
+                port=port,
+                user=user,
                 password=pwd,
-                database="cga_system_dev",
-                connect_timeout=3
+                database=db,
+                ssl_disabled=ssl_mode,
+                connect_timeout=5
             )
-            results[f"pwd_{pwd}"] = "SUCCESS"
+            cur = c.cursor()
+            cur.execute("SHOW TABLES")
+            tables = [r[0] for r in cur.fetchall()]
+            results[f"env_host_ssl_disabled_{ssl_mode}"] = {
+                "status": "SUCCESS",
+                "table_count": len(tables),
+                "tables": tables
+            }
             c.close()
         except Exception as err:
-            results[f"pwd_{pwd}"] = str(err)
+            results[f"env_host_ssl_disabled_{ssl_mode}"] = str(err)
             
     # 3. Check processes
     proc_list = ""

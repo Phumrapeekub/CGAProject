@@ -12,26 +12,32 @@ def get_db_connection():
     database = os.getenv("DB_NAME", "cga_system_dev")
     port = int(os.getenv("DB_PORT", "3306"))
 
-    # Try TCP connection on 127.0.0.1:3306
-    for pwd in [default_pw, "Kantiya203_", "", None]:
-        try:
-            conn = mysql.connector.connect(
-                host=host,
-                port=port,
-                user=user,
-                password=pwd,
-                database=database,
-                ssl_disabled=True,
-                connect_timeout=3
-            )
-            return conn
-        except mysql.connector.Error:
-            continue
+    # 1. Try TCP connection with SSL False (for Cloud DBs like Aiven) and True (for local)
+    passwords_to_try = [default_pw]
+    if default_pw != "Kantiya203_":
+        passwords_to_try.append("Kantiya203_")
+    passwords_to_try.extend(["", None])
 
-    # Try Unix Sockets if available on Linux
-    for sock in ["/var/run/mysqld/mysqld.sock", "/tmp/mysqld/mysqld.sock", "/tmp/mysql.sock"]:
+    for ssl_mode in [False, True]:
+        for pwd in passwords_to_try:
+            try:
+                conn = mysql.connector.connect(
+                    host=host,
+                    port=port,
+                    user=user,
+                    password=pwd,
+                    database=database,
+                    ssl_disabled=ssl_mode,
+                    connect_timeout=4
+                )
+                return conn
+            except mysql.connector.Error:
+                continue
+
+    # 2. Try Unix Sockets if available on Linux
+    for sock in ["/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock", "/tmp/mysqld/mysqld.sock", "/tmp/mysql.sock"]:
         if os.path.exists(sock):
-            for pwd in [default_pw, "Kantiya203_", "", None]:
+            for pwd in passwords_to_try:
                 try:
                     conn = mysql.connector.connect(
                         unix_socket=sock,
