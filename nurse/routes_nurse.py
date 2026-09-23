@@ -293,48 +293,60 @@ def dashboard():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True, buffered=True)
+    cur = None
     kpis = {"today": 0, "week": 0, "month": 0, "total": 0}
     recent_patients = []
-    try:
-        # 🟢 เปลี่ยนมาใช้ cga_records เพื่อให้ตัวเลขตรงกับหน้ารายงาน
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
-        kpis["today"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
-        kpis["week"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
-        kpis["month"] = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
-        kpis["total"] = cur.fetchone()["c"]
+    if conn:
+        try:
+            cur = conn.cursor(dictionary=True, buffered=True)
+            # 🟢 เปลี่ยนมาใช้ cga_records เพื่อให้ตัวเลขตรงกับหน้ารายงาน
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+            kpis["today"] = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
+            kpis["week"] = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
+            kpis["month"] = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+            kpis["total"] = cur.fetchone()["c"]
 
-        # 🟢 ดึงผู้ป่วยล่าสุด 5 รายการจาก cga_records โดยตรง
-        cur.execute("""
-            SELECT 
-                encounter_id as header_id, 
-                hn, 
-                full_name, 
-                mmse_score, 
-                tgds_score, 
-                created_at, 
-                CASE 
-                    WHEN (mmse_score <= 15 OR tgds_score >= 10 OR suicide_risk = 'มี') THEN 'high'
-                    WHEN (mmse_score <= 23 OR tgds_score >= 7) THEN 'medium'
-                    ELSE 'low'
-                END as overall_risk
-            FROM cga_records 
-            ORDER BY created_at DESC 
-            LIMIT 5
-        """)
-        recent_patients = cur.fetchall()
-        
-        # จัดรูปแบบวันที่ให้ Template ใช้งานได้
-        for p in recent_patients:
-            if p.get('hn'):
-                clean_hn = str(p['hn']).upper().replace("HN", "").strip()
-                if clean_hn.isdigit():
-                    p['hn'] = f"HN{clean_hn.zfill(3)}"
-    except Exception as e:
-        current_app.logger.error(f"Dashboard Error: {e}")
+            # 🟢 ดึงผู้ป่วยล่าสุด 5 รายการจาก cga_records โดยตรง
+            cur.execute("""
+                SELECT 
+                    encounter_id as header_id, 
+                    hn, 
+                    full_name, 
+                    mmse_score, 
+                    tgds_score, 
+                    created_at, 
+                    CASE 
+                        WHEN (mmse_score <= 15 OR tgds_score >= 10 OR suicide_risk = 'มี') THEN 'high'
+                        WHEN (mmse_score <= 23 OR tgds_score >= 7) THEN 'medium'
+                        ELSE 'low'
+                    END as overall_risk
+                FROM cga_records 
+                ORDER BY created_at DESC 
+                LIMIT 5
+            """)
+            recent_patients = cur.fetchall()
+            
+            # จัดรูปแบบวันที่ให้ Template ใช้งานได้
+            for p in recent_patients:
+                if p.get('hn'):
+                    clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                    if clean_hn.isdigit():
+                        p['hn'] = f"HN{clean_hn.zfill(3)}"
+        except Exception as e:
+            current_app.logger.error(f"Dashboard Error: {e}")
+        finally:
+            if cur:
+                try: cur.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
+
+    # Fallback to Supabase if local DB has 0 or failed
+    if not recent_patients or kpis["total"] == 0:
         try:
             supabase = get_supabase_client()
             if supabase:
@@ -343,11 +355,48 @@ def dashboard():
                 today_str = date.today().strftime('%Y-%m-%d')
                 res_today = supabase.table("cga_records").select("id", count="exact").eq("assessed_date", today_str).execute()
                 kpis["today"] = res_today.count or 0
+                
+                # Fetch recent assessments from Supabase
+                res_recent = supabase.table("cga_records").select("encounter_id, hn, full_name, mmse_score, tgds_score, created_at, suicide_risk").order("created_at", desc=True).limit(5).execute()
+                if res_recent.data:
+                    recent_patients = []
+                    for r in res_recent.data:
+                        mmse = r.get("mmse_score") or 0
+                        tgds = r.get("tgds_score") or 0
+                        suicide = r.get("suicide_risk") or ""
+                        if mmse <= 15 or tgds >= 10 or suicide == 'มี':
+                            risk = 'high'
+                        elif mmse <= 23 or tgds >= 7:
+                            risk = 'medium'
+                        else:
+                            risk = 'low'
+                        
+                        hn_fmt = str(r.get("hn") or "")
+                        if hn_fmt:
+                            clean_hn = hn_fmt.upper().replace("HN", "").strip()
+                            if clean_hn.isdigit():
+                                hn_fmt = f"HN{clean_hn.zfill(3)}"
+                        
+                        created_dt = r.get("created_at")
+                        if isinstance(created_dt, str):
+                            try:
+                                from datetime import datetime as dt_cls
+                                created_dt = dt_cls.fromisoformat(created_dt.replace("Z", "+00:00"))
+                            except:
+                                pass
+
+                        recent_patients.append({
+                            "header_id": r.get("encounter_id"),
+                            "hn": hn_fmt,
+                            "full_name": r.get("full_name"),
+                            "mmse_score": r.get("mmse_score"),
+                            "tgds_score": r.get("tgds_score"),
+                            "created_at": created_dt,
+                            "overall_risk": risk
+                        })
         except Exception as sb_err:
             pass
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
+
     return render_template("nurse/dashboard.html", kpis=kpis, recent_patients=recent_patients, role="พยาบาล")
 
 @nurse_bp.get("/api/kpis", endpoint="api_kpis")
@@ -355,24 +404,41 @@ def api_kpis():
     if not _require_nurse():
         return {"error": "unauthorized"}, 401
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True, buffered=True)
-    try:
-        # 🟢 อัปเดตให้ดึงจาก cga_records
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
-        today = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
-        week = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
-        month = cur.fetchone()["c"]
-        cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
-        total = cur.fetchone()["c"]
-        return {"today": today, "week": week, "month": month, "total": total}
-    except Exception as e:
-        current_app.logger.error(f"API KPI Error: {e}")
-        return {"error": str(e)}, 500
-    finally:
-        cur.close()
-        conn.close()
+    cur = None
+    today = week = month = total = 0
+    if conn:
+        try:
+            cur = conn.cursor(dictionary=True, buffered=True)
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date = CURDATE() AND ch.status != 'in_progress'")
+            today = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE YEARWEEK(cr.assessed_date, 1) = YEARWEEK(CURDATE(), 1) AND ch.status != 'in_progress'")
+            week = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE MONTH(cr.assessed_date) = MONTH(CURDATE()) AND YEAR(cr.assessed_date) = YEAR(CURDATE()) AND ch.status != 'in_progress'")
+            month = cur.fetchone()["c"]
+            cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+            total = cur.fetchone()["c"]
+        except Exception as e:
+            current_app.logger.error(f"API KPI Error: {e}")
+        finally:
+            if cur:
+                try: cur.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
+    else:
+        try:
+            supabase = get_supabase_client()
+            if supabase:
+                res_cga = supabase.table("cga_records").select("id", count="exact").execute()
+                total = res_cga.count or 0
+                today_str = date.today().strftime('%Y-%m-%d')
+                res_today = supabase.table("cga_records").select("id", count="exact").eq("assessed_date", today_str).execute()
+                today = res_today.count or 0
+        except Exception as sb_err:
+            pass
+
+    return {"today": today, "week": week, "month": month, "total": total}
 
 @nurse_bp.get("/reports", endpoint="reports")
 def reports():

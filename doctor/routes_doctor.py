@@ -295,34 +295,35 @@ def dashboard():
         # =========================
         # 1) KPIs
         # =========================
+        total_patients = today_patients = month_patients = high_risk = date_patient_count = 0
+        date_label_th = "วันนี้"
+
         local_conn = get_db_connection()
-        local_cur = local_conn.cursor(dictionary=True)
-        try:
-            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
-            total_patients = local_cur.fetchone()["c"]
+        if local_conn:
+            try:
+                local_cur = local_conn.cursor(dictionary=True)
+                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE ch.status != 'in_progress'")
+                total_patients = local_cur.fetchone()["c"]
 
-            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (start_str, end_str))
-            date_patient_count = local_cur.fetchone()["c"]
-            
-            date_label_th = "วันนี้"
-            if filter_type == "week": date_label_th = "สัปดาห์นี้"
-            elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
-            elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
-            
-            today_patients = date_patient_count
+                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (start_str, end_str))
+                date_patient_count = local_cur.fetchone()["c"]
+                
+                if filter_type == "week": date_label_th = "สัปดาห์นี้"
+                elif filter_type == "custom": date_label_th = f"วันที่ {format_thai_short_with_year(start_date)}"
+                elif filter_type == "month": date_label_th = f"เดือน {_thai_months_full()[start_date.month-1]} {start_date.year + 543}"
+                
+                today_patients = date_patient_count
 
-            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (m_start_current, m_end_current))
-            month_patients = local_cur.fetchone()["c"]
+                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE cr.assessed_date >= %s AND cr.assessed_date <= %s AND ch.status != 'in_progress'", (m_start_current, m_end_current))
+                month_patients = local_cur.fetchone()["c"]
 
-            local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE (cr.mmse_score <= 15 OR cr.tgds_score >= 10 OR cr.suicide_risk = 'yes') AND ch.status != 'in_progress'")
-            high_risk = local_cur.fetchone()["c"]
-        except Exception as e:
-            print("Local DB KPI Error:", e)
-            total_patients = today_patients = month_patients = high_risk = 0
-            date_label_th = "วันนี้"
-        finally:
-            local_cur.close()
-            local_conn.close()
+                local_cur.execute("SELECT COUNT(*) AS c FROM cga_records cr JOIN cga_headers ch ON cr.encounter_id = ch.encounter_id WHERE (cr.mmse_score <= 15 OR cr.tgds_score >= 10 OR cr.suicide_risk = 'yes') AND ch.status != 'in_progress'")
+                high_risk = local_cur.fetchone()["c"]
+                local_cur.close()
+            except Exception as e:
+                print("Local DB KPI Error:", e)
+            finally:
+                local_conn.close()
 
         # Fallback from Supabase if local DB has 0 or failed
         if total_patients == 0 and supabase:
@@ -581,7 +582,7 @@ def dashboard():
         )
 
     except Exception as e:
-        print("❌ Dashboard Error:", e)
+        print("[Doctor] Dashboard Error:", e)
         flash("เกิดข้อผิดพลาดในการโหลด Dashboard", "error")
         return redirect(url_for("doctor.login"))
 
