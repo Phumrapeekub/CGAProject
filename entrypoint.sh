@@ -1,14 +1,18 @@
 #!/bin/bash
-set -e
-
 echo "=== Starting MariaDB Database Daemon ==="
-mkdir -p /var/run/mysqld /var/lib/mysql /var/log/mysql
-mariadbd --user=user --datadir=/var/lib/mysql --socket=/var/run/mysqld/mysqld.sock --port=3306 --bind-address=127.0.0.1 &
+mkdir -p /app/mariadb/data /tmp/mysqld
+chmod 777 /tmp/mysqld 2>/dev/null || true
 
-# Wait up to 15 seconds for MariaDB to respond
-echo "Waiting for MariaDB to be available on port 3306..."
-for i in {1..15}; do
-    if mysqladmin ping --silent -h 127.0.0.1 -P 3306 2>/dev/null; then
+# Start mariadbd in background using /app/mariadb/data
+mariadbd --datadir=/app/mariadb/data \
+         --socket=/tmp/mysql.sock \
+         --port=3306 \
+         --bind-address=0.0.0.0 &
+MARIADB_PID=$!
+
+echo "Waiting for MariaDB to be available on socket or port 3306..."
+for i in {1..20}; do
+    if mysqladmin ping --silent --socket=/tmp/mysql.sock 2>/dev/null || mysqladmin ping --silent -h 127.0.0.1 -P 3306 2>/dev/null; then
         echo "MariaDB is online and ready!"
         break
     fi

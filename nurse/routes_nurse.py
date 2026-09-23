@@ -445,6 +445,9 @@ def reports():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
+    if not conn:
+        flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "danger")
+        return render_template("nurse/reports.html", report_data={'start_date': date.today().strftime('%Y-%m-%d'), 'end_date': date.today().strftime('%Y-%m-%d')})
     cur = conn.cursor(dictionary=True, buffered=True)
     start_date = request.args.get('start_date', date.today().replace(day=1).strftime('%Y-%m-%d'))
     end_date = request.args.get('end_date', date.today().strftime('%Y-%m-%d'))
@@ -552,6 +555,9 @@ def assess_create():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
+    if not conn:
+        flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง", "danger")
+        return redirect(url_for("nurse.assess_new"))
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
         import time
@@ -584,6 +590,9 @@ def assess_new_encounter(hn: str):
         return redirect(url_for('auth.login'))
         
     conn = get_db_connection()
+    if not conn:
+        flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง", "danger")
+        return redirect(url_for('nurse.patients'))
     cur = conn.cursor(dictionary=True, buffered=True)
     try:
         # 1. หา patient_id จาก HN

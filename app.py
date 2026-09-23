@@ -48,6 +48,57 @@ def supabase_status():
     result = check_supabase_connection()
     return jsonify(result)
 
+@app.get("/debug-db")
+def debug_db():
+    import subprocess, socket
+    db_env = {
+        "DB_HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "DB_USER": os.getenv("DB_USER", "root"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_NAME": os.getenv("DB_NAME", "cga_system_dev"),
+        "DB_PASSWORD_IS_SET": bool(os.getenv("DB_PASSWORD")),
+    }
+    
+    # 1. Check socket 3306
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    port_3306_open = (sock.connect_ex(('127.0.0.1', 3306)) == 0)
+    sock.close()
+    
+    # 2. Try connect with multiple password combinations
+    from db.db import get_db_connection
+    import mysql.connector
+    
+    results = {}
+    for pwd in [None, "Kantiya203_", ""]:
+        try:
+            c = mysql.connector.connect(
+                host="127.0.0.1",
+                port=3306,
+                user="root",
+                password=pwd,
+                database="cga_system_dev",
+                connect_timeout=3
+            )
+            results[f"pwd_{pwd}"] = "SUCCESS"
+            c.close()
+        except Exception as err:
+            results[f"pwd_{pwd}"] = str(err)
+            
+    # 3. Check processes
+    proc_list = ""
+    try:
+        proc_list = subprocess.check_output(["ps", "aux"], text=True)
+    except Exception as e:
+        proc_list = str(e)
+
+    return jsonify({
+        "env": db_env,
+        "port_3306_open": port_3306_open,
+        "connection_tests": results,
+        "processes": proc_list
+    })
+
 @app.errorhandler(500)
 def internal_error(e):
     import traceback

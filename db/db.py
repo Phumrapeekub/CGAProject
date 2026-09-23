@@ -4,27 +4,48 @@ from supabase import create_client, Client
 
 def get_db_connection():
     """
-    Returns a MySQL connection using environment variables
+    Returns a MySQL connection using environment variables with robust fallbacks
     """
     host = os.getenv("DB_HOST", "127.0.0.1")
     user = os.getenv("DB_USER", "root")
-    password = os.getenv("DB_PASSWORD")
+    default_pw = os.getenv("DB_PASSWORD") or "Kantiya203_"
     database = os.getenv("DB_NAME", "cga_system_dev")
-    port = os.getenv("DB_PORT", "3306")
+    port = int(os.getenv("DB_PORT", "3306"))
 
-    try:
-        conn = mysql.connector.connect(
-            host=host,
-            port=int(port),
-            user=user,
-            password=password,
-            database=database,
-            ssl_disabled=True
-        )
-        return conn
-    except mysql.connector.Error as err:
-        print("DB connect error:", err)
-        return None
+    # Try TCP connection on 127.0.0.1:3306
+    for pwd in [default_pw, "Kantiya203_", "", None]:
+        try:
+            conn = mysql.connector.connect(
+                host=host,
+                port=port,
+                user=user,
+                password=pwd,
+                database=database,
+                ssl_disabled=True,
+                connect_timeout=3
+            )
+            return conn
+        except mysql.connector.Error:
+            continue
+
+    # Try Unix Sockets if available on Linux
+    for sock in ["/var/run/mysqld/mysqld.sock", "/tmp/mysqld/mysqld.sock", "/tmp/mysql.sock"]:
+        if os.path.exists(sock):
+            for pwd in [default_pw, "Kantiya203_", "", None]:
+                try:
+                    conn = mysql.connector.connect(
+                        unix_socket=sock,
+                        user=user,
+                        password=pwd,
+                        database=database,
+                        connect_timeout=3
+                    )
+                    return conn
+                except mysql.connector.Error:
+                    continue
+
+    print("DB connect error: Unable to connect to MySQL on host or socket")
+    return None
 
 def get_supabase_client() -> Client:
     """
