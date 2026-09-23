@@ -4,53 +4,58 @@ from supabase import create_client, Client
 
 def get_db_connection():
     """
-    Returns a MySQL connection using environment variables with robust fallbacks
+    Returns a MySQL connection with robust fallbacks:
+    1. Local unix socket (/tmp/mysql.sock)
+    2. TCP connection (127.0.0.1:3306 or DB_HOST)
     """
-    host = os.getenv("DB_HOST", "127.0.0.1")
-    user = os.getenv("DB_USER", "root")
-    default_pw = os.getenv("DB_PASSWORD") or "Kantiya203_"
-    database = os.getenv("DB_NAME", "cga_system_dev")
-    port = int(os.getenv("DB_PORT", "3306"))
-
-    # 1. Try TCP connection with SSL False (for Cloud DBs like Aiven) and True (for local)
-    passwords_to_try = [default_pw]
-    if default_pw != "Kantiya203_":
-        passwords_to_try.append("Kantiya203_")
-    passwords_to_try.extend(["", None])
-
-    for ssl_mode in [False, True]:
-        for pwd in passwords_to_try:
-            try:
-                conn = mysql.connector.connect(
-                    host=host,
-                    port=port,
-                    user=user,
-                    password=pwd,
-                    database=database,
-                    ssl_disabled=ssl_mode,
-                    connect_timeout=4
-                )
-                return conn
-            except mysql.connector.Error:
-                continue
-
-    # 2. Try Unix Sockets if available on Linux
-    for sock in ["/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock", "/tmp/mysqld/mysqld.sock", "/tmp/mysql.sock"]:
+    # 1. First priority on Linux container: Local Unix Socket
+    for sock in ["/tmp/mysql.sock", "/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock"]:
         if os.path.exists(sock):
-            for pwd in passwords_to_try:
+            for pwd in ["Kantiya203_", "", None]:
                 try:
                     conn = mysql.connector.connect(
                         unix_socket=sock,
-                        user=user,
+                        user="root",
                         password=pwd,
-                        database=database,
+                        database="cga_system_dev",
                         connect_timeout=3
                     )
                     return conn
                 except mysql.connector.Error:
                     continue
 
-    print("DB connect error: Unable to connect to MySQL on host or socket")
+    # 2. Second priority: TCP connection
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    hosts_to_try = [host]
+    if host not in ["127.0.0.1", "localhost"]:
+        hosts_to_try.append("127.0.0.1")
+    
+    port = int(os.getenv("DB_PORT", "3306"))
+    user = os.getenv("DB_USER", "root")
+    default_pw = os.getenv("DB_PASSWORD") or "Kantiya203_"
+    database = os.getenv("DB_NAME", "cga_system_dev")
+
+    for h in hosts_to_try:
+        p = port if h == host else 3306
+        u = user if h == host else "root"
+        d = database if h == host else "cga_system_dev"
+        for ssl_mode in [False, True]:
+            for pwd in [default_pw, "Kantiya203_", "", None]:
+                try:
+                    conn = mysql.connector.connect(
+                        host=h,
+                        port=p,
+                        user=u,
+                        password=pwd,
+                        database=d,
+                        ssl_disabled=ssl_mode,
+                        connect_timeout=3
+                    )
+                    return conn
+                except mysql.connector.Error:
+                    continue
+
+    print(f"DB connect error: Unable to connect to MySQL")
     return None
 
 def get_supabase_client() -> Client:

@@ -11,6 +11,37 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def ensure_mariadb_running():
+    if os.name == 'nt':
+        return  # On Windows, local MySQL runs as Windows Service
+    
+    import socket, subprocess, time
+    sock_path = "/tmp/mysql.sock"
+    if os.path.exists(sock_path):
+        return
+        
+    mariadb_bin = "/usr/sbin/mariadbd" if os.path.exists("/usr/sbin/mariadbd") else "mariadbd"
+    datadir = "/app/mariadb/data"
+    if os.path.exists(datadir):
+        try:
+            print("Starting embedded MariaDB daemon from Python...")
+            subprocess.Popen([
+                mariadb_bin,
+                f"--datadir={datadir}",
+                f"--socket={sock_path}",
+                "--port=3306",
+                "--bind-address=0.0.0.0"
+            ])
+            for _ in range(25):
+                if os.path.exists(sock_path):
+                    print("Embedded MariaDB is ready via socket!")
+                    break
+                time.sleep(0.4)
+        except Exception as e:
+            print("Failed to launch embedded MariaDB:", e)
+
+ensure_mariadb_running()
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
 
@@ -98,8 +129,25 @@ def debug_db():
             c.close()
         except Exception as err:
             results[f"env_host_ssl_disabled_{ssl_mode}"] = str(err)
-            
-    # 3. Check processes
+    # 3. Test actual get_db_connection()
+    real_conn_status = "FAILED"
+    real_conn_tables = 0
+    try:
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor()
+            cur.execute("SHOW TABLES")
+            real_conn_tables = len(cur.fetchall())
+            real_conn_status = "SUCCESS"
+            conn.close()
+    except Exception as e:
+        real_conn_status = str(e)
+    results["get_db_connection_result"] = {
+        "status": real_conn_status,
+        "tables": real_conn_tables
+    }
+    
+    # 4. Check processes
     proc_list = ""
     try:
         proc_list = subprocess.check_output(["ps", "aux"], text=True)
