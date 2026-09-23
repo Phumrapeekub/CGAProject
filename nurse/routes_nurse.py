@@ -1950,34 +1950,52 @@ def patients():
         return redirect(url_for("auth.login"))
     search = request.args.get("search", "").strip()
     
-    # 🟢 ปรับปรุง: ดึงจาก Local MySQL เป็นหลักเพื่อให้เห็นข้อมูลล่าสุดที่แก้ไขในเครื่อง
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
     rows = []
-    try:
-        query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%'"
-        params = []
-        if search:
-            query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
-            search_param = f"%{search}%"
-            params = [search_param, search_param, search_param]
-        
-        query += " ORDER BY id DESC"
-        cur.execute(query, params)
-        rows = cur.fetchall()
-        
-        for p in rows:
-            if p.get('hn'):
-                clean_hn = str(p['hn']).upper().replace("HN", "").strip()
-                if clean_hn.isdigit():
-                    p['hn'] = f"HN{clean_hn.zfill(3)}"
-            if p.get('gcn'):
-                p['gcn'] = str(p['gcn']).zfill(3)
-    except Exception as e:
-        flash(f"Database Error: {e}", "danger")
-    finally:
-        cur.close()
-        conn.close()
+    if conn:
+        cur = conn.cursor(dictionary=True)
+        try:
+            query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%'"
+            params = []
+            if search:
+                query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
+                search_param = f"%{search}%"
+                params = [search_param, search_param, search_param]
+            
+            query += " ORDER BY id DESC"
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            
+            for p in rows:
+                if p.get('hn'):
+                    clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                    if clean_hn.isdigit():
+                        p['hn'] = f"HN{clean_hn.zfill(3)}"
+                if p.get('gcn'):
+                    p['gcn'] = str(p['gcn']).zfill(3)
+        except Exception as e:
+            flash(f"Database Error: {e}", "danger")
+        finally:
+            cur.close()
+            conn.close()
+    else:
+        # Fallback to Supabase cloud
+        try:
+            sp = get_supabase_client()
+            q = sp.table("patients").select("*")
+            if search:
+                q = q.or_(f"hn.ilike.%{search}%,full_name.ilike.%{search}%,gcn.ilike.%{search}%")
+            res = q.order("id", desc=True).execute()
+            rows = res.data or []
+            for p in rows:
+                if p.get('hn'):
+                    clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                    if clean_hn.isdigit():
+                        p['hn'] = f"HN{clean_hn.zfill(3)}"
+                if p.get('gcn'):
+                    p['gcn'] = str(p['gcn']).zfill(3)
+        except Exception as e:
+            flash(f"Database Error: {e}", "danger")
         
     return render_template("nurse/patients.html", patients=rows, search_val=search)
 
@@ -1986,60 +2004,92 @@ def patient_history(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True, buffered=True)
-    try:
-        cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
-        patient = cur.fetchone()
-        if not patient:
-            flash("ไม่พบข้อมูลผู้ป่วยในระบบ Local", "danger")
-            return redirect(url_for("nurse.patients"))
-        
-        # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
-        raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
-        if raw_hn.isdigit():
-            patient['hn'] = f"HN{raw_hn.zfill(3)}"
+    patient = None
+    history = []
+    if conn:
+        cur = conn.cursor(dictionary=True, buffered=True)
+        try:
+            cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
+            patient = cur.fetchone()
+            if not patient:
+                flash("ไม่พบข้อมูลผู้ป่วยในระบบ", "danger")
+                return redirect(url_for("nurse.patients"))
+            
+            # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
+            raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+            if raw_hn.isdigit():
+                patient['hn'] = f"HN{raw_hn.zfill(3)}"
 
-        # 🟢 ดึงประวัติการประเมินจาก cga_records
-        query = """
-            SELECT 
-                encounter_id as header_id, 
-                created_at, 
-                'completed' as status, 
-                mmse_score, 
-                tgds_score 
-            FROM cga_records 
-            WHERE hn = %s 
-            ORDER BY created_at DESC
-        """
-        cur.execute(query, (hn,))
-        history = cur.fetchall()
-        return render_template("nurse/patient_history.html", patient=patient, history=history)
-    finally:
-        cur.close()
-        conn.close()
+            # 🟢 ดึงประวัติการประเมินจาก cga_records
+            query = """
+                SELECT 
+                    encounter_id as header_id, 
+                    created_at, 
+                    'completed' as status, 
+                    mmse_score, 
+                    tgds_score 
+                FROM cga_records 
+                WHERE hn = %s 
+                ORDER BY created_at DESC
+            """
+            cur.execute(query, (hn,))
+            history = cur.fetchall()
+            return render_template("nurse/patient_history.html", patient=patient, history=history)
+        finally:
+            cur.close()
+            conn.close()
+    else:
+        try:
+            sp = get_supabase_client()
+            res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
+            if res.data:
+                patient = res.data[0]
+                raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+                if raw_hn.isdigit():
+                    patient['hn'] = f"HN{raw_hn.zfill(3)}"
+                rec_res = sp.table("cga_records").select("encounter_id, created_at, mmse_score, tgds_score").eq("hn", hn).order("created_at", desc=True).execute()
+                history = [{"header_id": r.get("encounter_id"), "created_at": r.get("created_at"), "status": "completed", "mmse_score": r.get("mmse_score"), "tgds_score": r.get("tgds_score")} for r in (rec_res.data or [])]
+                return render_template("nurse/patient_history.html", patient=patient, history=history)
+            else:
+                flash("ไม่พบข้อมูลผู้ป่วย", "danger")
+                return redirect(url_for("nurse.patients"))
+        except Exception as e:
+            flash(f"Database Error: {e}", "danger")
+            return redirect(url_for("nurse.patients"))
 
 @nurse_bp.get("/patient/edit/<string:hn>", endpoint="patient_edit")
 def patient_edit(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     conn = get_db_connection()
-    cur = conn.cursor(dictionary=True, buffered=True)
-    try:
-        cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
-        patient = cur.fetchone()
-        if not patient:
-            flash("ไม่พบข้อมูลผู้ป่วย", "danger")
-            return redirect(url_for("nurse.patients"))
-        
-        # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
-        raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
-        if raw_hn.isdigit():
-            patient['hn'] = f"HN{raw_hn.zfill(3)}"
+    patient = None
+    if conn:
+        cur = conn.cursor(dictionary=True, buffered=True)
+        try:
+            cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
+            patient = cur.fetchone()
+        finally:
+            cur.close()
+            conn.close()
+    else:
+        try:
+            sp = get_supabase_client()
+            res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
+            if res.data:
+                patient = res.data[0]
+        except Exception as e:
+            flash(f"Database Error: {e}", "danger")
+            
+    if not patient:
+        flash("ไม่พบข้อมูลผู้ป่วย", "danger")
+        return redirect(url_for("nurse.patients"))
+    
+    # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
+    raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+    if raw_hn.isdigit():
+        patient['hn'] = f"HN{raw_hn.zfill(3)}"
 
-        return render_template("nurse/patient_edit.html", patient=patient)
-    finally:
-        cur.close()
-        conn.close()
+    return render_template("nurse/patient_edit.html", patient=patient)
 
 @nurse_bp.post("/patient/update/<string:hn>", endpoint="patient_update")
 def patient_update(hn: str):
