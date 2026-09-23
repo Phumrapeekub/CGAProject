@@ -48,5 +48,12 @@ def supabase_status():
     result = check_supabase_connection()
     return jsonify(result)
 
+@app.errorhandler(500)
+def internal_error(e):
+    import traceback
+    trace = traceback.format_exc()
+    print("500 Internal Error Traceback:\n", trace)
+    return f"<div style='font-family:sans-serif;padding:30px;max-width:850px;margin:40px auto;background:#fff1f2;border:1px solid #fecdd3;border-radius:16px;color:#9f1239;'><h2 style='margin-top:0;'>⚠️ Server Error (500)</h2><p>เกิดข้อผิดพลาดในการประมวลผลคำขอ:</p><pre style='background:#fff;padding:15px;border-radius:8px;overflow-x:auto;border:1px solid #fda4af;font-size:13px;line-height:1.5;'>{trace}</pre><a href='/login' style='display:inline-block;margin-top:15px;background:#e11d48;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;'>กลับสู่หน้าเข้าสู่ระบบ</a></div>", 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=int(os.environ.get("PORT", 8080)))
