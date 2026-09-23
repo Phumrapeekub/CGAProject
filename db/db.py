@@ -1,14 +1,37 @@
 import os
 import mysql.connector
+from dotenv import load_dotenv
+load_dotenv()
+
 from supabase import create_client, Client
+
+_supabase_client: Client | None = None
+
+def get_supabase_client() -> Client:
+    """
+    Returns a cached Supabase client
+    """
+    global _supabase_client
+    if _supabase_client is not None:
+        return _supabase_client
+
+    url = os.getenv("SUPABASE_URL", "https://ylahheyefrqxcjqccpsn.supabase.co")
+    key = os.getenv("SUPABASE_KEY", "sb_publishable_w4aFFHRYgyZEtzhM0Pxq1g_YWtCqIHJ")
+    
+    if not url or not key:
+        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment")
+
+    _supabase_client = create_client(url, key)
+    return _supabase_client
+
+get_db_client = get_supabase_client
 
 def get_db_connection():
     """
-    Returns a MySQL connection with robust fallbacks:
-    1. Local unix socket (/tmp/mysql.sock)
-    2. TCP connection (127.0.0.1:3306 or DB_HOST)
+    Safe fallback for MySQL connection:
+    Only attempts local connection if available, never hangs on unreachable cloud hosts.
     """
-    # 1. First priority on Linux container: Local Unix Socket
+    # 1. Local unix socket
     for sock in ["/tmp/mysql.sock", "/app/mariadb/run/mysql.sock", "/var/run/mysqld/mysqld.sock"]:
         if os.path.exists(sock):
             for pwd in ["Kantiya203_", "", None]:
@@ -18,52 +41,31 @@ def get_db_connection():
                         user="root",
                         password=pwd,
                         database="cga_system_dev",
-                        connect_timeout=3
+                        connect_timeout=1
                     )
                     return conn
                 except mysql.connector.Error:
                     continue
 
-    # 2. Second priority: TCP connection
+    # 2. Localhost TCP (only 127.0.0.1 or localhost, never remote dead hosts)
     host = os.getenv("DB_HOST", "127.0.0.1")
-    hosts_to_try = [host]
-    if host not in ["127.0.0.1", "localhost"]:
-        hosts_to_try.append("127.0.0.1")
-    
-    port = int(os.getenv("DB_PORT", "3306"))
-    user = os.getenv("DB_USER", "root")
-    default_pw = os.getenv("DB_PASSWORD") or "Kantiya203_"
-    database = os.getenv("DB_NAME", "cga_system_dev")
+    if host in ["127.0.0.1", "localhost"]:
+        port = int(os.getenv("DB_PORT", "3306"))
+        user = os.getenv("DB_USER", "root")
+        pwd = os.getenv("DB_PASSWORD") or "Kantiya203_"
+        database = os.getenv("DB_NAME", "cga_system_dev")
+        try:
+            conn = mysql.connector.connect(
+                host=host,
+                port=port,
+                user=user,
+                password=pwd,
+                database=database,
+                connect_timeout=1
+            )
+            return conn
+        except mysql.connector.Error:
+            pass
 
-    for h in hosts_to_try:
-        p = port if h == host else 3306
-        u = user if h == host else "root"
-        d = database if h == host else "cga_system_dev"
-        for ssl_mode in [False, True]:
-            for pwd in [default_pw, "Kantiya203_", "", None]:
-                try:
-                    conn = mysql.connector.connect(
-                        host=h,
-                        port=p,
-                        user=u,
-                        password=pwd,
-                        database=d,
-                        ssl_disabled=ssl_mode,
-                        connect_timeout=3
-                    )
-                    return conn
-                except mysql.connector.Error:
-                    continue
-
-    print(f"DB connect error: Unable to connect to MySQL")
     return None
 
-def get_supabase_client() -> Client:
-    """
-    Returns a Supabase client
-    """
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
-    return create_client(url, key)
-
-get_db_client = get_supabase_client

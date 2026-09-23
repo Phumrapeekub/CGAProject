@@ -608,8 +608,8 @@ def patients():
         return redirect(url_for("auth.login"))
 
     try:
-        # 1. Fetch Patients
-        query = supabase.table("patients").select("*")
+        # 1. Fetch Patients (excluding temporary drafts)
+        query = supabase.table("patients").select("*").not_.like("hn", "TMP-%").neq("full_name", "รอกรอกข้อมูล")
 
         if date_q:
             start_q = date_q

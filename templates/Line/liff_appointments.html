@@ -26,7 +26,7 @@
       }
 
       const p = await liff.getProfile();
-      const res = await fetch(`/liff/api/appointments?userId=${p.userId}`);
+      const res = await fetch(`/line/api/appointments?userId=${p.userId}`);
       const json = await res.json();
 
       const el = document.getElementById("list");

@@ -9,11 +9,12 @@ from Line.routes_line import line_bp
 from supabase_utils import check_supabase_connection
 from dotenv import load_dotenv
 load_dotenv()
-
+from datetime import timedelta
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 def ensure_mariadb_running():
-    if os.name == 'nt':
-        return  # On Windows, local MySQL runs as Windows Service
+    if os.name == 'nt' or os.getenv("RUN_LOCAL_MARIADB") != "1":
+        return
     
     import socket, subprocess, time
     sock_path = "/tmp/mysql.sock"
@@ -41,10 +42,11 @@ def ensure_mariadb_running():
         except Exception as e:
             print("Failed to launch embedded MariaDB:", e)
 
-ensure_mariadb_running()
+if os.getenv("RUN_LOCAL_MARIADB") == "1":
+    ensure_mariadb_running()
 
 def init_cga_database_if_needed():
-    if os.name == 'nt':
+    if os.name == 'nt' or os.getenv("RUN_LOCAL_MARIADB") != "1":
         return
     import subprocess, time
     sock_path = "/tmp/mysql.sock"
@@ -70,10 +72,14 @@ def init_cga_database_if_needed():
     except Exception as e:
         print("Error initializing cga_system_dev database:", e)
 
-init_cga_database_if_needed()
+if os.getenv("RUN_LOCAL_MARIADB") == "1":
+    init_cga_database_if_needed()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key_fallback")
+# ProxyFix for reverse proxy (HTTPS on Hugging Face Spaces)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+app.secret_key = os.getenv("FLASK_SECRET_KEY") or os.getenv("SECRET_KEY") or "dev_secret_key_cga_hospital_phayao_2026"
 
 def parse_dt(d):
     if not d: return None
@@ -86,13 +92,22 @@ def parse_dt(d):
     return d
 app.jinja_env.globals.update(parse_dt=parse_dt)
 
-# ตั้งค่าให้ Session ทำงานได้เมื่อฝังเว็บใน iframe ของ Hugging Face Spaces
-is_hf_space = bool(os.getenv("SPACE_ID"))
+# ตั้งค่า Session Cookie ให้ทำงานได้ทั้ง Direct URL และเมื่อฝังใน iframe ของ Hugging Face Spaces
+is_hf_space = bool(os.getenv("SPACE_ID")) or os.getenv("ENV") == "production"
 app.config.update(
-    SESSION_COOKIE_SECURE=is_hf_space,
+    SESSION_COOKIE_SECURE=True if is_hf_space else False,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='None' if is_hf_space else 'Lax',
+    SESSION_COOKIE_NAME='cga_session',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),
 )
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # อนุญาตให้ Hugging Face Spaces ฝัง iframe ได้โดยไม่โดนเบราว์เซอร์บล็อก
+    response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://huggingface.co https://*.huggingface.co https://*.hf.space;"
+    return response
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)

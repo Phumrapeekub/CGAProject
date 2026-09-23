@@ -443,14 +443,44 @@ def api_kpis():
 def reports():
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    conn = get_db_connection()
-    if not conn:
-        flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "danger")
-        return render_template("nurse/reports.html", report_data={'start_date': date.today().strftime('%Y-%m-%d'), 'end_date': date.today().strftime('%Y-%m-%d')})
-    cur = conn.cursor(dictionary=True, buffered=True)
     start_date = request.args.get('start_date', date.today().replace(day=1).strftime('%Y-%m-%d'))
     end_date = request.args.get('end_date', date.today().strftime('%Y-%m-%d'))
     report_data = {'start_date': start_date, 'end_date': end_date}
+    
+    conn = get_db_connection()
+    if not conn:
+        try:
+            supabase = get_supabase_client()
+            res = supabase.table("cga_records").select("*").gte("assessed_date", start_date).lte("assessed_date", end_date).execute()
+            records = res.data or []
+            total = len(records)
+            mmse_risk = sum(1 for r in records if (r.get("mmse_score") or 0) <= 23)
+            tgds_risk = sum(1 for r in records if (r.get("tgds_score") or 0) >= 7)
+            report_data['ov'] = {"total": total, "mmse_risk": mmse_risk, "tgds_risk": tgds_risk}
+            
+            high_risk = []
+            for r in records:
+                m_score = r.get("mmse_score") or 0
+                t_score = r.get("tgds_score") or 0
+                suicide = r.get("suicide_risk") == 'มี'
+                if m_score <= 23 or t_score >= 7 or suicide:
+                    high_risk.append({
+                        "header_id": r.get("encounter_id"),
+                        "hn": r.get("hn"),
+                        "full_name": r.get("full_name"),
+                        "mmse": m_score,
+                        "tgds": t_score,
+                        "suicide": "yes" if suicide else "no"
+                    })
+            report_data['high_risk'] = high_risk[:30]
+            report_data['diseases'] = {'diabetes': 0, 'hypertension': 0, 'heart': 0, 'kidney': 0, 'cancer': 0}
+            report_data['bmi'] = {'underweight': 0, 'normal': 0, 'overweight': 0, 'obese': 0}
+            return render_template("nurse/summary_report.html", data=report_data, date=date.today().strftime('%d/%m/%Y'))
+        except Exception as sb_e:
+            print("Supabase report fetch error:", sb_e)
+            return render_template("nurse/summary_report.html", data=report_data, date=date.today().strftime('%d/%m/%Y'))
+
+    cur = conn.cursor(dictionary=True, buffered=True)
     try:
         # 🟢 1. สถิติรวมจาก cga_records
         cur.execute("""
@@ -790,6 +820,43 @@ def assess_step1_save(header_id: int):
         """, (full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr,
               chronic_str or None, caregiver_name or None, emergency_phone or None, p_id))
         
+        # 🟢 Sync ทะเบียนคนไข้ขึ้น Supabase ทันทีที่กรอก Step 1 เสร็จ
+        try:
+            patient_hn = data.get("hn")
+            if patient_hn and patient_hn != "N/A":
+                sb_p = {
+                    "hn": patient_hn,
+                    "full_name": full_name,
+                    "birth_date": str(f.get('birthdate')) if f.get('birthdate') else None,
+                    "gender": f.get('gender'),
+                    "phone": f.get('phone'),
+                    "address": final_readable_addr,
+                    "updated_at": datetime.now().isoformat()
+                }
+                if data.get("gcn") and str(data.get("gcn")) != "---":
+                    sb_p["gcn"] = str(data.get("gcn")).zfill(3)
+                safe_supabase_sync("patients", sb_p, method='upsert', conflict_col='hn')
+
+                enc_id = data.get("encounter_id")
+                if enc_id:
+                    supabase = get_supabase_client()
+                    sb_p_res = supabase.table("patients").select("id").eq("hn", patient_hn).execute()
+                    if sb_p_res.data:
+                        safe_supabase_sync("encounters", {
+                            "id": enc_id,
+                            "patient_id": sb_p_res.data[0]['id'],
+                            "encounter_date": str(date.today()),
+                            "created_by": session.get("user_id")
+                        }, method='upsert', conflict_col='id')
+                        safe_supabase_sync("cga_headers", {
+                            "id": header_id,
+                            "encounter_id": enc_id,
+                            "status": "in_progress",
+                            "is_completed": False
+                        }, method='upsert', conflict_col='id')
+        except Exception as sb_step1_err:
+            print("Step 1 Supabase sync warning:", sb_step1_err)
+
         if sess_id:
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='basic'", (sess_id,))
             fields = ['marry', 'live', 'smoke', 'alcohol', 'hearing_left', 'hearing_right', 'visionTest', 'vision_left', 'vision_right', 'height', 'weight', 'waist', 'otherDisease', 'age', 'house_no', 'moo', 'subdistrict', 'district', 'province', 'postal_code', 'hearing_left_detail', 'hearing_right_detail', 'emergency_phone', 'caregiver_name', 'caregiver_relation', 'alcohol_daily_amount']
@@ -1620,6 +1687,16 @@ def _sync_to_cga_records(header_id, conn, cur):
         try:
             supabase = get_supabase_client()
             sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
+            if not sb_p_res.data and base_info.get('hn'):
+                # สร้างคนไข้ใน Supabase ทันทีถ้ายังไม่มี เพื่อไม่ให้การ Sync cga_records ติดขัด
+                safe_supabase_sync("patients", {
+                    "hn": base_info['hn'],
+                    "full_name": base_info.get('full_name') or "รอกรอกข้อมูล",
+                    "birth_date": str(base_info['birth_date']) if base_info.get('birth_date') else None,
+                    "created_at": datetime.now().isoformat()
+                }, method='upsert', conflict_col='hn')
+                sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
+
             if sb_p_res.data:
                 cloud_payload = record_data.copy()
                 cloud_payload['patient_id'] = sb_p_res.data[0]['id']
@@ -1877,9 +1954,44 @@ def assess_finalize(header_id: int):
                 if k in ['caregiver_name', 'caregiver_relation', 'emergency_phone']:
                     caregiver_info[k] = v
 
+        # ถ้ายังเป็น TMP ให้แปลงเป็น HN ทางการทันทีเมื่อบันทึกเสร็จ
+        final_hn = p_row['hn']
+        final_gcn = p_row.get('gcn')
+        if not final_hn or str(final_hn).startswith("TMP"):
+            supabase = get_supabase_client()
+            sb_res = supabase.table("patients").select("hn").execute()
+            max_num = 0
+            pattern = re.compile(r'^HN(\d+)$', re.IGNORECASE)
+            for r in (sb_res.data or []):
+                if r.get('hn'):
+                    m = pattern.match(str(r['hn']))
+                    if m:
+                        val = int(m.group(1))
+                        if val < 1000000 and val > max_num:
+                            max_num = val
+            
+            cur.execute("SELECT hn FROM patients WHERE hn LIKE 'HN%'")
+            for r in cur.fetchall():
+                m = pattern.match(str(r['hn']))
+                if m:
+                    val = int(m.group(1))
+                    if val < 1000000 and val > max_num:
+                        max_num = val
+            
+            final_hn = f"HN{(max_num + 1):03d}"
+            if not final_gcn or final_gcn == "---":
+                cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
+                final_gcn = f"{(cur.fetchone()['c'] + 1):03d}"
+            
+            cur.execute("UPDATE patients SET hn=%s, gcn=%s WHERE id=%s", (final_hn, final_gcn, p_id))
+            cur.execute("UPDATE cga_records SET hn=%s WHERE encounter_id=%s", (final_hn, h_data['encounter_id']))
+            conn.commit()
+            p_row['hn'] = final_hn
+            p_row['gcn'] = final_gcn
+
         sb_p = {
-            "hn": p_row['hn'], 
-            "gcn": str(p_row['gcn']).zfill(3) if p_row['gcn'] else None,
+            "hn": final_hn, 
+            "gcn": str(final_gcn).zfill(3) if final_gcn else None, 
             "full_name": p_row['full_name'], 
             "phone": p_row['phone'], 
             "address": p_row['address'], 
@@ -1958,52 +2070,52 @@ def patients():
         return redirect(url_for("auth.login"))
     search = request.args.get("search", "").strip()
     
-    conn = get_db_connection()
     rows = []
-    if conn:
-        cur = conn.cursor(dictionary=True)
-        try:
-            query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%'"
-            params = []
-            if search:
-                query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
-                search_param = f"%{search}%"
-                params = [search_param, search_param, search_param]
-            
-            query += " ORDER BY id DESC"
-            cur.execute(query, params)
-            rows = cur.fetchall()
-            
-            for p in rows:
-                if p.get('hn'):
-                    clean_hn = str(p['hn']).upper().replace("HN", "").strip()
-                    if clean_hn.isdigit():
-                        p['hn'] = f"HN{clean_hn.zfill(3)}"
-                if p.get('gcn'):
-                    p['gcn'] = str(p['gcn']).zfill(3)
-        except Exception as e:
-            flash(f"Database Error: {e}", "danger")
-        finally:
-            cur.close()
-            conn.close()
-    else:
-        # Fallback to Supabase cloud
-        try:
-            sp = get_supabase_client()
-            q = sp.table("patients").select("*")
-            if search:
-                q = q.or_(f"hn.ilike.%{search}%,full_name.ilike.%{search}%,gcn.ilike.%{search}%")
-            res = q.order("id", desc=True).execute()
-            rows = res.data or []
-            for p in rows:
-                if p.get('hn'):
-                    clean_hn = str(p['hn']).upper().replace("HN", "").strip()
-                    if clean_hn.isdigit():
-                        p['hn'] = f"HN{clean_hn.zfill(3)}"
-                if p.get('gcn'):
-                    p['gcn'] = str(p['gcn']).zfill(3)
-        except Exception as e:
-            flash(f"Database Error: {e}", "danger")
+    # 1. Primary: Fetch from Supabase Cloud
+    try:
+        sp = get_supabase_client()
+        q = sp.table("patients").select("*").not_.like("hn", "TMP-%").neq("full_name", "รอกรอกข้อมูล")
+        if search:
+            q = q.or_(f"hn.ilike.%{search}%,full_name.ilike.%{search}%,gcn.ilike.%{search}%")
+        res = q.order("id", desc=True).execute()
+        rows = res.data or []
+        for p in rows:
+            if p.get('hn'):
+                clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                if clean_hn.isdigit():
+                    p['hn'] = f"HN{clean_hn.zfill(3)}"
+            if p.get('gcn'):
+                p['gcn'] = str(p['gcn']).zfill(3)
+    except Exception as sb_err:
+        print(f"Supabase nurse patients fetch error: {sb_err}")
+        # 2. Fallback to Local MySQL if available
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor(dictionary=True)
+            try:
+                query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%' AND full_name != 'รอกรอกข้อมูล'"
+                params = []
+                if search:
+                    query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
+                    search_param = f"%{search}%"
+                    params = [search_param, search_param, search_param]
+                query += " ORDER BY id DESC"
+                cur.execute(query, params)
+                rows = cur.fetchall()
+                for p in rows:
+                    if p.get('hn'):
+                        clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                        if clean_hn.isdigit():
+                            p['hn'] = f"HN{clean_hn.zfill(3)}"
+                    if p.get('gcn'):
+                        p['gcn'] = str(p['gcn']).zfill(3)
+            except Exception as e:
+                flash(f"Database Error: {e}", "danger")
+            finally:
+                cur.close()
+                conn.close()
+        else:
+            flash(f"Database Error: {sb_err}", "danger")
         
     return render_template("nurse/patients.html", patients=rows, search_val=search)
 
@@ -2231,30 +2343,49 @@ def api_patients():
     if not _require_nurse():
         return {"error": "unauthorized"}, 401
     search = request.args.get("search", "").strip()
-    conn = get_db_connection()
-    if not conn:
-        return {"error": "database connection failed"}, 500
-    cur = conn.cursor(dictionary=True)
+    
+    # 1. Primary: Supabase
     try:
-        query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%'"
-        params = []
+        sp = get_supabase_client()
+        q = sp.table("patients").select("*").not_.like("hn", "TMP-%").neq("full_name", "รอกรอกข้อมูล")
         if search:
-            query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
-            search_param = f"%{search}%"
-            params = [search_param, search_param, search_param]
-        
-        query += " ORDER BY id DESC"
-        cur.execute(query, params)
-        rows = cur.fetchall()
-        
-        # Clean data for JSON serialization
+            q = q.or_(f"hn.ilike.%{search}%,full_name.ilike.%{search}%,gcn.ilike.%{search}%")
+        res = q.order("id", desc=True).limit(50).execute()
+        rows = res.data or []
         for p in rows:
             if p.get("birth_date"): p["birth_date"] = str(p["birth_date"])
             if p.get("created_at"): p["created_at"] = str(p["created_at"])
-            
+            if p.get('hn'):
+                clean_hn = str(p['hn']).upper().replace("HN", "").strip()
+                if clean_hn.isdigit():
+                    p['hn'] = f"HN{clean_hn.zfill(3)}"
+            if p.get('gcn'):
+                p['gcn'] = str(p['gcn']).zfill(3)
         return {"patients": rows}
     except Exception as e:
+        print(f"Supabase api_patients error: {e}")
+        # 2. Fallback to Local MySQL if available
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor(dictionary=True)
+            try:
+                query = "SELECT * FROM patients WHERE hn NOT LIKE 'TMP-%' AND full_name != 'รอกรอกข้อมูล'"
+                params = []
+                if search:
+                    query += " AND (hn LIKE %s OR gcn LIKE %s OR full_name LIKE %s)"
+                    search_param = f"%{search}%"
+                    params = [search_param, search_param, search_param]
+                
+                query += " ORDER BY id DESC LIMIT 50"
+                cur.execute(query, params)
+                rows = cur.fetchall()
+                for p in rows:
+                    if p.get("birth_date"): p["birth_date"] = str(p["birth_date"])
+                    if p.get("created_at"): p["created_at"] = str(p["created_at"])
+                return {"patients": rows}
+            except Exception as le:
+                return {"error": str(le)}, 500
+            finally:
+                cur.close()
+                conn.close()
         return {"error": str(e)}, 500
-    finally:
-        cur.close()
-        conn.close()

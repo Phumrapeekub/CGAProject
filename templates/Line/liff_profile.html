@@ -13,7 +13,7 @@
   <script>
     async function loadProfile() {
       try {
-        const res = await fetch("/api/profile");
+        const res = await fetch("/line/api/profile");
         const data = await res.json();
 
         if (data.error) {

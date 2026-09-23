@@ -5232,5 +5232,201 @@
       "smoke": "สูบ",
       "alcohol": "ดื่มบางครั้ง"
     }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:12.364606",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "TMP-1790173812",
+      "full_name": "รอกรอกข้อมูล",
+      "birth_date": null,
+      "created_at": "2026-09-23T21:30:12.364598"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:12.566726",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 204,
+      "patient_id": 305,
+      "hn": "TMP-1790173812",
+      "full_name": "รอกรอกข้อมูล",
+      "assessed_date": "2026-09-23",
+      "age": 0,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:12.834233",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN087",
+      "full_name": "สมชาย ใจดี",
+      "birth_date": "1955-08-15",
+      "gender": "male",
+      "phone": "0812345678",
+      "address": "เลขที่ 123 หมู่ 1 ต. แม่กา อ. เมือง จ. พะเยา 56000",
+      "updated_at": "2026-09-23T21:30:12.834221",
+      "gcn": "001"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:12.979137",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 204,
+      "patient_id": 306,
+      "encounter_date": "2026-09-23",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:13.066098",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "id": 185,
+      "encounter_id": 204,
+      "status": "in_progress",
+      "is_completed": false
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:30:13.236343",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 204,
+      "patient_id": 305,
+      "hn": "TMP-1790173812",
+      "full_name": "สมชาย ใจดี",
+      "assessed_date": "2026-09-23",
+      "age": 71,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "สมศรี ใจดี",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:00.814841",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "TMP-1790173920",
+      "full_name": "รอกรอกข้อมูล",
+      "birth_date": null,
+      "created_at": "2026-09-23T21:32:00.814832"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:00.977102",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 205,
+      "patient_id": 307,
+      "hn": "TMP-1790173920",
+      "full_name": "รอกรอกข้อมูล",
+      "assessed_date": "2026-09-23",
+      "age": 0,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:01.250881",
+    "table": "patients",
+    "method": "upsert",
+    "payload": {
+      "hn": "HN088",
+      "full_name": "สมชาย ใจดี",
+      "birth_date": "1955-08-15",
+      "gender": "male",
+      "phone": "0812345678",
+      "address": "เลขที่ 123 หมู่ 1 ต. แม่กา อ. เมือง จ. พะเยา 56000",
+      "updated_at": "2026-09-23T21:32:01.250870",
+      "gcn": "001"
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:01.399624",
+    "table": "encounters",
+    "method": "upsert",
+    "payload": {
+      "id": 205,
+      "patient_id": 308,
+      "encounter_date": "2026-09-23",
+      "created_by": 3
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:01.491098",
+    "table": "cga_headers",
+    "method": "upsert",
+    "payload": {
+      "id": 186,
+      "encounter_id": 205,
+      "status": "in_progress",
+      "is_completed": false
+    }
+  },
+  {
+    "timestamp": "2026-09-23T21:32:01.652210",
+    "table": "cga_records",
+    "method": "upsert",
+    "payload": {
+      "encounter_id": 205,
+      "patient_id": 307,
+      "hn": "TMP-1790173920",
+      "full_name": "สมชาย ใจดี",
+      "assessed_date": "2026-09-23",
+      "age": 71,
+      "education": "สูงกว่าประถม",
+      "caregiver_name": "สมศรี ใจดี",
+      "mmse_score": 0,
+      "mmse_result": "เสี่ยง",
+      "tgds_score": 0,
+      "tgds_result": "ปกติ",
+      "q8_score": 0,
+      "suicide_risk": "ไม่มี",
+      "incontinence": "ปกติ",
+      "sleep_problem": "ปกติ",
+      "smoke": "ไม่สูบ",
+      "alcohol": "ไม่ดื่ม"
+    }
   }
 ]

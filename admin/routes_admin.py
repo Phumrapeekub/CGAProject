@@ -272,9 +272,8 @@ def patients_list():
         return render_template("admin/patients.html", patients=[], q=q, page=1, total_pages=1, active_page="patients")
     try:
         supabase: Client = create_client(supabase_url, supabase_key)
-        # Revert to simple query to ensure list shows up. 
-        # Complex nested query might be failing due to relation names or permissions.
-        query = supabase.table("patients").select("*", count="exact")
+        # Query patients excluding temporary drafts
+        query = supabase.table("patients").select("*", count="exact").not_.like("hn", "TMP-%").neq("full_name", "รอกรอกข้อมูล")
         
         if q: 
             query = query.or_(f"full_name.ilike.%{q}%,hn.ilike.%{q}%")

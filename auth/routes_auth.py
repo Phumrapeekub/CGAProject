@@ -25,33 +25,33 @@ def login():
         cur = None
         db_reachable = False
 
-        # 1. Try MySQL if connection is available
+        # 1. Try Supabase as primary database
         try:
-            conn = get_db_connection()
-            if conn:
-                db_reachable = True
-                cur = conn.cursor(dictionary=True)
-                cur.execute(
-                    "SELECT id, username, password_hash, is_active, full_name, role FROM users WHERE username = %s LIMIT 1",
-                    (username,)
-                )
-                user = cur.fetchone()
+            supabase = get_supabase_client()
+            if supabase:
+                res = supabase.table("users").select(
+                    "id, username, password_hash, is_active, full_name, role"
+                ).eq("username", username).limit(1).execute()
+                if res.data:
+                    user = res.data[0]
+                    db_reachable = True
         except Exception as err:
-            print(f"MySQL auth lookup error: {err}")
+            print(f"Supabase auth lookup error: {err}")
 
-        # 2. Fallback to Supabase if MySQL is unavailable or user not found
+        # 2. Fallback to MySQL if Supabase unavailable or user not found
         if not user:
             try:
-                supabase = get_supabase_client()
-                if supabase:
-                    res = supabase.table("users").select(
-                        "id, username, password_hash, is_active, full_name, role"
-                    ).eq("username", username).limit(1).execute()
-                    if res.data:
-                        user = res.data[0]
-                        db_reachable = True
+                conn = get_db_connection()
+                if conn:
+                    db_reachable = True
+                    cur = conn.cursor(dictionary=True)
+                    cur.execute(
+                        "SELECT id, username, password_hash, is_active, full_name, role FROM users WHERE username = %s LIMIT 1",
+                        (username,)
+                    )
+                    user = cur.fetchone()
             except Exception as err:
-                print(f"Supabase auth lookup error: {err}")
+                print(f"MySQL auth lookup error: {err}")
 
         # Check if no database was reached at all
         if not db_reachable and not user:
