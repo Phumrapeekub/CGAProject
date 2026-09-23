@@ -1,5 +1,5 @@
 from __future__ import annotations
-import os
+import os, shutil
 from flask import Flask, redirect, jsonify
 from auth import auth_bp
 from admin.routes_admin import admin_bp
@@ -147,17 +147,45 @@ def debug_db():
         "tables": real_conn_tables
     }
     
-    # 4. Check processes
+    # 4. Check processes and filesystem
     proc_list = ""
     try:
         proc_list = subprocess.check_output(["ps", "aux"], text=True)
     except Exception as e:
         proc_list = str(e)
 
+    diag = {
+        "mariadbd_exists": os.path.exists("/usr/sbin/mariadbd"),
+        "mariadb_in_path": shutil.which("mariadbd") or shutil.which("mysqld"),
+        "app_mariadb_exists": os.path.exists("/app/mariadb"),
+        "app_mariadb_data_exists": os.path.exists("/app/mariadb/data"),
+        "app_mariadb_data_contents": os.listdir("/app/mariadb/data") if os.path.exists("/app/mariadb/data") else [],
+        "var_lib_mysql_exists": os.path.exists("/var/lib/mysql"),
+        "var_lib_mysql_contents": os.listdir("/var/lib/mysql") if os.path.exists("/var/lib/mysql") else [],
+    }
+    
+    # Try starting it right now synchronously and return output
+    start_output = ""
+    try:
+        res = subprocess.run([
+            shutil.which("mariadbd") or "mariadbd",
+            "--datadir=/app/mariadb/data",
+            "--socket=/tmp/mysql.sock",
+            "--port=3306",
+            "--bind-address=0.0.0.0"
+        ], capture_output=True, text=True, timeout=3)
+        start_output = f"stdout: {res.stdout}\nstderr: {res.stderr}"
+    except subprocess.TimeoutExpired:
+        start_output = "Started and timed out (running!)"
+    except Exception as e:
+        start_output = str(e)
+    diag["sync_start_attempt"] = start_output
+
     return jsonify({
         "env": db_env,
         "port_3306_open": port_3306_open,
         "connection_tests": results,
+        "diag": diag,
         "processes": proc_list
     })
 
