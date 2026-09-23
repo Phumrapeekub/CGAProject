@@ -29,6 +29,7 @@ def ensure_mariadb_running():
                 mariadb_bin,
                 f"--datadir={datadir}",
                 f"--socket={sock_path}",
+                "--pid-file=/tmp/mysqld.pid",
                 "--port=3306",
                 "--bind-address=0.0.0.0"
             ])
@@ -171,6 +172,7 @@ def debug_db():
             shutil.which("mariadbd") or "mariadbd",
             "--datadir=/app/mariadb/data",
             "--socket=/tmp/mysql.sock",
+            "--pid-file=/tmp/mysqld.pid",
             "--port=3306",
             "--bind-address=0.0.0.0"
         ], capture_output=True, text=True, timeout=3)

@@ -6,6 +6,7 @@ chmod 777 /tmp/mysqld 2>/dev/null || true
 # Start mariadbd in background using /app/mariadb/data
 mariadbd --datadir=/app/mariadb/data \
          --socket=/tmp/mysql.sock \
+         --pid-file=/tmp/mysqld.pid \
          --port=3306 \
          --bind-address=0.0.0.0 &
 MARIADB_PID=$!
