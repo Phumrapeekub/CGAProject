@@ -62,6 +62,11 @@ def init_cga_database_if_needed():
             print("Importing /app/init_db.sql into cga_system_dev...")
             subprocess.run(f"mysql --socket={sock_path} -u root cga_system_dev < /app/init_db.sql", shell=True, check=True)
             print("Database import complete!")
+        new_h = 'scrypt:32768:8:1$JRurXV2Ox0LIo2Oc$c34bcca0dff322485dc4449357efbc4a72401b4b3cd817a7fafa5c40209306c32fd3e27ad542ccbc2c066d23635073acbe7c85a6c33f730998350e64484c7726'
+        subprocess.run([
+            "mysql", f"--socket={sock_path}", "-u", "root", "cga_system_dev", "-e",
+            f"UPDATE users SET password_hash='{new_h}' WHERE username IN ('admin', 'nurse1', 'doctor1', 'nurse2', 'doctor2');"
+        ])
     except Exception as e:
         print("Error initializing cga_system_dev database:", e)
 

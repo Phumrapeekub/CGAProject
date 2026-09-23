@@ -62,7 +62,6 @@ def _require_nurse():
         flash("กรุณาเข้าสู่ระบบก่อน", "warning")
         return False
     if role != "nurse":
-        from flask import flash
         flash(f"ไม่มีสิทธิ์เข้าถึง (ปัจจุบันคุณเข้าระบบในฐานะ '{role}' ไม่ใช่ nurse)", "error")
         return False
     return True
