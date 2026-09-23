@@ -57,6 +57,7 @@ USER 1000
 # เปิด Port 7860 (ข้อบังคับของ Hugging Face Spaces)
 EXPOSE 7860
 ENV PORT=7860
+ENV PATH="/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 ENV DB_HOST=127.0.0.1
 ENV DB_PORT=3306
 ENV DB_USER=root
