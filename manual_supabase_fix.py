@@ -51,11 +51,7 @@ pass
 
 print("⚠️  To add the 'updated_at' column to Supabase, you usually need to run SQL directly in the Supabase Dashboard.")
 print("    (Because the API Client restricts table structure changes for security).")
-print("
-👉 Please go to your Supabase Dashboard -> SQL Editor and run this command:")
-print("
-    ALTER TABLE patients ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();")
-print("
-    ALTER TABLE patients ADD COLUMN IF NOT EXISTS birth_date DATE;")
-print("
-✅ After you run this in Supabase, the 'updated_at' error will disappear.")
+print("\n👉 Please go to your Supabase Dashboard -> SQL Editor and run this command:")
+print("\n    ALTER TABLE patients ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();")
+print("\n    ALTER TABLE patients ADD COLUMN IF NOT EXISTS birth_date DATE;")
+print("\n✅ After you run this in Supabase, the 'updated_at' error will disappear.")

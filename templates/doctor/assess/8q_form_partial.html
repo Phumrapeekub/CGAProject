@@ -1,4 +1,5 @@
-{% set t = q8 or q8_detail or row or {} %}
+{% set _raw_t = q8 or q8_detail or row or {} %}
+{% set t = _raw_t if (_raw_t is mapping) else {} %}
 
 {# -------------------------
    normalize answers

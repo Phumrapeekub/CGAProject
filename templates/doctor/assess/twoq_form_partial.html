@@ -1,4 +1,4 @@
-{% set t = twoq or {} %}
+{% set t = twoq if (twoq is mapping) else {} %}
 
 {# q1, q2 เป็น enum('no','yes') - แปลงเป็น 0/1 #}
 {% set q1_raw = t.get('q1') %}

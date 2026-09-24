@@ -1455,13 +1455,13 @@ def patient_detail(hn):
 
         # Parse 2Q from string (Fallback from consultations)
         final_twoq = latest_c.get("depression_2q")
-        if isinstance(final_twoq, str) and "q1:" in final_twoq.lower():
-            try:
-                parts = final_twoq.lower().split(",")
-                q1_val = parts[0].split(":")[1].strip() if ":" in parts[0] else "no"
-                q2_val = parts[1].split(":")[1].strip() if ":" in parts[1] else "no"
-                final_twoq = {"q1": q1_val, "q2": q2_val, "yes_count": (1 if q1_val == "yes" else 0) + (1 if q2_val == "yes" else 0)}
-            except: pass
+        if isinstance(final_twoq, str):
+            f_lower = final_twoq.lower()
+            q1_val = "yes" if "q1:yes" in f_lower else "no"
+            q2_val = "yes" if "q2:yes" in f_lower else "no"
+            final_twoq = {"q1": q1_val, "q2": q2_val, "yes_count": (1 if q1_val == "yes" else 0) + (1 if q2_val == "yes" else 0)}
+        elif not isinstance(final_twoq, dict):
+            final_twoq = {"q1": "no", "q2": "no", "yes_count": 0}
 
         # Force 8Q mapping using 'suicide_risk' from cga_records
         final_8q = q8_details

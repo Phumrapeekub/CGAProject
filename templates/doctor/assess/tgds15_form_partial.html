@@ -1,4 +1,5 @@
-{% set t = row or tgds or {} %}
+{% set _raw_t = row or tgds or {} %}
+{% set t = _raw_t if (_raw_t is mapping) else {} %}
 
 {# ดึงคำตอบแต่ละข้อ tgds_1 - tgds_15 (enum 'no','yes') #}
 {% set ans = {} %}

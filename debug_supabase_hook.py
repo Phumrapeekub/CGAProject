@@ -60,12 +60,10 @@ def main():
     try:
         with open(output_filename, "w", encoding="utf-8") as f:
             json.dump(debug_data, f, ensure_ascii=False, indent=4, default=json_serializer)
-        print(f"
-✨ Debug data successfully saved to: {output_filename}")
+        print(f"\n✨ Debug data successfully saved to: {output_filename}")
         print("   You can inspect this file to see exactly what data is currently in Supabase.")
     except Exception as e:
-        print(f"
-❌ Error saving JSON file: {e}")
+        print(f"\n❌ Error saving JSON file: {e}")
 
 if __name__ == "__main__":
     main()

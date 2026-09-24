@@ -50,8 +50,7 @@ def sync_schema():
     target_tables = ['patients', 'cga_headers', 'consultations']
 
     for table in target_tables:
-        print(f"
-🔍 Checking table: {table}")
+        print(f"\n🔍 Checking table: {table}")
         
         # 1. Get Local Columns
         my_cur.execute(f"DESCRIBE {table}")
@@ -87,8 +86,7 @@ def sync_schema():
             else:
                 print(f"   ✓ {col_name} exists")
 
-    print("
-✨ Schema Sync Completed!")
+    print("\n✨ Schema Sync Completed!")
     my_conn.close()
     pg_conn.close()
 
