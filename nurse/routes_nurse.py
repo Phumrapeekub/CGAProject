@@ -2213,7 +2213,28 @@ def patient_history(hn: str):
             if raw_hn.isdigit():
                 patient['hn'] = f"HN{raw_hn.zfill(3)}"
             rec_res = sp.table("cga_records").select("encounter_id, created_at, mmse_score, tgds_score").eq("hn", hn).order("created_at", desc=True).execute()
-            history = [{"header_id": r.get("encounter_id"), "created_at": r.get("created_at"), "status": "completed", "mmse_score": r.get("mmse_score"), "tgds_score": r.get("tgds_score")} for r in (rec_res.data or [])]
+            history = []
+            for r in (rec_res.data or []):
+                dt_val = r.get("created_at")
+                dt_obj = None
+                if isinstance(dt_val, str):
+                    try:
+                        dt_obj = datetime.fromisoformat(dt_val.replace("Z", "+00:00"))
+                    except Exception:
+                        try:
+                            dt_obj = datetime.strptime(dt_val[:10], "%Y-%m-%d")
+                        except Exception:
+                            dt_obj = None
+                elif isinstance(dt_val, (date, datetime)):
+                    dt_obj = dt_val
+
+                history.append({
+                    "header_id": r.get("encounter_id"),
+                    "created_at": dt_obj,
+                    "status": "completed",
+                    "mmse_score": r.get("mmse_score"),
+                    "tgds_score": r.get("tgds_score")
+                })
             return render_template("nurse/patient_history.html", patient=patient, history=history)
     except Exception as e:
         print(f"Supabase patient_history error: {e}")
