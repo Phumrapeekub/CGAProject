@@ -212,8 +212,12 @@
           </div>
 
           <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
-            <div class="text-sm font-extrabold text-slate-900 mb-3">3. ส่วนสูงและรอบเอว</div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="text-sm font-extrabold text-slate-900 mb-3">3. น้ำหนัก ส่วนสูง และรอบเอว</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
+                <div class="text-[11px] text-slate-500 font-bold">น้ำหนัก (กก.)</div>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('weight') or '-' }}</div>
+              </div>
               <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
                 <div class="text-[11px] text-slate-500 font-bold">ส่วนสูง (ซม.)</div>
                 <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('height') or '-' }}</div>
@@ -221,6 +225,10 @@
               <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
                 <div class="text-[11px] text-slate-500 font-bold">รอบเอว (ซม.)</div>
                 <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('waist') or '-' }}</div>
+              </div>
+              <div class="rounded-2xl bg-slate-50/90 border border-slate-200/50 p-4 text-center">
+                <div class="text-[11px] text-slate-500 font-bold">BMI</div>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ g.get('bmi') or '-' }}</div>
               </div>
             </div>
           </div>

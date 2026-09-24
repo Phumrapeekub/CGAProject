@@ -323,6 +323,22 @@ def _get_assess_data(conn, header_id):
                 elif r['instrument'] == 'mmse_edu':
                     res['edu'] = txt
         
+        try:
+            sp = get_supabase_client()
+            id_filters = set(filter(None, [sess_id, actual_encounter_id, actual_header_id, header_id]))
+            or_clauses = [f"session_id.eq.{i}" for i in id_filters] + [f"cga_id.eq.{i}" for i in id_filters]
+            sb_ans = sp.table("assessment_answers").select("instrument, answer_text").or_(",".join(or_clauses)).execute()
+            for r in (sb_ans.data or []):
+                txt = r.get('answer_text') or ""
+                if r.get('instrument') == 'basic' and ':' in txt:
+                    k, v = txt.split(':', 1)
+                    if not res.get(k):
+                        res[k] = v
+                elif r.get('instrument') == 'mmse_edu' and not res.get('edu'):
+                    res['edu'] = txt
+        except Exception as e:
+            pass
+
         addr_fields = ['house_no', 'moo', 'subdistrict', 'district', 'province', 'postal_code', 'caregiver_relation', 'caregiver_name', 'emergency_phone']
         for af in addr_fields:
             if af not in res:
@@ -1543,17 +1559,24 @@ def assess_summary(header_id: int):
     cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (data.get('session_id'),))
     all_ans = cur.fetchall()
 
-    # 🟢 Supabase Fallback for all_ans if Local DB returned empty
-    if not all_ans:
-        try:
-            sp = get_supabase_client()
-            sid = data.get('session_id') or encounter_id or header_id
-            hid = data.get('header_id') or header_id
-            sb_ans = sp.table("assessment_answers").select("instrument, question_no, answer_text").or_(f"session_id.eq.{sid},cga_id.eq.{hid},cga_id.eq.{sid}").execute()
-            if sb_ans.data:
-                all_ans = sb_ans.data
-        except Exception as e:
-            current_app.logger.warning(f"Supabase all_ans fallback warning: {e}")
+    # 🟢 Supabase Sync for all_ans (merge cloud answers if local is incomplete)
+    try:
+        sp = get_supabase_client()
+        sid = data.get('session_id') or encounter_id or header_id
+        eid = data.get('encounter_id') or encounter_id
+        hid = data.get('header_id') or header_id
+        id_filters = set(filter(None, [sid, eid, hid, header_id]))
+        or_clauses = [f"session_id.eq.{i}" for i in id_filters] + [f"cga_id.eq.{i}" for i in id_filters]
+        sb_ans = sp.table("assessment_answers").select("instrument, question_no, answer_text").or_(",".join(or_clauses)).execute()
+        if sb_ans.data:
+            existing_pairs = {(str(r.get('instrument')), str(r.get('question_no')), str(r.get('answer_text'))) for r in all_ans}
+            for sr in sb_ans.data:
+                pair = (str(sr.get('instrument')), str(sr.get('question_no')), str(sr.get('answer_text')))
+                if pair not in existing_pairs:
+                    all_ans.append(sr)
+                    existing_pairs.add(pair)
+    except Exception as e:
+        current_app.logger.warning(f"Supabase all_ans fallback warning: {e}")
     
     # ถ้ายังไม่ได้ 8Q details จาก Local ให้ลองดึงจาก all_ans
     if not q8_details and all_ans:

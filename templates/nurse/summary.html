@@ -247,6 +247,21 @@
                               {{ full_info.get('sleep_problem_detail') if sleep=='abnormal' else 'ปกติ' }}
                           </p>
                       </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">ความเสี่ยงฆ่าตัวตาย</p>       
+                          <p class="font-medium text-sm {{ 'text-red-600 font-bold' if (suicide_risk in ['yes', 'มี', 'true'] or (q8_score is defined and q8_score > 0)) else 'text-green-600 font-bold' }}">
+                              {{ 'มีความเสี่ยง' if (suicide_risk in ['yes', 'มี', 'true'] or (q8_score is defined and q8_score > 0)) else 'ไม่มี / ปกติ' }}
+                          </p>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การพักอาศัย</p>       
+                          <p class="font-medium text-sm text-slate-800">
+                              {% set liv = full_info.get('living_status') or full_info.get('live') %}
+                              {% if liv in ['alone', 'อยู่คนเดียว'] %}อยู่คนเดียว
+                              {% elif liv in ['family', 'caregiver', 'อยู่กับครอบครัว'] %}อยู่กับครอบครัว
+                              {% else %}{{ liv or 'อยู่คนเดียว' }}{% endif %}
+                          </p>
+                      </div>
                   </div>
               </div>
           </div>

@@ -1299,6 +1299,8 @@ def patient_detail(hn):
                                 basic_extras["height"] = val.split(":", 1)[1]
                             elif val.startswith("waist:"):
                                 basic_extras["waist"] = val.split(":", 1)[1]
+                            elif val.startswith("weight:"):
+                                basic_extras["weight"] = val.split(":", 1)[1]
                             elif val.startswith("caregiver_name:"):
                                 basic_extras["caregiver_name"] = val.split(":", 1)[1]
                             elif val.startswith("caregiver_relation:"):
@@ -1523,6 +1525,21 @@ def patient_detail(hn):
             cga_general["height"] = basic_extras["height"]
         if "waist" in basic_extras:
             cga_general["waist"] = basic_extras["waist"]
+        if "weight" in basic_extras:
+            cga_general["weight"] = basic_extras["weight"]
+        elif latest_cga.get("weight"):
+            cga_general["weight"] = latest_cga.get("weight")
+
+        # Calculate BMI
+        try:
+            w_flt = float(cga_general.get("weight") or 0)
+            h_flt = float(cga_general.get("height") or 0)
+            if w_flt > 0 and h_flt > 0:
+                cga_general["bmi"] = f"{(w_flt / ((h_flt / 100) ** 2)):.1f}"
+            else:
+                cga_general["bmi"] = "-"
+        except:
+            cga_general["bmi"] = "-"
         if "caregiver_name" in basic_extras and basic_extras["caregiver_name"]:
             cga_general["caregiver_name"] = basic_extras["caregiver_name"]
         if "caregiver_relation" in basic_extras and basic_extras["caregiver_relation"]:
