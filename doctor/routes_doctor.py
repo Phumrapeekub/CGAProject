@@ -1229,11 +1229,28 @@ def patient_detail(hn):
         except:
             pass
 
-        print(f"DEBUG: patient_detail HN={hn} latest_session_id={latest_session_id}")
+        # 🟢 Supabase Cloud Merge for assessment_answers
+        try:
+            candidate_ids = [str(x) for x in [encounter_id, latest_session_id, latest_cga.get('id'), latest_cga.get('encounter_id')] if x]
+            if candidate_ids:
+                or_cond = ",".join([f"session_id.eq.{cid}" for cid in candidate_ids] + [f"cga_id.eq.{cid}" for cid in candidate_ids])
+                sb_ans = supabase.table("assessment_answers").select("*").or_(or_cond).execute()
+                if sb_ans.data:
+                    existing_keys = { (r.get("instrument"), str(r.get("question_no")), (r.get("answer_text") or "").split(":", 1)[0] if ":" in (r.get("answer_text") or "") else r.get("answer_text")) for r in ans_rows }
+                    for s_row in sb_ans.data:
+                        k_tuple = (s_row.get("instrument"), str(s_row.get("question_no")), (s_row.get("answer_text") or "").split(":", 1)[0] if ":" in (s_row.get("answer_text") or "") else s_row.get("answer_text"))
+                        if k_tuple not in existing_keys:
+                            ans_rows.append(s_row)
+                            existing_keys.add(k_tuple)
+                    latest_session_id = latest_session_id or encounter_id
+        except Exception as e_sb:
+            print("DEBUG: Supabase answers fetch error:", e_sb)
+
+        print(f"DEBUG: patient_detail HN={hn} latest_session_id={latest_session_id} ans_count={len(ans_rows)}")
         
-        if latest_session_id and ans_rows:
+        if ans_rows:
             try:
-                print(f"DEBUG: Fetched {len(ans_rows)} answers for session {latest_session_id} from Local DB")
+                print(f"DEBUG: Fetched {len(ans_rows)} answers for HN {hn}")
                 for row in ans_rows:
                     inst = str(row.get("instrument") or "").lower()
                     q_no = row.get("question_no")
@@ -1497,6 +1514,11 @@ def patient_detail(hn):
 
         if "living_status" in basic_extras:
             cga_general["living_status"] = basic_extras["living_status"]
+        elif not cga_general.get("living_status"):
+            cg_name = cga_general.get("caregiver_name")
+            if not cg_name or cg_name in ["-", "ไม่มีข้อมูล", ""]:
+                cga_general["living_status"] = "alone"
+
         if "height" in basic_extras:
             cga_general["height"] = basic_extras["height"]
         if "waist" in basic_extras:
@@ -1542,8 +1564,8 @@ def patient_detail(hn):
             disease_str = ", ".join(dict.fromkeys(doctor_diseases))
             cga_general["disease"] = disease_str
             cga_general["chronic_disease"] = disease_str
-        elif not cga_general.get("disease"):
-            cga_general["disease"] = latest_cga.get("comorbidity_detail") or latest_c.get("note_from_nurse") or "-"
+        elif not cga_general.get("disease") or cga_general.get("disease") == "-":
+            cga_general["disease"] = latest_cga.get("comorbidity_detail") or latest_c.get("note_from_nurse") or "ไม่มีโรคประจำตัว"
             cga_general["chronic_disease"] = cga_general["disease"]
 
         return render_template(

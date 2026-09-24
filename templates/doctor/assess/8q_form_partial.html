@@ -3,12 +3,13 @@
 {# -------------------------
    normalize answers
 -------------------------- #}
+{% set is_all_zero = (t.get('total_score') == 0 or t.get('risk_level') in ['ไม่มี', 'low', 'none', 'ปกติ']) %}
 {% set ans = {} %}
 {% for i in range(1, 9) %}
   {% set val = t.get('q' ~ i) %}
-  {% if val == 'yes' %}
+  {% if val in ['yes', 1, '1'] %}
     {% set _ = ans.update({i: 1}) %}
-  {% elif val == 'no' %}
+  {% elif val in ['no', 0, '0'] or (is_all_zero and val is none) %}
     {% set _ = ans.update({i: 0}) %}
   {% else %}
     {% set _ = ans.update({i: none}) %}
@@ -144,7 +145,7 @@
         {% set answer = ans[num] %}
 
         {% if num == 3 %}
-          {% set answer = 1 if (q3a == 1 and q3b == 1) else (0 if (q3a_raw or q3b_raw) else none) %}
+          {% set answer = 1 if (q3a == 1 and q3b == 1) else (0 if (q3a_raw or q3b_raw or ans[3] == 0 or is_all_zero) else none) %}
           {% set got_score = weight if (q3a == 1 and q3b == 1) else 0 %}
         {% else %}
           {% set got_score = weight if (answer is not none and answer == 1) else 0 %}

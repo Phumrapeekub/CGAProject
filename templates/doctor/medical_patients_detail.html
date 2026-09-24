@@ -152,24 +152,25 @@
               <div class="rounded-2xl soft-chip p-3">
                 <div class="text-[11px] text-slate-500 font-bold">การพักอาศัย</div>
                 <div class="text-sm font-bold text-slate-800 mt-1">
-                  {% if g.get('living_status') == 'alone' %}อยู่คนเดียว
-                  {% elif g.get('living_status') == 'family' %}อยู่กับครอบครัว
-                  {% else %}-{% endif %}
+                  {% if g.get('living_status') in ['alone', 'อยู่คนเดียว'] %}อยู่คนเดียว
+                  {% elif g.get('living_status') in ['family', 'อยู่กับครอบครัว', 'caregiver'] %}อยู่กับครอบครัว
+                  {% elif g.get('living_status') and g.get('living_status') != '-' %}{{ g.get('living_status') }}
+                  {% else %}อยู่คนเดียว{% endif %}
                 </div>
               </div>
               <div class="rounded-2xl bg-white/85 border border-slate-200/70 p-3">
                 <div class="text-[11px] text-slate-500 font-bold">ผู้ดูแล (Caregiver)</div>
                 <div class="text-sm font-bold text-slate-800 mt-1">
                   {{ g.get('caregiver_name') or 'ไม่มีข้อมูล' }}
-                  {% if g.get('caregiver_phone') %}
+                  {% if g.get('caregiver_phone') and g.get('caregiver_phone') != '-' %}
                     <span class="text-slate-500 font-semibold">({{ g.get('caregiver_phone') }})</span>
                   {% endif %}
                 </div>
               </div>
-              <div class="rounded-2xl bg-white/85 border {% if g.get('disease') and g.get('disease') != '-' %}border-red-200 bg-red-50/50{% else %}border-emerald-200 bg-emerald-50/50{% endif %} p-3">
-                <div class="text-[11px] {% if g.get('disease') and g.get('disease') != '-' %}text-red-700{% else %}text-emerald-700{% endif %} font-bold">โรคประจำตัว</div>
-                <div class="text-sm font-bold {% if g.get('disease') and g.get('disease') != '-' %}text-red-800{% else %}text-emerald-800{% endif %} mt-1">
-                  {{ g.get('disease') or 'ไม่มีโรคประจำตัว' }}
+              <div class="rounded-2xl bg-white/85 border {% if g.get('disease') and g.get('disease') != '-' and g.get('disease') != 'ไม่มีโรคประจำตัว' %}border-red-200 bg-red-50/50{% else %}border-emerald-200 bg-emerald-50/50{% endif %} p-3">
+                <div class="text-[11px] {% if g.get('disease') and g.get('disease') != '-' and g.get('disease') != 'ไม่มีโรคประจำตัว' %}text-red-700{% else %}text-emerald-700{% endif %} font-bold">โรคประจำตัว</div>
+                <div class="text-sm font-bold {% if g.get('disease') and g.get('disease') != '-' and g.get('disease') != 'ไม่มีโรคประจำตัว' %}text-red-800{% else %}text-emerald-800{% endif %} mt-1">
+                  {% if g.get('disease') and g.get('disease') != '-' %}{{ g.get('disease') }}{% else %}ไม่มีโรคประจำตัว{% endif %}
                 </div>
               </div>
             </div>

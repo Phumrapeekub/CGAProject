@@ -146,6 +146,74 @@ def _get_assess_data(conn, header_id):
             ids = cur.fetchone()
 
         if not ids:
+            try:
+                sp = get_supabase_client()
+                sb_cga = sp.table("cga_records").select("*").or_(f"encounter_id.eq.{header_id},id.eq.{header_id}").limit(1).execute()
+                cga_data = sb_cga.data[0] if sb_cga.data else None
+                
+                sb_head = sp.table("cga_headers").select("*").or_(f"encounter_id.eq.{header_id},id.eq.{header_id}").limit(1).execute()
+                head_data = sb_head.data[0] if sb_head.data else None
+
+                if cga_data or head_data:
+                    enc_id = (cga_data.get("encounter_id") if cga_data else None) or (head_data.get("encounter_id") if head_data else None) or header_id
+                    cga_rec_id = (cga_data.get("id") if cga_data else None) or (head_data.get("id") if head_data else None) or header_id
+                    hn_target = cga_data.get("hn") if cga_data else None
+                    
+                    p_cloud = None
+                    if hn_target:
+                        p_res = sp.table("patients").select("*").eq("hn", hn_target).limit(1).execute()
+                        if p_res.data: p_cloud = p_res.data[0]
+                    
+                    if not p_cloud and cga_data and cga_data.get("patient_id"):
+                        p_res = sp.table("patients").select("*").eq("id", cga_data["patient_id"]).limit(1).execute()
+                        if p_res.data: p_cloud = p_res.data[0]
+
+                    if p_cloud or cga_data:
+                        final_hn = (p_cloud.get("hn") if p_cloud else None) or (cga_data.get("hn") if cga_data else None) or "HN ---"
+                        clean_hn = str(final_hn).upper().replace("HN", "").strip()
+                        if clean_hn.isdigit(): final_hn = f"HN{clean_hn.zfill(3)}"
+                        final_gcn = str(p_cloud.get("gcn")).zfill(3) if (p_cloud and p_cloud.get("gcn")) else "001"
+                        
+                        res = {
+                            "hn": final_hn,
+                            "gcn": final_gcn,
+                            "full_name": (p_cloud.get("full_name") if p_cloud else None) or (cga_data.get("full_name") if cga_data else None),
+                            "birth_date": p_cloud.get("birth_date") if p_cloud else None,
+                            "gender": p_cloud.get("gender") if p_cloud else "male",
+                            "address": p_cloud.get("address") if p_cloud else None,
+                            "phone": p_cloud.get("phone") if p_cloud else None,
+                            "age_year": cga_data.get("age") if cga_data else (p_cloud.get("age_year") if p_cloud else None),
+                            "patient_id": (p_cloud.get("id") if p_cloud else None) or (cga_data.get("patient_id") if cga_data else None),
+                            "session_id": enc_id,
+                            "encounter_id": enc_id,
+                            "header_id": cga_rec_id,
+                            "mmse_score": cga_data.get("mmse_score") if cga_data else 0,
+                            "tgds_score": cga_data.get("tgds_score") if cga_data else 0,
+                            "q8_score": cga_data.get("q8_score") if cga_data else 0,
+                            "suicide_risk": cga_data.get("suicide_risk") if cga_data else "none",
+                            "smoke": cga_data.get("smoke") if cga_data else "no",
+                            "alcohol": cga_data.get("alcohol") if cga_data else "no",
+                            "incontinence": cga_data.get("incontinence") if cga_data else "normal",
+                            "sleep_problem": cga_data.get("sleep_problem") if cga_data else "normal",
+                            "caregiver_name": cga_data.get("caregiver_name") if cga_data else "",
+                            "caregiver_relation": cga_data.get("caregiver_relation") if cga_data else "",
+                            "emergency_phone": cga_data.get("emergency_phone") if cga_data else "",
+                            "education": cga_data.get("education") if cga_data else "3"
+                        }
+                        
+                        sb_ans = sp.table("assessment_answers").select("*").or_(f"session_id.eq.{enc_id},cga_id.eq.{cga_rec_id},cga_id.eq.{enc_id}").execute()
+                        for r in (sb_ans.data or []):
+                            txt = r.get('answer_text') or ""
+                            if r.get('instrument') == 'basic' and ':' in txt:
+                                k, v = txt.split(':', 1)
+                                res[k] = v
+                            elif r.get('instrument') == 'mmse_edu':
+                                res['edu'] = txt
+                        
+                        return res
+            except Exception as sb_err:
+                print(f"Supabase _get_assess_data fallback error: {sb_err}")
+                
             return {"hn": "N/A", "gcn": "N/A", "patient_id": None, "session_id": None}
         
         p_id = ids["patient_id"]
@@ -166,6 +234,17 @@ def _get_assess_data(conn, header_id):
         hn_val = p_row.get("hn")
         gcn_val = p_row.get("gcn")
         
+        if hn_val and str(hn_val).startswith("TMP"):
+            try:
+                sp = get_supabase_client()
+                chk_cga = sp.table("cga_records").select("hn").or_(f"encounter_id.eq.{actual_encounter_id},id.eq.{actual_header_id}").limit(1).execute()
+                if chk_cga.data and chk_cga.data[0].get("hn") and not str(chk_cga.data[0]["hn"]).startswith("TMP"):
+                    hn_val = chk_cga.data[0]["hn"]
+                    cur.execute("UPDATE patients SET hn=%s WHERE id=%s", (hn_val, p_id))
+                    conn.commit()
+            except Exception as sb_chk_err:
+                pass
+
         if hn_val and str(hn_val).startswith("TMP"):
             try:
                 # ถ้าเป็นคนไข้ใหม่ที่ยังกรอกไม่เสร็จ ให้ลองหา GCN เดิมที่เคยคำนวณไว้ก่อน
@@ -941,6 +1020,35 @@ def assess_step1_save(header_id: int):
             d = f.getlist('chronicDiseases')
             if d:
                 cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'basic', 0, %s)", (sess_id, f"chronicDiseases:{','.join(d)}"))
+            
+            # 🟢 Cloud Sync basic answers to Supabase assessment_answers
+            try:
+                sp = get_supabase_client()
+                sp.table("assessment_answers").delete().or_(f"session_id.eq.{sess_id},cga_id.eq.{header_id}").eq("instrument", "basic").execute()
+                sb_rows = []
+                for k in fields:
+                    if f.get(k):
+                        sb_rows.append({
+                            "session_id": sess_id,
+                            "cga_id": header_id,
+                            "instrument": "basic",
+                            "question_no": 0,
+                            "answer_text": f"{k}:{f.get(k)}",
+                            "score": 0
+                        })
+                if d:
+                    sb_rows.append({
+                        "session_id": sess_id,
+                        "cga_id": header_id,
+                        "instrument": "basic",
+                        "question_no": 0,
+                        "answer_text": f"chronicDiseases:{','.join(d)}",
+                        "score": 0
+                    })
+                if sb_rows:
+                    sp.table("assessment_answers").insert(sb_rows).execute()
+            except Exception as sb_ans_err:
+                print("Step 1 Supabase answers sync warning:", sb_ans_err)
         
         conn.commit()
 
@@ -1075,6 +1183,19 @@ def assess_mmse_save(header_id: int):
             cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'mmse_edu', 0, %s)", (sess_id, f.get('edu')))
             cur.execute("DELETE FROM assessment_answers WHERE session_id=%s AND instrument='basic' AND answer_text LIKE 'education:%%'", (sess_id,))
             cur.execute("INSERT INTO assessment_answers (session_id, instrument, question_no, answer_text) VALUES (%s, 'basic', 0, %s)", (sess_id, f"education:{f.get('edu')}"))
+            try:
+                sp = get_supabase_client()
+                sp.table("assessment_answers").delete().or_(f"session_id.eq.{sess_id},cga_id.eq.{actual_cga_id}").eq("instrument", "mmse_edu").execute()
+                sp.table("assessment_answers").insert({
+                    "session_id": sess_id,
+                    "cga_id": actual_cga_id,
+                    "instrument": "mmse_edu",
+                    "question_no": 0,
+                    "answer_text": str(f.get('edu')),
+                    "score": 0
+                }).execute()
+            except Exception as sb_edu_err:
+                print("MMSE Supabase edu sync warning:", sb_edu_err)
         
         conn.commit()
         if f.get('next_url'):
@@ -1325,6 +1446,26 @@ def assess_tgds_save(header_id: int):
                 "is_completed": True
             }
             safe_supabase_sync("cga_headers", cga_sb_data, method='upsert', conflict_col='encounter_id')
+
+            # 3. Sync all assessment_answers to Supabase Cloud
+            if sess_id:
+                cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (sess_id,))
+                local_answers = cur.fetchall()
+                if local_answers:
+                    sp = get_supabase_client()
+                    sp.table("assessment_answers").delete().or_(f"session_id.eq.{sess_id},cga_id.eq.{actual_cga_id}").execute()
+                    sb_ans_payload = [
+                        {
+                            "session_id": sess_id,
+                            "cga_id": actual_cga_id,
+                            "instrument": a['instrument'],
+                            "question_no": int(a['question_no']) if str(a['question_no']).isdigit() else 0,
+                            "answer_text": str(a['answer_text']),
+                            "score": 0
+                        }
+                        for a in local_answers
+                    ]
+                    sp.table("assessment_answers").insert(sb_ans_payload).execute()
             
         except Exception as cloud_err: 
             current_app.logger.warning(f"⚠️ Cloud Sync Error (Local Data is Safe): {cloud_err}")
@@ -1401,14 +1542,45 @@ def assess_summary(header_id: int):
     # ดึงข้อมูลเพิ่มเติมสำหรับหน้า Summary (Depression 2Q, Health Behavior)
     cur.execute("SELECT instrument, question_no, answer_text FROM assessment_answers WHERE session_id=%s", (data.get('session_id'),))
     all_ans = cur.fetchall()
+
+    # 🟢 Supabase Fallback for all_ans if Local DB returned empty
+    if not all_ans:
+        try:
+            sp = get_supabase_client()
+            sid = data.get('session_id') or encounter_id or header_id
+            hid = data.get('header_id') or header_id
+            sb_ans = sp.table("assessment_answers").select("instrument, question_no, answer_text").or_(f"session_id.eq.{sid},cga_id.eq.{hid},cga_id.eq.{sid}").execute()
+            if sb_ans.data:
+                all_ans = sb_ans.data
+        except Exception as e:
+            current_app.logger.warning(f"Supabase all_ans fallback warning: {e}")
+    
+    # ถ้ายังไม่ได้ 8Q details จาก Local ให้ลองดึงจาก all_ans
+    if not q8_details and all_ans:
+        for r in all_ans:
+            if r.get('instrument') == 'depression8Q':
+                try:
+                    q_idx = int(r['question_no'])
+                    q8_details[str(q_idx)] = 'มี' if r['answer_text'] in ['yes', '1', 1] else 'ไม่มี'
+                except: pass
+
+    if q8_val == 0 and data.get('q8_score') is not None:
+        q8_val = data.get('q8_score')
+
+    if sr_val in ['none', None, ''] and data.get('suicide_risk'):
+        sr_val = 'yes' if data.get('suicide_risk') in ['yes', 'มี'] else 'none'
+    if inc_val in ['normal', None, ''] and data.get('incontinence'):
+        inc_val = data.get('incontinence')
+    if sl_val in ['normal', None, ''] and data.get('sleep_problem'):
+        sl_val = data.get('sleep_problem')
     
     # ดึงข้อมูลทั้งหมด (Full Info) เพื่อแสดงในหน้าสรุปแบบละเอียด
     full_info = {}
     
     # แปลง key จาก assessment_answers ให้เป็น Dictionary ที่เข้าถึงง่าย
     for r in all_ans:
-        inst = r['instrument']
-        val = r['answer_text']
+        inst = r.get('instrument')
+        val = r.get('answer_text') or ''
         
         if inst == 'basic' and ':' in val:
             k, v = val.split(':', 1)
@@ -1424,18 +1596,44 @@ def assess_summary(header_id: int):
         elif inst == 'suicideRisk':
             full_info['suicide_risk'] = val
 
+    # รวมข้อมูลจาก data เข้า full_info ป้องกันฟิลด์สูญหาย
+    if not full_info.get('age') and (data.get('age_year') or data.get('age')):
+        full_info['age'] = data.get('age_year') or data.get('age')
+    if not full_info.get('smoke') and data.get('smoke'):
+        full_info['smoke'] = data.get('smoke')
+    if not full_info.get('alcohol') and data.get('alcohol'):
+        full_info['alcohol'] = data.get('alcohol')
+    if not full_info.get('caregiver_name') and data.get('caregiver_name'):
+        full_info['caregiver_name'] = data.get('caregiver_name')
+    if not full_info.get('caregiver_relation') and data.get('caregiver_relation'):
+        full_info['caregiver_relation'] = data.get('caregiver_relation')
+    if not full_info.get('emergency_phone') and data.get('emergency_phone'):
+        full_info['emergency_phone'] = data.get('emergency_phone')
+    if not full_info.get('living_status') and data.get('live'):
+        full_info['living_status'] = data.get('live')
+    if not full_info.get('height') and data.get('height'):
+        full_info['height'] = data.get('height')
+    if not full_info.get('waist') and data.get('waist'):
+        full_info['waist'] = data.get('waist')
+    if not full_info.get('weight') and data.get('weight'):
+        full_info['weight'] = data.get('weight')
+    if not full_info.get('chronicDiseases') and data.get('chronicDiseases'):
+        full_info['chronicDiseases'] = data.get('chronicDiseases')
+    if not full_info.get('address') and data.get('address'):
+        full_info['address'] = data.get('address')
+
     # เพิ่มเพศเข้าไปใน full_info
     full_info['gender'] = data.get('gender')
 
     dep_2q_txt = []
     
     for r in all_ans:
-        inst = r['instrument']
-        val = r['answer_text']
+        inst = r.get('instrument')
+        val = r.get('answer_text')
         if inst == 'depression2Q':
             # แปลง yes/no เป็น มี/ไม่มี
             disp_val = 'มี' if val == 'yes' else 'ไม่มี'
-            dep_2q_txt.append(f"Q{r['question_no']}: {disp_val}")
+            dep_2q_txt.append(f"Q{r.get('question_no')}: {disp_val}")
 
     dep_2q_display = ", ".join(dep_2q_txt) if dep_2q_txt else "-"
     
@@ -1486,6 +1684,12 @@ def assess_summary(header_id: int):
             t_row = cur.fetchone()
             if t_row: t_score = t_row['total_score'] or 0
 
+    # 🟢 Supabase Fallback for MMSE and TGDS scores if still 0
+    if m_score == 0 and data.get('mmse_score'):
+        m_score = data.get('mmse_score')
+    if t_score == 0 and data.get('tgds_score'):
+        t_score = data.get('tgds_score')
+
     if actual_cga_id:
         # 3. ดึงรายละเอียดรายข้อ (ถ้ามี)
         cur.execute("SELECT id FROM assessment_mmse WHERE cga_id=%s ORDER BY id DESC LIMIT 1", (actual_cga_id,))
@@ -1514,6 +1718,11 @@ def assess_summary(header_id: int):
     edu_row = cur.fetchone()
     if edu_row:
         edu = edu_row['answer_text'].split(':')[1]
+    elif data.get('education'):
+        raw_edu = str(data.get('education'))
+        if raw_edu in ['1', '2', '3']: edu = raw_edu
+        elif 'ไม่ได้เรียน' in raw_edu: edu = '1'
+        elif 'ประถม' in raw_edu: edu = '2'
 
     mmse_total = 30
     mmse_threshold = 22 # default (สูงกว่าประถม cutoff ที่ 22 -> <=22 เสี่ยง)
@@ -1602,11 +1811,26 @@ def assess_summary(header_id: int):
         ai_result = {"error": str(e), "label": "ไม่สามารถวิเคราะห์ได้", "risk_score": 0, "factors": []}
 
     # ดึงข้อมูล HN และ GCN ล่าสุด
-    fresh_p = {"hn": data.get("hn"), "gcn": data.get("gcn")}
+    hn_candidate = data.get("hn")
+    gcn_candidate = data.get("gcn")
     if p_id:
         cur.execute("SELECT hn, gcn FROM patients WHERE id = %s", (p_id,))
         row = cur.fetchone()
-        if row: fresh_p = row
+        if row:
+            if row.get("hn") and not str(row["hn"]).startswith("TMP"):
+                hn_candidate = row["hn"]
+            elif not hn_candidate or str(hn_candidate).startswith("TMP"):
+                hn_candidate = row.get("hn")
+            
+            if row.get("gcn") and str(row["gcn"]).lower() not in ["none", "---", ""]:
+                gcn_candidate = str(row["gcn"]).zfill(3)
+
+    if not hn_candidate or hn_candidate == "N/A":
+        hn_candidate = data.get("hn") or "HN ---"
+    if not gcn_candidate or str(gcn_candidate).lower() in ["none", "---", ""]:
+        gcn_candidate = data.get("gcn") or "001"
+
+    fresh_p = {"hn": hn_candidate, "gcn": gcn_candidate}
     
     cur.close()
     conn.close()

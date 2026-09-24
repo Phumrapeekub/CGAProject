@@ -152,9 +152,13 @@
                   <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                       <p class="text-xs text-slate-500 font-bold mb-1">ที่อยู่ปัจจุบัน</p>
                       <p class="text-lg text-slate-800 font-medium">
-                          {{ full_info.get('house_no', '-') }} หมู่ {{ full_info.get('moo', '-') }}
-                          ต.{{ full_info.get('subdistrict', '-') }} อ.{{ full_info.get('district', '-') }}
-                          จ.{{ full_info.get('province', '-') }} {{ full_info.get('postal_code', '') }}
+                          {% if full_info.get('house_no') and full_info.get('house_no') != '-' %}
+                              {{ full_info.get('house_no') }} หมู่ {{ full_info.get('moo', '-') }}
+                              ต.{{ full_info.get('subdistrict', '-') }} อ.{{ full_info.get('district', '-') }}
+                              จ.{{ full_info.get('province', '-') }} {{ full_info.get('postal_code', '') }}
+                          {% else %}
+                              {{ patient.get('address') or full_info.get('address') or '-' }}
+                          {% endif %}
                       </p>
                   </div>
                   <div class="p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
@@ -194,38 +198,57 @@
                           <p class="text-xl font-bold">{{ full_info.get('bmi', '-') }}</p>
                       </div>
                   </div>
-                                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                          <p class="text-xs text-slate-500 mb-2">การมองเห็น</p>
-                                          <div class="flex justify-between font-medium text-sm">
-                                              <span>ซ้าย: {{ full_info.get('vision_left') or '-' }}</span>
-                                              <span>ขวา: {{ full_info.get('vision_right') or '-' }}</span>
-                                          </div>
-                                      </div>
-                                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                          <p class="text-xs text-slate-500 mb-2">การได้ยิน</p>
-                                          <div class="flex justify-between font-medium text-sm">
-                                              <span class="{{ 'text-red-600' if full_info.get('hearing_left')=='abnormal' else 'text-green-600' }}">
-                                                  ซ้าย: {{ full_info.get('hearing_left_detail') if full_info.get('hearing_left')=='abnormal' else 'ปกติ' }}
-                                              </span>
-                                              <span class="{{ 'text-red-600' if full_info.get('hearing_right')=='abnormal' else 'text-green-600' }}">
-                                                  ขวา: {{ full_info.get('hearing_right_detail') if full_info.get('hearing_right')=='abnormal' else 'ปกติ' }}
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                          <p class="text-xs text-slate-500 mb-2">การกลั้นปัสสาวะ</p>       
-                                          <p class="font-medium text-sm {{ 'text-red-600' if incontinence=='abnormal' else 'text-green-600' }}">
-                                              {{ full_info.get('incontinence_detail') if incontinence=='abnormal' else 'ปกติ' }}
-                                          </p>
-                                      </div>
-                                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                          <p class="text-xs text-slate-500 mb-2">การนอนหลับ</p>       
-                                          <p class="font-medium text-sm {{ 'text-red-600' if sleep=='abnormal' else 'text-green-600' }}">
-                                              {{ full_info.get('sleep_problem_detail') if sleep=='abnormal' else 'ปกติ' }}
-                                          </p>
-                                      </div>
-                                  </div>              </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การสูบบุหรี่</p>
+                          <p class="font-medium text-sm">
+                              {% set smk = full_info.get('smoke') %}
+                              {% if smk in ['yes', 'สูบ', '1'] %}<span class="text-red-600 font-bold">สูบ</span>
+                              {% elif smk in ['quit', 'เคยสูบ', 'เลิกแล้ว'] %}<span class="text-amber-600 font-bold">เคยสูบ/เลิกแล้ว</span>
+                              {% else %}<span class="text-green-600 font-bold">ไม่สูบ</span>{% endif %}
+                          </p>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การดื่มแอลกอฮอล์</p>
+                          <p class="font-medium text-sm">
+                              {% set alc = full_info.get('alcohol') %}
+                              {% if alc in ['daily', 'ดื่มทุกวัน'] %}<span class="text-red-600 font-bold">ดื่มทุกวัน</span>
+                              {% elif alc in ['social', 'sometimes', 'บางครั้ง', 'ดื่มบางครั้ง'] %}<span class="text-amber-600 font-bold">ดื่มบางครั้ง</span>
+                              {% else %}<span class="text-green-600 font-bold">ไม่ดื่ม</span>{% endif %}
+                          </p>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การมองเห็น</p>
+                          <div class="flex justify-between font-medium text-sm">
+                              <span>ซ้าย: {{ full_info.get('vision_left') or '-' }}</span>
+                              <span>ขวา: {{ full_info.get('vision_right') or '-' }}</span>
+                          </div>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การได้ยิน</p>
+                          <div class="flex justify-between font-medium text-sm">
+                              <span class="{{ 'text-red-600' if full_info.get('hearing_left')=='abnormal' else 'text-green-600' }}">
+                                  ซ้าย: {{ full_info.get('hearing_left_detail') if full_info.get('hearing_left')=='abnormal' else 'ปกติ' }}
+                              </span>
+                              <span class="{{ 'text-red-600' if full_info.get('hearing_right')=='abnormal' else 'text-green-600' }}">
+                                  ขวา: {{ full_info.get('hearing_right_detail') if full_info.get('hearing_right')=='abnormal' else 'ปกติ' }}
+                              </span>
+                          </div>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การกลั้นปัสสาวะ</p>       
+                          <p class="font-medium text-sm {{ 'text-red-600' if incontinence=='abnormal' else 'text-green-600' }}">
+                              {{ full_info.get('incontinence_detail') if incontinence=='abnormal' else 'ปกติ' }}
+                          </p>
+                      </div>
+                      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p class="text-xs text-slate-500 mb-2">การนอนหลับ</p>       
+                          <p class="font-medium text-sm {{ 'text-red-600' if sleep=='abnormal' else 'text-green-600' }}">
+                              {{ full_info.get('sleep_problem_detail') if sleep=='abnormal' else 'ปกติ' }}
+                          </p>
+                      </div>
+                  </div>
+              </div>
           </div>
       </div>
   
