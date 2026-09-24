@@ -41,7 +41,8 @@
                     <div class="flex flex-wrap items-center gap-4 text-blue-100 font-medium text-sm">
                         <span>HN: {{ patients.hn or '-' }}</span>
                         <span class="w-1 h-1 bg-blue-300 rounded-full"></span>
-                        <span>อายุ: {{ (now_year - patients.birth_date.year) if patients.birth_date else '-' }} ปี</span>
+                        {% set bd_yr = (patients.birth_date.year if (patients.birth_date and patients.birth_date.year is defined) else (patients.birth_date.split('-')[0]|int if (patients.birth_date and patients.birth_date is string) else None)) %}
+                        <span>อายุ: {{ (now_year - bd_yr) if bd_yr else '-' }} ปี</span>
                         <span class="w-1 h-1 bg-blue-300 rounded-full"></span>
                         {% set gender_display = 'ชาย' if patients.gender in ['male','ชาย','M'] else 'หญิง' if patients.gender in ['female','หญิง','F'] else patients.gender %}
                         <span>เพศ: {{ gender_display or '-' }}</span>

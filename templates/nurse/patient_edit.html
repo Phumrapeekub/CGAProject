@@ -66,7 +66,12 @@
                 <label class="block text-sm font-bold text-slate-700 ml-1">วัน/เดือน/ปีเกิด (พ.ศ.)</label>
                 {% set bd = patient.birth_date or patient.birthdate %}
                 {% set bd_val = "" %}
-                {% if bd %}
+                {% if bd is string %}
+                    {% set bd_parts = bd.split('T')[0].split('-') %}
+                    {% if bd_parts|length == 3 %}
+                        {% set bd_val = "%02d/%02d/%d" % (bd_parts[2]|int, bd_parts[1]|int, bd_parts[0]|int + 543) %}
+                    {% endif %}
+                {% elif bd and bd.day is defined %}
                     {% set bd_val = "%02d/%02d/%d" % (bd.day, bd.month, bd.year + 543) %}
                 {% endif %}
                 <input id="dob" type="text" data-buddhist-date="1" value="{{ bd_val }}" placeholder="วว/ดด/ปปปป"

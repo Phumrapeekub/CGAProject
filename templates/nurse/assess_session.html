@@ -76,7 +76,14 @@
             {% set dob_val = "" %}
             {% if assess and assess.get('birth_date') %}
               {% set bd = assess.get('birth_date') %}
-              {% set dob_val = "%02d/%02d/%d" % (bd.day, bd.month, bd.year + 543) %}
+              {% if bd is string %}
+                {% set bd_parts = bd.split('T')[0].split('-') %}
+                {% if bd_parts|length == 3 %}
+                  {% set dob_val = "%02d/%02d/%d" % (bd_parts[2]|int, bd_parts[1]|int, bd_parts[0]|int + 543) %}
+                {% endif %}
+              {% elif bd and bd.day is defined %}
+                {% set dob_val = "%02d/%02d/%d" % (bd.day, bd.month, bd.year + 543) %}
+              {% endif %}
             {% endif %}
             <input id="dob" name="dob" type="text" data-buddhist-date="1" class="w-full rounded-2xl border-2 border-slate-200 px-6 py-4 outline-none focus:border-sky-400 text-xl bg-white font-medium" value="{{ dob_val }}">
             <input type="hidden" id="dob_ad" name="birthdate" value="{{ assess.get('birth_date') or '' }}">
