@@ -88,9 +88,9 @@
 {% set tgds = (scores.tgds if scores is defined and scores and scores.tgds is defined else (scores.get('tgds') if scores is mapping else 0)) %}
 {% set sra  = (scores.sra  if scores is defined and scores and scores.sra  is defined else (scores.get('sra')  if scores is mapping else 0)) %}
 {% set twoq = (scores.twoq if scores is defined and scores and scores.twoq is defined else (scores.get('twoq') if scores is mapping else 0)) %}
-{% set mmse_val = (mmse.score_total|int if mmse is mapping else mmse|int) %}
-{% set tgds_val = (tgds.total_score|int if tgds is mapping else tgds|int) %}
-{% set twoq_val = (twoq.yes_count|int if twoq is mapping else (twoq.score_total|int if twoq is mapping and 'score_total' in twoq else twoq|int)) %}
+{% set mmse_val = (mmse.get('score_total')|int if (mmse is mapping and mmse.get('score_total') is not none) else (mmse|int if (mmse is not mapping and mmse is not none and mmse != '') else 0)) %}
+{% set tgds_val = (tgds.get('total_score')|int if (tgds is mapping and tgds.get('total_score') is not none) else (tgds|int if (tgds is not mapping and tgds is not none and tgds != '') else 0)) %}
+{% set twoq_val = (twoq.get('yes_count')|int if (twoq is mapping and twoq.get('yes_count') is not none) else (twoq.get('score_total')|int if (twoq is mapping and twoq.get('score_total') is not none) else (twoq|int if (twoq is not mapping and twoq is not none and twoq != '') else 0))) %}
 
 <div class="min-h-[calc(100vh-64px)] bg-slate-50">
   <div class="max-w-[1200px] mx-auto px-4 lg:px-6 py-6">

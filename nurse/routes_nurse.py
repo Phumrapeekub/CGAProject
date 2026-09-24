@@ -636,6 +636,22 @@ def assess_new_encounter(hn: str):
         cur.execute("SELECT id, full_name FROM patients WHERE hn = %s", (hn,))
         patient = cur.fetchone()
         if not patient:
+            try:
+                sp = get_supabase_client()
+                sb_res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
+                if sb_res.data:
+                    sb_p = sb_res.data[0]
+                    cur.execute("""
+                        INSERT INTO patients (hn, gcn, full_name, gender, birth_date, phone, address, chronic_disease)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (sb_p.get('hn'), sb_p.get('gcn'), sb_p.get('full_name'), sb_p.get('gender'),
+                          sb_p.get('birth_date'), sb_p.get('phone'), sb_p.get('address'), sb_p.get('chronic_disease')))
+                    conn.commit()
+                    patient = {'id': cur.lastrowid, 'full_name': sb_p.get('full_name')}
+            except Exception as e:
+                print(f"Supabase fallback in assess_new_encounter: {e}")
+
+        if not patient:
             flash(f"ไม่พบข้อมูลผู้ป่วย HN: {hn}", "danger")
             return redirect(url_for('nurse.patients'))
             
@@ -2183,83 +2199,84 @@ def patients():
 def patient_history(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    conn = get_db_connection()
+    
     patient = None
     history = []
+
+    # 1. Primary: Fetch from Supabase Cloud
+    try:
+        sp = get_supabase_client()
+        res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
+        if res.data:
+            patient = res.data[0]
+            raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
+            if raw_hn.isdigit():
+                patient['hn'] = f"HN{raw_hn.zfill(3)}"
+            rec_res = sp.table("cga_records").select("encounter_id, created_at, mmse_score, tgds_score").eq("hn", hn).order("created_at", desc=True).execute()
+            history = [{"header_id": r.get("encounter_id"), "created_at": r.get("created_at"), "status": "completed", "mmse_score": r.get("mmse_score"), "tgds_score": r.get("tgds_score")} for r in (rec_res.data or [])]
+            return render_template("nurse/patient_history.html", patient=patient, history=history)
+    except Exception as e:
+        print(f"Supabase patient_history error: {e}")
+
+    # 2. Fallback: Local MySQL
+    conn = get_db_connection()
     if conn:
         cur = conn.cursor(dictionary=True, buffered=True)
         try:
             cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
             patient = cur.fetchone()
-            if not patient:
-                flash("ไม่พบข้อมูลผู้ป่วยในระบบ", "danger")
-                return redirect(url_for("nurse.patients"))
-            
-            # 🟢 Format HN ให้ตรงกับหน้ารายชื่อหลัก
-            raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
-            if raw_hn.isdigit():
-                patient['hn'] = f"HN{raw_hn.zfill(3)}"
-
-            # 🟢 ดึงประวัติการประเมินจาก cga_records
-            query = """
-                SELECT 
-                    encounter_id as header_id, 
-                    created_at, 
-                    'completed' as status, 
-                    mmse_score, 
-                    tgds_score 
-                FROM cga_records 
-                WHERE hn = %s 
-                ORDER BY created_at DESC
-            """
-            cur.execute(query, (hn,))
-            history = cur.fetchall()
-            return render_template("nurse/patient_history.html", patient=patient, history=history)
-        finally:
-            cur.close()
-            conn.close()
-    else:
-        try:
-            sp = get_supabase_client()
-            res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
-            if res.data:
-                patient = res.data[0]
+            if patient:
                 raw_hn = str(patient['hn']).upper().replace("HN", "").strip()
                 if raw_hn.isdigit():
                     patient['hn'] = f"HN{raw_hn.zfill(3)}"
-                rec_res = sp.table("cga_records").select("encounter_id, created_at, mmse_score, tgds_score").eq("hn", hn).order("created_at", desc=True).execute()
-                history = [{"header_id": r.get("encounter_id"), "created_at": r.get("created_at"), "status": "completed", "mmse_score": r.get("mmse_score"), "tgds_score": r.get("tgds_score")} for r in (rec_res.data or [])]
+                query = """
+                    SELECT 
+                        encounter_id as header_id, 
+                        created_at, 
+                        'completed' as status, 
+                        mmse_score, 
+                        tgds_score 
+                    FROM cga_records 
+                    WHERE hn = %s 
+                    ORDER BY created_at DESC
+                """
+                cur.execute(query, (hn,))
+                history = cur.fetchall()
                 return render_template("nurse/patient_history.html", patient=patient, history=history)
-            else:
-                flash("ไม่พบข้อมูลผู้ป่วย", "danger")
-                return redirect(url_for("nurse.patients"))
-        except Exception as e:
-            flash(f"Database Error: {e}", "danger")
-            return redirect(url_for("nurse.patients"))
+        finally:
+            cur.close()
+            conn.close()
+
+    flash("ไม่พบข้อมูลผู้ป่วยในระบบ", "danger")
+    return redirect(url_for("nurse.patients"))
 
 @nurse_bp.get("/patient/edit/<string:hn>", endpoint="patient_edit")
 def patient_edit(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    conn = get_db_connection()
     patient = None
-    if conn:
-        cur = conn.cursor(dictionary=True, buffered=True)
-        try:
-            cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
-            patient = cur.fetchone()
-        finally:
-            cur.close()
-            conn.close()
-    else:
-        try:
-            sp = get_supabase_client()
-            res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
-            if res.data:
-                patient = res.data[0]
-        except Exception as e:
-            flash(f"Database Error: {e}", "danger")
-            
+    
+    # 1. Primary: Fetch from Supabase Cloud
+    try:
+        sp = get_supabase_client()
+        res = sp.table("patients").select("*").eq("hn", hn).limit(1).execute()
+        if res.data:
+            patient = res.data[0]
+    except Exception as e:
+        print(f"Supabase patient_edit error: {e}")
+
+    # 2. Fallback: Local MySQL
+    if not patient:
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor(dictionary=True, buffered=True)
+            try:
+                cur.execute("SELECT * FROM patients WHERE hn = %s", (hn,))
+                patient = cur.fetchone()
+            finally:
+                cur.close()
+                conn.close()
+
     if not patient:
         flash("ไม่พบข้อมูลผู้ป่วย", "danger")
         return redirect(url_for("nurse.patients"))
@@ -2276,126 +2293,90 @@ def patient_update(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
     f = request.form
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True, buffered=True)
+    
+    # 1. Primary: Update Supabase Cloud
     try:
-        # 1. หาข้อมูล ID เดิมก่อนอัปเดต
-        cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
-        p_row = cur.fetchone()
-        if not p_row:
-            flash("ไม่พบข้อมูลผู้ป่วย", "danger")
-            return redirect(url_for("nurse.patients"))
-        p_id = p_row['id']
+        supabase_sex = 'ชาย' if f.get('gender') == 'male' else ('หญิง' if f.get('gender') == 'female' else None)
+        sb_data = {
+            "hn": f.get('hn') or hn,
+            "full_name": f.get('full_name'),
+            "phone": f.get('phone'),
+            "address": f.get('address'),
+            "sex": supabase_sex,
+            "gender": f.get('gender') or None,
+            "birth_date": f.get('birthdate') or None
+        }
+        safe_supabase_sync("patients", sb_data, method='upsert', conflict_col='hn')
+    except Exception as sb_err:
+        print(f"Supabase patient_update error: {sb_err}")
 
-        # 2. ทำการอัปเดตตาราง patients
-        sex_val = 'male' if f.get('gender')=='male' else ('female' if f.get('gender')=='female' else None)
-        cur.execute("UPDATE patients SET hn=%s, full_name=%s, phone=%s, address=%s, gender=%s, birth_date=%s WHERE id=%s",
-                    (f.get('hn') or hn, f.get('full_name'), f.get('phone'), f.get('address'), sex_val, f.get('birthdate') or None, p_id))
-        
-        # 3. 🟢 บังคับ Sync ลง cga_records สำหรับ Encounter ล่าสุด
-        # หา Encounter ล่าสุดของคนไข้คนนี้ (ใช้ p_id จะแม่นยำกว่า hn เพราะ hn พึ่งเปลี่ยนได้)
-        cur.execute("SELECT id FROM encounters WHERE patient_id = %s ORDER BY created_at DESC LIMIT 1", (p_id,))
-        latest_e = cur.fetchone()
-        if latest_e:
-            # พยายามหา Header ที่ผูกกับ Encounter นี้
-            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s ORDER BY id DESC LIMIT 1", (latest_e['id'],))
-            latest_h = cur.fetchone()
-            
-            # รัน Sync โดยส่ง header_id (ถ้ามี) หรือ encounter_id ไป
-            sync_id = latest_h['id'] if latest_h else latest_e['id']
-            _sync_to_cga_records(sync_id, conn, cur)
-            print(f"DEBUG: Force synced cga_records for patient ID {p_id}")
+    # 2. Local MySQL sync
+    try:
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor(dictionary=True, buffered=True)
+            cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
+            p_row = cur.fetchone()
+            if p_row:
+                p_id = p_row['id']
+                sex_val = 'male' if f.get('gender')=='male' else ('female' if f.get('gender')=='female' else None)
+                cur.execute("UPDATE patients SET hn=%s, full_name=%s, phone=%s, address=%s, gender=%s, birth_date=%s WHERE id=%s",
+                            (f.get('hn') or hn, f.get('full_name'), f.get('phone'), f.get('address'), sex_val, f.get('birthdate') or None, p_id))
+                conn.commit()
+            cur.close()
+            conn.close()
+    except Exception as local_err:
+        print(f"Local patient_update warning: {local_err}")
 
-        conn.commit()
-        try:
-            supabase = get_supabase_client()
-            supabase_sex = 'ชาย' if f.get('gender') == 'male' else ('หญิง' if f.get('gender') == 'female' else None)
-            sb_data = {
-                "hn": f.get('hn') or hn,
-                "full_name": f.get('full_name'),
-                "phone": f.get('phone'),
-                "address": f.get('address'),
-                "sex": supabase_sex,
-                "gender": f.get('gender') or None,
-                "birth_date": f.get('birthdate') or None
-            }
-            # ใช้ Safe Sync เพื่อป้องกัน Error จากคอลัมน์ที่ไม่มี
-            safe_supabase_sync("patients", sb_data, method='upsert', conflict_col='hn')
-        except:
-            pass
-        flash("บันทึกการแก้ไขข้อมูลเรียบร้อยแล้ว", "success")
-        return redirect(url_for("nurse.patients"))
-    except Exception as e:
-        conn.rollback()
-        flash(f"เกิดข้อผิดพลาด: {e}", "danger")
-        return redirect(url_for("nurse.patient_edit", hn=hn))
-    finally:
-        cur.close()
-        conn.close()
+    flash("บันทึกการแก้ไขข้อมูลเรียบร้อยแล้ว", "success")
+    return redirect(url_for("nurse.patients"))
 
 @nurse_bp.post("/patient/delete/<string:hn>", endpoint="patient_delete")
 def patient_delete(hn: str):
     if not _require_nurse():
         return redirect(url_for("auth.login"))
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
+        
+    # 1. Primary: Delete from Supabase Cloud
     try:
-        # 1. หา patient_id
-        cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
-        patient = cur.fetchone()
-        if not patient:
-            flash("ไม่พบข้อมูลผู้ป่วย", "warning")
-            return redirect(url_for("nurse.patients"))
-        p_id = patient['id']
+        supabase = get_supabase_client()
+        supabase.table("consultations").delete().eq("hn", hn).execute()
+        supabase.table("cga_records").delete().eq("hn", hn).execute()
+        supabase.table("patients").delete().eq("hn", hn).execute()
+    except Exception as sb_err:
+        print(f"Supabase delete warning: {sb_err}")
 
-        # 2. ล้างข้อมูลในตารางที่เกี่ยวข้อง (Cascaded Cleanup)
-        # หา encounters ทั้งหมดของคนไข้คนนี้
-        cur.execute("SELECT id FROM encounters WHERE patient_id = %s", (p_id,))
-        enc_ids = [r['id'] for r in cur.fetchall()]
+    # 2. Delete from Local MySQL if exists
+    try:
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor(dictionary=True)
+            cur.execute("SELECT id FROM patients WHERE hn = %s", (hn,))
+            patient = cur.fetchone()
+            if patient:
+                p_id = patient['id']
+                cur.execute("SELECT id FROM encounters WHERE patient_id = %s", (p_id,))
+                enc_ids = [r['id'] for r in cur.fetchall()]
+                for e_id in enc_ids:
+                    cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (e_id,))
+                    h_ids = [r['id'] for r in cur.fetchall()]
+                    for h_id in h_ids:
+                        cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id IN (SELECT id FROM assessment_mmse WHERE cga_id = %s)", (h_id,))
+                        cur.execute("DELETE FROM assessment_mmse WHERE cga_id = %s", (h_id,))
+                        cur.execute("DELETE FROM assessment_tgds_items WHERE tgds_id IN (SELECT id FROM assessment_tgds WHERE cga_id = %s)", (h_id,))
+                        cur.execute("DELETE FROM assessment_tgds WHERE cga_id = %s", (h_id,))
+                        cur.execute("DELETE FROM cga_headers WHERE id = %s", (h_id,))
+                    cur.execute("DELETE FROM assessment_answers WHERE session_id IN (SELECT id FROM assessment_sessions WHERE encounter_id = %s)", (e_id,))
+                    cur.execute("DELETE FROM assessment_sessions WHERE encounter_id = %s", (e_id,))
+                    cur.execute("DELETE FROM cga_records WHERE encounter_id = %s", (e_id,))
+                    cur.execute("DELETE FROM encounters WHERE id = %s", (e_id,))
+                cur.execute("DELETE FROM patients WHERE id = %s", (p_id,))
+                conn.commit()
+            cur.close()
+            conn.close()
+    except Exception as local_err:
+        print(f"Local delete warning: {local_err}")
 
-        for e_id in enc_ids:
-            # หา cga_headers
-            cur.execute("SELECT id FROM cga_headers WHERE encounter_id = %s", (e_id,))
-            h_ids = [r['id'] for r in cur.fetchall()]
-            for h_id in h_ids:
-                # ลบ MMSE/TGDS Items
-                cur.execute("DELETE FROM assessment_mmse_items WHERE mmse_id IN (SELECT id FROM assessment_mmse WHERE cga_id = %s)", (h_id,))
-                cur.execute("DELETE FROM assessment_mmse WHERE cga_id = %s", (h_id,))
-                cur.execute("DELETE FROM assessment_tgds_items WHERE tgds_id IN (SELECT id FROM assessment_tgds WHERE cga_id = %s)", (h_id,))
-                cur.execute("DELETE FROM assessment_tgds WHERE cga_id = %s", (h_id,))
-                cur.execute("DELETE FROM cga_headers WHERE id = %s", (h_id,))
-
-            # ลบ Answers & Sessions
-            cur.execute("DELETE FROM assessment_answers WHERE session_id IN (SELECT id FROM assessment_sessions WHERE encounter_id = %s)", (e_id,))
-            cur.execute("DELETE FROM assessment_sessions WHERE encounter_id = %s", (e_id,))
-            
-            # ลบ Summary Records
-            cur.execute("DELETE FROM cga_records WHERE encounter_id = %s", (e_id,))
-            
-            # ลบ Encounter
-            cur.execute("DELETE FROM encounters WHERE id = %s", (e_id,))
-
-        # 3. ลบข้อมูลผู้ป่วย (Local)
-        cur.execute("DELETE FROM patients WHERE id = %s", (p_id,))
-        conn.commit()
-
-        # 4. ลบข้อมูลใน Cloud (Supabase)
-        try:
-            supabase = get_supabase_client()
-            # ลบ cga_records บน cloud ก่อน
-            supabase.table("cga_records").delete().eq("hn", hn).execute()
-            # ลบผู้ป่วยบน cloud
-            supabase.table("patients").delete().eq("hn", hn).execute()
-        except Exception as cloud_e:
-            print(f"Cloud Delete Sync Error: {cloud_e}")
-
-        flash("ลบข้อมูลผู้ป่วยและประวัติการประเมินทั้งหมดเรียบร้อยแล้ว", "success")
-    except Exception as e:
-        conn.rollback()
-        flash(f"ไม่สามารถลบข้อมูลได้: {e}", "danger")
-    finally:
-        cur.close()
-        conn.close()
+    flash("ลบข้อมูลผู้ป่วยและประวัติการประเมินทั้งหมดเรียบร้อยแล้ว", "success")
     return redirect(url_for("nurse.patients"))
 
 @nurse_bp.get("/api/patients", endpoint="api_patients")

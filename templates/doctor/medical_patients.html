@@ -111,7 +111,7 @@
             <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">โรคประจำตัว</th>
             <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">การประเมินล่าสุด</th>
             <th class="px-6 py-4 text-left font-bold text-slate-600 border-b border-slate-200 bg-slate-50">ความเสี่ยง</th>
-            <th class="px-6 py-4 text-center font-bold text-slate-600 border-b border-slate-200 bg-slate-50">จัดการ</th>
+            <th class="px-6 py-4 text-center font-bold text-slate-600 border-b border-slate-200 bg-slate-50 sticky right-0 z-20 shadow-sm">จัดการ</th>
           </tr>
         </thead>
 
@@ -124,19 +124,21 @@
                ========================================================== #}
             {% set risk_slug = p.risk_slug %}
 
-            <tr class="patients-row hover:bg-blue-50/60 transition-colors"
+            <tr class="patients-row hover:bg-blue-50/80 transition-colors cursor-pointer group"
+                onclick="if(!event.target.closest('button, form, a')) window.location='{{ url_for('doctor.patient_detail', hn=p.hn) }}';"
+                title="คลิกเพื่อดูรายละเอียดผู้ป่วย {{ p.full_name }}"
                 data-name="{{ (p.full_name or '')|lower }}"
                 data-hn="{{ (p.hn or '')|lower }}"
                 data-gcn="{{ (p.gcn or '')|lower }}"
                 data-risk="{{ risk_slug }}">
 
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-semibold text-gray-900">{{ p.hn }}</div>
+                <div class="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ p.hn }}</div>
                 <div class="text-xs text-gray-400">{{ p.gcn or '' }}</div>
               </td>
 
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-semibold text-gray-900">{{ p.full_name }}</div>
+                <div class="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ p.full_name }}</div>
               </td>
 
               <td class="px-6 py-4 whitespace-nowrap">
@@ -150,9 +152,9 @@
                 </div>
               </td>
 
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-6 py-4 max-w-[240px]">
                 {% if p.disease %}
-                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs truncate max-w-full" title="{{ p.disease }}">
                     {{ p.disease }}
                   </span>
                 {% else %}
@@ -191,34 +193,33 @@
                 </span>
               </td>
 
-              <td class="px-6 py-4 text-center whitespace-nowrap">
+              <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-blue-50/80 transition-colors shadow-[-4px_0_8px_-3px_rgba(0,0,0,0.06)]">
                 <div class="flex items-center justify-center gap-3">
 
                   <!-- ✅ ดูข้อมูล (ใช้ endpoint ที่มีจริง) -->
                   <a href="{{ url_for('doctor.patient_detail', hn=p.hn) }}"
-                     class="inline-flex items-center justify-center rounded-full p-2
-                            bg-blue-50 hover:bg-blue-100 transition"
+                     class="inline-flex items-center justify-center rounded-full p-2.5
+                            bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white transition shadow-sm"
                      title="ดูข้อมูล">
-                    <svg class="h-5 w-5" fill="#0000CD" viewBox="0 0 24 24"
-                         xmlns="http://www.w3.org/2000/svg" stroke="#0000CD">
-                      <path d="M2.062,12.346C3.773,17,7.675,20,12,20s8.227-3,9.938-7.654a.993.993,0,0,0,0-.692C20.227,7,16.325,4,12,4S3.773,7,2.062,11.654A.993.993,0,0,0,2.062,12.346ZM12,6c3.373,0,6.451,2.343,7.929,6-1.478,3.657-4.556,6-7.929,6s-6.451-2.343-7.929-6C5.549,8.343,8.627,6,12,6Zm0,10a4,4,0,1,0-4-4A4,4,0,0,0,12,16Zm0-6a2,2,0,1,1-2,2A2,2,0,0,1,12,10Z"></path>
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </a>
 
                   <!-- ✅ ลบ (endpoint ที่มีจริง) -->
                   <form method="POST"
                         action="{{ url_for('doctor.patients_delete', hn=p.hn) }}"
-                        onsubmit="return confirm('ยืนยันลบข้อมูลผู้ป่วย HN {{ p.hn }} ?');">
+                        onsubmit="event.stopPropagation(); return confirm('ยืนยันลบข้อมูลผู้ป่วย HN {{ p.hn }} ?');">
                     <button type="submit"
-                            class="inline-flex items-center justify-center rounded-full p-2
-                                   bg-red-50 hover:bg-red-100 transition"
+                            class="inline-flex items-center justify-center rounded-full p-2.5
+                                   bg-red-50 hover:bg-red-600 text-red-600 hover:text-white transition shadow-sm"
                             title="ลบข้อมูลผู้ป่วย">
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5">
-                        <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M2 6H22" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10 11V16" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M14 11V16" stroke="#EE0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" stroke="currentColor" stroke-width="2">
+                        <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 6H22" stroke-linecap="round" stroke-linejoin="round"/>
                       </svg>
                     </button>
                   </form>
