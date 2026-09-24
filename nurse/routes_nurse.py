@@ -819,19 +819,69 @@ def assess_step1_save(header_id: int):
         caregiver_name = (f.get('caregiver_name') or '').strip()
         emergency_phone = (f.get('emergency_phone') or '').strip()
 
-        # Update Patients Table (Local)
-        cur.execute("""
-            UPDATE patients 
-            SET full_name=%s, birth_date=%s, gender=%s, phone=%s, address=%s,
-                chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s
-            WHERE id=%s
-        """, (full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr,
-              chronic_str or None, caregiver_name or None, emergency_phone or None, p_id))
-        
-        # 🟢 Sync ทะเบียนคนไข้ขึ้น Supabase ทันทีที่กรอก Step 1 เสร็จ
-        try:
+        # Check current patient HN in Local MySQL
+        cur.execute("SELECT hn, gcn FROM patients WHERE id = %s", (p_id,))
+        p_curr = cur.fetchone() or {}
+        curr_hn = p_curr.get("hn")
+        curr_gcn = p_curr.get("gcn")
+
+        # ถ้าคนไข้ยังเป็นรหัสชั่วคราว (TMP-) หรือยังไม่มี HN ให้กำหนด HN และ GCN ทางการทันทีที่บันทึกข้อมูลส่วนตัวเสร็จ
+        if not curr_hn or str(curr_hn).startswith("TMP"):
             patient_hn = data.get("hn")
-            if patient_hn and patient_hn != "N/A":
+            patient_gcn = data.get("gcn")
+            
+            # ตรวจสอบว่า patient_hn ถูกสร้างมาหรือยัง ถ้ายังให้คำนวณใหม่
+            if not patient_hn or patient_hn == "N/A" or str(patient_hn).startswith("TMP"):
+                supabase = get_supabase_client()
+                sb_res = supabase.table("patients").select("hn").execute()
+                max_num = 0
+                pattern = re.compile(r'^HN(\d+)$', re.IGNORECASE)
+                for r in (sb_res.data or []):
+                    if r.get('hn'):
+                        m = pattern.match(str(r['hn']))
+                        if m:
+                            val = int(m.group(1))
+                            if val < 1000000 and val > max_num: max_num = val
+                cur.execute("SELECT hn FROM patients WHERE hn LIKE 'HN%'")
+                for r in cur.fetchall():
+                    m = pattern.match(str(r['hn']))
+                    if m:
+                        val = int(m.group(1))
+                        if val < 1000000 and val > max_num: max_num = val
+                patient_hn = f"HN{(max_num + 1):03d}"
+
+            if not patient_gcn or str(patient_gcn) in ["---", "None", ""]:
+                cur.execute("SELECT COUNT(*) AS c FROM cga_headers WHERE status IN ('completed','sent_to_doctor') AND DATE(created_at) = CURDATE()")
+                patient_gcn = f"{(cur.fetchone()['c'] + 1):03d}"
+
+            # 🟢 ล็อกและบันทึกเลข HN ทางการลง Local MySQL ทันที! (ป้องกันการรันเลขซ้ำใน Step 3)
+            cur.execute("""
+                UPDATE patients 
+                SET hn=%s, gcn=%s, full_name=%s, birth_date=%s, gender=%s, phone=%s, address=%s,
+                    chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s
+                WHERE id=%s
+            """, (patient_hn, patient_gcn, full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr,
+                  chronic_str or None, caregiver_name or None, emergency_phone or None, p_id))
+
+            enc_id = data.get("encounter_id")
+            if enc_id:
+                cur.execute("UPDATE cga_records SET hn=%s, full_name=%s WHERE encounter_id=%s", (patient_hn, full_name, enc_id))
+            conn.commit()
+        else:
+            patient_hn = curr_hn
+            patient_gcn = curr_gcn
+            cur.execute("""
+                UPDATE patients 
+                SET full_name=%s, birth_date=%s, gender=%s, phone=%s, address=%s,
+                    chronic_disease=%s, emergency_contact_name=%s, emergency_contact_phone=%s
+                WHERE id=%s
+            """, (full_name, f.get('birthdate') or None, f.get('gender'), f.get('phone'), final_readable_addr,
+                  chronic_str or None, caregiver_name or None, emergency_phone or None, p_id))
+            conn.commit()
+
+        # 🟢 Sync ทะเบียนคนไข้ขึ้น Supabase ทันทีที่กรอก Step 1 เสร็จ (ใช้ patient_hn เดียวกัน)
+        try:
+            if patient_hn and patient_hn != "N/A" and not str(patient_hn).startswith("TMP"):
                 sb_p = {
                     "hn": patient_hn,
                     "full_name": full_name,
@@ -841,8 +891,8 @@ def assess_step1_save(header_id: int):
                     "address": final_readable_addr,
                     "updated_at": datetime.now().isoformat()
                 }
-                if data.get("gcn") and str(data.get("gcn")) != "---":
-                    sb_p["gcn"] = str(data.get("gcn")).zfill(3)
+                if patient_gcn and str(patient_gcn) != "---":
+                    sb_p["gcn"] = str(patient_gcn).zfill(3)
                 safe_supabase_sync("patients", sb_p, method='upsert', conflict_col='hn')
 
                 enc_id = data.get("encounter_id")
@@ -1212,7 +1262,7 @@ def assess_tgds_save(header_id: int):
                 m = pattern.match(str(r['hn']))
                 if m:
                     val = int(m.group(1))
-                    if val < 1000000 and val > max_num: val = val
+                    if val < 1000000 and val > max_num: max_num = val
             
             final_hn = f"HN{(max_num + 1):03d}"
             
@@ -1693,23 +1743,25 @@ def _sync_to_cga_records(header_id, conn, cur):
 
         # 7. Cloud Sync
         try:
-            supabase = get_supabase_client()
-            sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
-            if not sb_p_res.data and base_info.get('hn'):
-                # สร้างคนไข้ใน Supabase ทันทีถ้ายังไม่มี เพื่อไม่ให้การ Sync cga_records ติดขัด
-                safe_supabase_sync("patients", {
-                    "hn": base_info['hn'],
-                    "full_name": base_info.get('full_name') or "รอกรอกข้อมูล",
-                    "birth_date": str(base_info['birth_date']) if base_info.get('birth_date') else None,
-                    "created_at": datetime.now().isoformat()
-                }, method='upsert', conflict_col='hn')
+            # ซิงค์เฉพาะคนไข้ที่มี HN ทางการแล้วเท่านั้น (ไม่นำ TMP- เข้า Cloud)
+            if base_info.get('hn') and not str(base_info['hn']).startswith("TMP"):
+                supabase = get_supabase_client()
                 sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
+                if not sb_p_res.data:
+                    # สร้างคนไข้ใน Supabase ทันทีถ้ายังไม่มี เพื่อไม่ให้การ Sync cga_records ติดขัด
+                    safe_supabase_sync("patients", {
+                        "hn": base_info['hn'],
+                        "full_name": base_info.get('full_name') or "รอกรอกข้อมูล",
+                        "birth_date": str(base_info['birth_date']) if base_info.get('birth_date') else None,
+                        "created_at": datetime.now().isoformat()
+                    }, method='upsert', conflict_col='hn')
+                    sb_p_res = supabase.table("patients").select("id").eq("hn", base_info['hn']).execute()
 
-            if sb_p_res.data:
-                cloud_payload = record_data.copy()
-                cloud_payload['patient_id'] = sb_p_res.data[0]['id']
-                safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
-                print(f"☁️ [CLOUD SYNC OK] HN: {record_data['hn']}")
+                if sb_p_res.data:
+                    cloud_payload = record_data.copy()
+                    cloud_payload['patient_id'] = sb_p_res.data[0]['id']
+                    safe_supabase_sync("cga_records", cloud_payload, method='upsert', conflict_col='encounter_id')
+                    print(f"☁️ [CLOUD SYNC OK] HN: {record_data['hn']}")
         except Exception as cloud_e: 
             print(f"☁️ [CLOUD SYNC ERR] {cloud_e}")
             
