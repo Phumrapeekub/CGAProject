@@ -1741,7 +1741,7 @@ def _sync_to_cga_records(header_id, conn, cur):
             "suicide_risk": 'มี' if data_map['suicide_risk'] == 'yes' else 'ไม่มี',
             "incontinence": data_map['incontinence_detail'] if data_map['incontinence']=='abnormal' else 'ปกติ',
             "sleep_problem": data_map['sleep_problem_detail'] if data_map['sleep_problem']=='abnormal' else 'ปกติ',
-            "smoke": {'no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(data_map['smoke'], 'ไม่ระบุ'),
+            "smoke": {'none':'ไม่สูบ','no':'ไม่สูบ','quit':'เลิกแล้ว','yes':'สูบ'}.get(data_map['smoke'], 'ไม่ระบุ'),
             "alcohol": {'none':'ไม่ดื่ม','no':'ไม่ดื่ม','social':'ดื่มบางครั้ง','daily':'ดื่มทุกวัน'}.get(data_map['alcohol'], 'ไม่ระบุ')
         }
 

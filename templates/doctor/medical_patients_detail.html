@@ -192,8 +192,8 @@
             {% set smoke = g.get('smoking_status') %}
             <div class="flex flex-wrap gap-2">
               <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['yes', 'สูบ'] %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">สูบ</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['no', 'ไม่สูบ'] %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่สูบ</span>
-              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['quit', 'เลิกแล้ว'] %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">เคยสูบ/เลิกแล้ว</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['no', 'ไม่สูบ', 'none'] or (smoke == 'ไม่ระบุ' and g.get('alcohol_level')) %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">ไม่สูบ</span>
+              <span class="px-3 py-1 rounded-full text-sm border font-bold {% if smoke in ['quit', 'เลิกแล้ว', 'เคยสูบ'] %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">เคยสูบ/เลิกแล้ว</span>
             </div>
             {% if smoke in ['yes', 'สูบ'] %}
               <div class="mt-2 text-sm text-slate-600">จำนวน: <span class="font-extrabold">{{ g.get('smoking_per_day') or '-' }}</span> มวน/วัน</div>
@@ -452,28 +452,36 @@
 
       <!-- ========= CGA History ========= -->
       <section class="col-span-12 lg:col-span-6 surface overflow-hidden">
-        <div class="surface-head px-5 py-4">
+        <div class="surface-head px-5 py-4 flex items-center justify-between">
           <div class="font-extrabold text-slate-900">ประวัติ การประเมิน CGA</div>
+          <div class="text-xs text-slate-500 font-bold">
+            {{ cga_history|length if cga_history is defined else 0 }} รายการ
+          </div>
         </div>
 
         <div class="h-[220px] overflow-y-auto scroller p-4 space-y-3">
-          {% if _visits and _visits|length > 0 %}
-            {% for v in _visits %}
-              <div class="rounded-2xl bg-white/80 border border-slate-200/60 p-4">
+          {% if cga_history and cga_history|length > 0 %}
+            {% for c in cga_history %}
+              {% set view_url = url_for('doctor.cga_history_detail', cga_id=c.id) %}
+              <a href="{{ view_url }}" class="block rounded-2xl bg-white/80 border border-slate-200/60 p-4 hover:bg-indigo-50/40 hover:border-indigo-200 transition group">
                 <div class="flex items-center justify-between gap-3">
                   <div class="min-w-0">
-                    <div class="font-extrabold text-slate-900 text-sm truncate">
-                      CGA Visit #{{ v.id if v.id is defined else loop.index }}
+                    <div class="font-extrabold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                      การประเมิน CGA #{{ c.id }}
                     </div>
                     <div class="text-xs text-slate-500 font-bold mt-1">
-                      {{ v.visit_datetime.strftime("%d/%m/%Y %H:%M") if v.visit_datetime else (v.encounter_datetime.strftime("%d/%m/%Y %H:%M") if v.encounter_datetime else '-') }}
+                      {{ c.assessed_date or (c.created_at[:10] if c.created_at is string else (c.created_at.strftime("%d/%m/%Y") if c.created_at else '-')) }}
                     </div>
                   </div>
-                  <div class="text-xs font-extrabold text-indigo-700 bg-indigo-50/80 border border-indigo-200/60 px-2.5 py-1 rounded-full">
-                    ดูรายละเอียด
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700">MMSE: {{ c.mmse_score if c.mmse_score is not none else '-' }}/30</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700">TGDS: {{ c.tgds_score if c.tgds_score is not none else '-' }}/15</span>
+                    <div class="text-xs font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      ดูรายละเอียด
+                    </div>
                   </div>
                 </div>
-              </div>
+              </a>
             {% endfor %}
           {% else %}
             <div class="text-center py-10 text-slate-400 font-semibold">ยังไม่มีประวัติการประเมิน CGA</div>
