@@ -2,35 +2,123 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ข้อมูลของฉัน</title>
+  <title>ข้อมูลของฉัน - CGA Smart Care</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; padding: 16px; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .back-btn { text-decoration: none; color: #475569; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+    h1 { font-size: 20px; font-weight: 700; color: #0f172a; }
+    .container { max-width: 520px; margin: 0 auto; }
+    .profile-card { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 20px; padding: 24px; color: #fff; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4); margin-bottom: 20px; position: relative; overflow: hidden; }
+    .profile-card::after { content: ""; position: absolute; right: -20px; bottom: -20px; width: 140px; height: 140px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+    .hospital-title { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 500; margin-bottom: 8px; letter-spacing: 0.5px; }
+    .patient-name { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+    .hn-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; }
+    .details-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .detail-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
+    .detail-item:last-child { border-bottom: none; }
+    .detail-label { color: #64748b; }
+    .detail-value { font-weight: 600; color: #0f172a; }
+    .loading-box { text-align: center; padding: 40px 20px; color: #64748b; }
+    .error-box { text-align: center; padding: 30px 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; color: #9f1239; margin-top: 10px; }
+  </style>
 </head>
 <body>
-  <h1>ข้อมูลของฉัน</h1>
-  <div id="content">กำลังโหลด...</div>
+  <div class="container">
+    <div class="top-bar">
+      <a href="/line/liff/home" class="back-btn">‹ เมนูหลัก</a>
+      <h1>👤 ข้อมูลผู้ป่วย</h1>
+      <div style="width: 70px;"></div>
+    </div>
 
+    <div id="content" class="loading-box">
+      กำลังโหลดข้อมูลผู้ป่วย...
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    async function loadProfile() {
+    const LIFF_ID = "{{ liff_id }}";
+
+    async function fetchProfile(userId = "") {
+      const content = document.getElementById("content");
       try {
-        const res = await fetch("/line/api/profile");
+        const urlParams = new URLSearchParams(window.location.search);
+        const hn = urlParams.get("hn") || "";
+        const queryParam = userId ? `userId=${encodeURIComponent(userId)}` : (hn ? `hn=${encodeURIComponent(hn)}` : "");
+        const res = await fetch(`/line/api/profile?${queryParam}`);
         const data = await res.json();
 
-        if (data.error) {
-          document.getElementById("content").innerText = "❌ ไม่พบข้อมูลผู้ใช้";
-        } else {
-          document.getElementById("content").innerHTML = `
-            <p><b>ชื่อ:</b> ${data.full_name}</p>
-            <p><b>HN:</b> ${data.hn}</p>
+        if (!data.ok) {
+          content.innerHTML = `
+            <div class="error-box">
+              <p style="font-weight: 600; font-size: 16px;">❌ ${data.error || 'ไม่พบข้อมูลผู้ป่วย'}</p>
+              <p style="font-size: 13px; margin-top: 6px; color: #be123c;">กรุณาติดต่อเจ้าหน้าที่เพื่อลงทะเบียนเชื่อมต่อ LINE</p>
+            </div>
           `;
+          return;
         }
+
+        content.innerHTML = `
+          <div class="profile-card">
+            <div class="hospital-title">บัตรประจำตัวผู้ป่วย • รพ.พะเยา</div>
+            <div class="patient-name">${data.full_name || data.name || '-'}</div>
+            <div class="hn-pill">
+              <span>HN:</span>
+              <span>${data.hn || '-'}</span>
+            </div>
+          </div>
+
+          <div class="details-box">
+            <div class="detail-item">
+              <span class="detail-label">เบอร์โทรศัพท์</span>
+              <span class="detail-value">${data.phone || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">วัน/เดือน/ปีเกิด</span>
+              <span class="detail-value">${data.birth_date || '-'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">สถานะการเชื่อมต่อ</span>
+              <span class="detail-value" style="color: #059669;">● เชื่อมต่อแล้ว</span>
+            </div>
+          </div>
+        `;
       } catch (err) {
-        document.getElementById("content").innerText = "❌ โหลดข้อมูลไม่สำเร็จ";
         console.error(err);
+        content.innerHTML = `
+          <div class="error-box">
+            <p style="font-weight: 600;">⚠️ โหลดข้อมูลไม่สำเร็จ</p>
+            <p style="font-size: 13px; margin-top: 4px;">กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</p>
+          </div>
+        `;
       }
     }
 
-    loadProfile();
+    async function main() {
+      if (LIFF_ID && LIFF_ID.trim() !== "" && !LIFF_ID.includes("ใส่_LIFF_ID")) {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+          if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+          }
+          const p = await liff.getProfile();
+          fetchProfile(p.userId);
+          return;
+        } catch (e) {
+          console.warn("LIFF init error, falling back to direct load:", e);
+        }
+      }
+      fetchProfile();
+    }
+
+    main();
   </script>
 </body>
 </html>

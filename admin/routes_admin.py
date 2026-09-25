@@ -40,14 +40,12 @@ def dashboard():
     service_type_values = []
 
     # Supabase Client Initialization
-    supabase_url = (os.getenv("SUPABASE_URL") or "").strip()
-    supabase_key = (os.getenv("SUPABASE_KEY") or "").strip()
     supabase_client = None
-    if supabase_url and supabase_key:
-        try:
-            supabase_client = create_client(supabase_url, supabase_key)
-        except Exception as e:
-            print(f"Dashboard Supabase Init Error: {e}")
+    try:
+        from db.db import get_supabase_client
+        supabase_client = get_supabase_client()
+    except Exception as e:
+        print(f"Dashboard Supabase Init Error: {e}")
 
     try:
         if supabase_client:

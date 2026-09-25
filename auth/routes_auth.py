@@ -1,8 +1,7 @@
 from __future__ import annotations
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash
-from db.db import get_db_connection, get_supabase_client
-from mysql.connector import Error as MySQLdbError # Import MySQL Error
+from db.db import get_supabase_client
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -21,11 +20,9 @@ def login():
         username = aliases.get(raw_username.lower(), raw_username)
 
         user = None
-        conn = None
-        cur = None
         db_reachable = False
 
-        # 1. Try Supabase as primary database
+        # Supabase lookup
         try:
             supabase = get_supabase_client()
             if supabase:
@@ -38,65 +35,21 @@ def login():
         except Exception as err:
             print(f"Supabase auth lookup error: {err}")
 
-        # 2. Fallback to MySQL if Supabase unavailable or user not found
-        if not user:
-            try:
-                conn = get_db_connection()
-                if conn:
-                    db_reachable = True
-                    cur = conn.cursor(dictionary=True)
-                    cur.execute(
-                        "SELECT id, username, password_hash, is_active, full_name, role FROM users WHERE username = %s LIMIT 1",
-                        (username,)
-                    )
-                    user = cur.fetchone()
-            except Exception as err:
-                print(f"MySQL auth lookup error: {err}")
-
-        # Check if no database was reached at all
+        # Check if database failed to connect
         if not db_reachable and not user:
             flash("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "error")
-            if cur:
-                try: cur.close()
-                except: pass
-            if conn:
-                try: conn.close()
-                except: pass
             return redirect(url_for("auth.login"))
 
         if not user:
             flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
-            if cur:
-                try: cur.close()
-                except: pass
-            if conn:
-                try: conn.close()
-                except: pass
             return redirect(url_for("auth.login"))
 
-        # Check password
+        # Verify password hash
         pwd_hash = user.get("password_hash") or ""
         valid_password = check_password_hash(pwd_hash, password)
-        if not valid_password and password == "password123":
-            valid_password = True
-        if not valid_password:
-            try:
-                supabase = get_supabase_client()
-                if supabase:
-                    res = supabase.table("users").select("password_hash").eq("username", username).limit(1).execute()
-                    if res.data and check_password_hash(res.data[0].get("password_hash", ""), password):
-                        valid_password = True
-            except:
-                pass
 
         if not valid_password:
             flash("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error")
-            if cur:
-                try: cur.close()
-                except: pass
-            if conn:
-                try: conn.close()
-                except: pass
             return redirect(url_for("auth.login"))
 
         # Check active status
@@ -108,12 +61,6 @@ def login():
 
         if not is_active:
             flash("บัญชีนี้ถูกระงับการใช้งาน", "error")
-            if cur:
-                try: cur.close()
-                except: pass
-            if conn:
-                try: conn.close()
-                except: pass
             return redirect(url_for("auth.login"))
 
         # Setup session
@@ -128,32 +75,19 @@ def login():
         try:
             ip_addr = request.remote_addr
             user_agent = request.headers.get("User-Agent")
-            if cur and conn:
-                cur.execute("""
-                    INSERT INTO audit_logs (actor_user_id, actor_role, action, entity_type, ip_address, user_agent)
-                    VALUES (%s, %s, 'login', 'auth', %s, %s)
-                """, (user["id"], user.get("role"), ip_addr, user_agent))
-                conn.commit()
-            else:
-                supabase = get_supabase_client()
-                if supabase:
-                    supabase.table("audit_logs").insert({
-                        "actor_user_id": user["id"],
-                        "actor_role": user.get("role"),
-                        "action": "login",
-                        "entity_type": "auth",
-                        "ip_address": ip_addr,
-                        "user_agent": user_agent
-                    }).execute()
+            supabase = get_supabase_client()
+            if supabase:
+                supabase.table("audit_logs").insert({
+                    "actor_user_id": user["id"],
+                    "actor_role": user.get("role"),
+                    "action": "login",
+                    "entity_type": "auth",
+                    "ip_address": ip_addr,
+                    "user_agent": user_agent
+                }).execute()
         except Exception as ex:
-            print(f"Audit Log Warning: {ex}")
-
-        if cur:
-            try: cur.close()
-            except: pass
-        if conn:
-            try: conn.close()
-            except: pass
+            # Audit log table may not exist or be optional in schema
+            pass
 
         # Redirect based on role
         role = session["role"]
@@ -174,6 +108,7 @@ def login():
         page_title="CGA System Login",
         page_desc="ระบบประเมินสุขภาพผู้สูงอายุ โรงพยาบาลพะเยา"
     )
+
 @auth_bp.route("/logout")
 def logout():
     session.clear()

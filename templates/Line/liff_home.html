@@ -1,14 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
   <meta charset="utf-8">
-  <title>LIFF Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGA Smart Care - หน้าหลัก</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; padding: 20px 16px; }
+    .header { text-align: center; margin-bottom: 24px; padding-top: 12px; }
+    .badge { display: inline-block; background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    p.sub { font-size: 14px; color: #64748b; }
+    .menu-grid { display: flex; flex-direction: column; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .card { background: #ffffff; border-radius: 16px; padding: 18px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit; border: 1px solid #e2e8f0; transition: transform 0.15s, box-shadow 0.15s; }
+    .card:active { transform: scale(0.98); }
+    .icon-box { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+    .icon-blue { background: #eff6ff; color: #2563eb; }
+    .icon-emerald { background: #ecfdf5; color: #059669; }
+    .card-info { flex: 1; }
+    .card-title { font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 2px; }
+    .card-desc { font-size: 13px; color: #64748b; }
+    .chevron { color: #94a3b8; font-size: 18px; font-weight: bold; }
+    .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #94a3b8; }
+  </style>
 </head>
 <body>
-  <h1>หน้าเมนู LIFF</h1>
-  <ul>
-    <li><a href="/liff/profile">ข้อมูลของฉัน</a></li>
-    <li><a href="/liff/appointments">การนัดหมาย</a></li>
-  </ul>
+  <div class="header">
+    <span class="badge">ระบบประเมินภาวะสุขภาพผู้สูงอายุ</span>
+    <h1>CGA Smart Care</h1>
+    <p class="sub">โรงพยาบาลพะเยา</p>
+  </div>
+
+  <div class="menu-grid">
+    <a href="/line/liff/profile" class="card">
+      <div class="icon-box icon-blue">👤</div>
+      <div class="card-info">
+        <div class="card-title">ข้อมูลส่วนตัวของฉัน</div>
+        <div class="card-desc">ตรวจสอบประวัติทั่วไปและเลขประจำตัวผู้ป่วย (HN)</div>
+      </div>
+      <div class="chevron">›</div>
+    </a>
+
+    <a href="/line/liff/appointments" class="card">
+      <div class="icon-box icon-emerald">📅</div>
+      <div class="card-info">
+        <div class="card-title">รายการนัดหมาย</div>
+        <div class="card-desc">ดูวันเวลาและแพทย์ที่นัดตรวจติดตามอาการ</div>
+      </div>
+      <div class="chevron">›</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    กลุ่มงานเวชกรรมสังคม โรงพยาบาลพะเยา
+  </div>
 </body>
 </html>

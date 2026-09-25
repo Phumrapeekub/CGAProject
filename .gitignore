@@ -8,3 +8,6 @@ __pycache__/
 .agents/
 .gemini/
 scratch/
+supabase_payload_log.json
+*.log
+.DS_Store

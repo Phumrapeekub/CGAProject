@@ -2,47 +2,120 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>การนัดหมาย</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>รายการนัดหมาย - CGA Smart Care</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: system-ui, sans-serif; padding: 16px; }
-    .item { border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; padding: 16px; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .back-btn { text-decoration: none; color: #475569; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+    h1 { font-size: 20px; font-weight: 700; color: #0f172a; }
+    .container { max-width: 520px; margin: 0 auto; }
+    .loading-box { text-align: center; padding: 40px 20px; color: #64748b; font-size: 15px; }
+    .item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .item-type { font-size: 16px; font-weight: 600; color: #0f172a; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .status-confirmed { background: #dcfce7; color: #15803d; }
+    .status-pending { background: #fef3c7; color: #b45309; }
+    .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #475569; margin-top: 6px; }
+    .info-icon { font-size: 15px; }
+    .empty-state { text-align: center; padding: 40px 20px; background: #fff; border-radius: 16px; border: 1px dashed #cbd5e1; color: #64748b; }
+    .empty-icon { font-size: 40px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h1>การนัดหมาย</h1>
-  <div id="list">กำลังโหลด...</div>
+  <div class="container">
+    <div class="top-bar">
+      <a href="/line/liff/home" class="back-btn">‹ เมนูหลัก</a>
+      <h1>📅 รายการนัดหมาย</h1>
+      <div style="width: 70px;"></div>
+    </div>
+
+    <div id="list" class="loading-box">กำลังโหลดรายการนัดหมาย...</div>
+  </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const LIFF_ID = "ใส่_LIFF_ID_ของคุณตรงนี้";
+    const LIFF_ID = "{{ liff_id }}";
+
+    async function loadAppointments(userId = "") {
+      const el = document.getElementById("list");
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hn = urlParams.get("hn") || "";
+        const queryParam = userId ? `userId=${encodeURIComponent(userId)}` : (hn ? `hn=${encodeURIComponent(hn)}` : "");
+        const res = await fetch(`/line/api/appointments?${queryParam}`);
+        const json = await res.json();
+
+        if (!json.ok || !json.data || json.data.length === 0) {
+          el.outerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">📅</div>
+              <p style="font-weight: 600; font-size: 16px; color: #334155;">ยังไม่มีรายการนัดหมาย</p>
+              <p style="font-size: 13px; margin-top: 4px;">หากมีนัดตรวจกับแพทย์ ระบบจะแสดงรายการที่นี่</p>
+            </div>
+          `;
+          return;
+        }
+
+        const cardsHtml = json.data.map(a => {
+          const isConfirmed = a.status === 'ยืนยันแล้ว' || a.status === 'confirmed';
+          const badgeClass = isConfirmed ? 'status-confirmed' : 'status-pending';
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-type">${a.type || 'ตรวจติดตามอาการ'}</span>
+                <span class="status-badge ${badgeClass}">${a.status || 'รอยืนยัน'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">📆</span>
+                <span><b>วันที่:</b> ${a.date || 'ตามแพทย์นัด'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">⏰</span>
+                <span><b>เวลา:</b> ${a.time || '09:00 น.'}</span>
+              </div>
+              ${a.note ? `<div class="info-row" style="margin-top: 8px; font-size: 13px; color: #64748b;"><span>📝 ${a.note}</span></div>` : ''}
+            </div>
+          `;
+        }).join("");
+
+        el.outerHTML = `<div id="list">${cardsHtml}</div>`;
+      } catch (err) {
+        console.error("Error loading appointments:", err);
+        el.outerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+          </div>
+        `;
+      }
+    }
 
     async function main() {
-      await liff.init({ liffId: LIFF_ID });
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
+      // ตรวจสอบว่ามี LIFF ID ที่ตั้งค่าไว้หรือไม่
+      if (LIFF_ID && LIFF_ID.trim() !== "" && !LIFF_ID.includes("ใส่_LIFF_ID")) {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+          if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+          }
+          const p = await liff.getProfile();
+          loadAppointments(p.userId);
+          return;
+        } catch (e) {
+          console.warn("LIFF init error, falling back to direct load:", e);
+        }
       }
-
-      const p = await liff.getProfile();
-      const res = await fetch(`/line/api/appointments?userId=${p.userId}`);
-      const json = await res.json();
-
-      const el = document.getElementById("list");
-      if (!json.ok || !json.data.length) {
-        el.innerHTML = "<p>ไม่พบนัดหมาย</p>";
-        return;
-      }
-
-      el.innerHTML = json.data.map(a => `
-        <div class="item">
-          <div><b>วันที่:</b> ${a.date}</div>
-          <div><b>เวลา:</b> ${a.time}</div>
-          <div><b>ประเภท:</b> ${a.type}</div>
-        </div>
-      `).join("");
+      // โหมดแสดงผลโดยตรง (เมื่อทดสอบนอก LINE หรือยังไม่ได้ตั้งค่า LIFF ID)
+      loadAppointments();
     }
+
     main();
   </script>
 </body>

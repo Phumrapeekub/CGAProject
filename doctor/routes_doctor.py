@@ -111,18 +111,7 @@ def login():
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
 
-        # --- 🔓 Emergency Bypass สำหรับ doctor1 (ใช้ Hash จริง) ---
-        DOCTOR_HASH = "scrypt:32768:8:1$clBDnyu6f6uKaSPR$6c9b9807c5a35fe6facca667ae66036d1377cf1b752d1d8883a46bb855372e418a9570e8ab9fac9d36dcaa3a82e5f6ed1ff8b1928093da66dd412f251359a2db"
-        if username == "doctor1" and check_password_hash(DOCTOR_HASH, password):
-            session.clear()
-            session["logged_in"] = True
-            session["user_id"] = 2
-            session["username"] = "doctor1"
-            session["full_name"] = "พญ.ลีลาวดี กลิ่นหอม"
-            session["role"] = "doctor"
-            return redirect(url_for("doctor.dashboard"))
-
-        from db.db import get_db_client, get_db_connection
+        from db.db import get_db_client
         supabase = get_db_client()
         if not supabase:
             flash("เชื่อมต่อ Supabase ไม่สำเร็จ", "error")
@@ -637,47 +626,41 @@ def patients():
         disease_map = {}
 
         try:
-            conn = get_db_connection()
-            cur = conn.cursor(dictionary=True)
             if hns:
-                format_strings = ','.join(['%s'] * len(hns))
-                query_sql = f'''
-                    SELECT p.hn, a.answer_text
-                    FROM patients p
-                    JOIN encounters e ON p.id = e.patient_id
-                    JOIN cga_headers c ON e.id = c.encounter_id
-                    JOIN assessment_answers a ON c.session_id = a.session_id
-                    WHERE p.hn IN ({format_strings})
-                      AND a.instrument = 'basic' 
-                      AND (a.answer_text LIKE 'chronicDiseases:%' OR a.answer_text LIKE 'otherDisease:%')
-                '''
-                cur.execute(query_sql, tuple(hns))
-                for mr in cur.fetchall():
-                    mhn = mr['hn']
-                    ans = mr['answer_text']
-                    if ':' in ans:
-                        _, v = ans.split(':', 1)
-                        if v.strip() and v.strip() != '-':
-
-                            if mhn not in disease_map:
-                                disease_map[mhn] = []
-                            # Translate common diseases to Thai
-                            raw_ds = v.strip().split(',')
-                            for rd in raw_ds:
-                                clean_rd = rd.strip().lower()
-                                th_d = clean_rd
-                                if clean_rd == 'diabetes': th_d = 'เบาหวาน'
-                                elif clean_rd == 'hypertension': th_d = 'ความดันโลหิตสูง'
-                                elif clean_rd == 'heart': th_d = 'โรคหัวใจ'
-                                elif clean_rd == 'kidney': th_d = 'โรคไต'
-                                elif clean_rd == 'cancer': th_d = 'มะเร็ง'
-                                else: th_d = rd.strip()
-                                disease_map[mhn].append(th_d)
-
-            cur.close()
-            conn.close()
+                p_res = supabase.table("patients").select("id, hn").in_("hn", hns).execute()
+                p_id_to_hn = {p["id"]: p["hn"] for p in (p_res.data or [])}
+                if p_id_to_hn:
+                    e_res = supabase.table("encounters").select("id, patient_id").in_("patient_id", list(p_id_to_hn.keys())).execute()
+                    e_id_to_hn = {e["id"]: p_id_to_hn[e["patient_id"]] for e in (e_res.data or []) if e.get("patient_id") in p_id_to_hn}
+                    if e_id_to_hn:
+                        c_res = supabase.table("cga_headers").select("encounter_id, session_id").in_("encounter_id", list(e_id_to_hn.keys())).execute()
+                        s_id_to_hn = {c["session_id"]: e_id_to_hn[c["encounter_id"]] for c in (c_res.data or []) if c.get("session_id") and c.get("encounter_id") in e_id_to_hn}
+                        if s_id_to_hn:
+                            a_res = supabase.table("assessment_answers").select("session_id, answer_text").eq("instrument", "basic").in_("session_id", list(s_id_to_hn.keys())).execute()
+                            for mr in (a_res.data or []):
+                                ans = mr.get("answer_text") or ""
+                                mhn = s_id_to_hn.get(mr.get("session_id"))
+                                if not mhn:
+                                    continue
+                                if ans.startswith("chronicDiseases:") or ans.startswith("otherDisease:"):
+                                    if ":" in ans:
+                                        _, v = ans.split(":", 1)
+                                        if v.strip() and v.strip() != "-":
+                                            if mhn not in disease_map:
+                                                disease_map[mhn] = []
+                                            raw_ds = v.strip().split(",")
+                                            for rd in raw_ds:
+                                                clean_rd = rd.strip().lower()
+                                                if clean_rd == "diabetes": th_d = "เบาหวาน"
+                                                elif clean_rd == "hypertension": th_d = "ความดันโลหิตสูง"
+                                                elif clean_rd == "heart": th_d = "โรคหัวใจ"
+                                                elif clean_rd == "kidney": th_d = "โรคไต"
+                                                elif clean_rd == "cancer": th_d = "มะเร็ง"
+                                                else: th_d = rd.strip()
+                                                if th_d and th_d not in disease_map[mhn]:
+                                                    disease_map[mhn].append(th_d)
         except Exception as e:
-            print(f"DEBUG: MySQL disease fetch error: {e}")
+            print(f"DEBUG: Supabase disease fetch error: {e}")
 
         history_map = {}  # ✅ Group history to pass to AI
         consult_map = {}
@@ -911,15 +894,12 @@ def patient_detail(hn):
         # 2) consultations
         try:
             res_cons = supabase.table("consultations").select("*").eq("hn", hn).order("id", desc=True).execute()
-            print(f"DEBUG: res_cons.data raw type={type(res_cons.data)} val={res_cons.data}")
             consultations_data = res_cons.data
             if not isinstance(consultations_data, list):
                 consultations_data = []
             # Sanitization
             consultations_data = [x for x in consultations_data if isinstance(x, dict)]
-            print(f"DEBUG: consultations_data sanitized len={len(consultations_data)}")
         except Exception as e:
-            print(f"DEBUG: consultations error: {e}")
             consultations_data = []
         
         # Helper to format date
@@ -1183,10 +1163,17 @@ def patient_detail(hn):
                 if not ai_analysis["recs"]:
                     ai_analysis["recs"].append("ติดตามอาการตามนัดหมายปกติ")
             else:
-                raise Exception(prediction.get("error", "Unknown error"))
-                
+                ai_analysis = {
+                    "overall_label": "รอการประเมิน",
+                    "overall_desc": "กรุณาประเมิน MMSE และ TGDS เพื่อให้ AI วิเคราะห์ผล",
+                    "risk_score": "-",
+                    "risk_badge": "gray",
+                    "domains": [],
+                    "cautions": [],
+                    "recs": [],
+                    "risk_level": "N/A",
+                }
         except Exception as e:
-            print(f"⚠️ AI Prediction failed: {e}")
             ai_analysis = {
                 "overall_label": "รอการประเมิน",
                 "overall_desc": "กรุณาประเมิน MMSE และ TGDS เพื่อให้ AI วิเคราะห์ผล",
